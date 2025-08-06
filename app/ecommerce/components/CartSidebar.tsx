@@ -11,7 +11,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useCart } from "../contexts/CartContext";
 

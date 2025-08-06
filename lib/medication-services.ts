@@ -10,6 +10,27 @@ export interface MedicationInteraction {
   recommendation: string;
 }
 
+// Interface for medication history records
+export interface MedicationHistoryRecord {
+  adherence: number;
+  medication: string;
+  date: string;
+}
+
+// Interface for user patterns
+export interface UserPatterns {
+  preferredTime: 'morning' | 'afternoon' | 'evening' | 'night';
+  medicationCount: number;
+  usesReminders: boolean;
+}
+
+// Interface for food interactions
+export interface FoodInteraction {
+  food: string;
+  severity: string;
+  description: string;
+}
+
 /**
  * Check for medication interactions
  * 
@@ -69,11 +90,11 @@ export async function checkMedicationInteractions(
  */
 export async function checkFoodInteractions(
   medication: string
-): Promise<{ food: string; severity: string; description: string }[]> {
+): Promise<FoodInteraction[]> {
   // Mock implementation
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  const foodInteractions: Record<string, { food: string; severity: string; description: string }[]> = {
+  const foodInteractions: Record<string, FoodInteraction[]> = {
     'Lisinopril': [
       { 
         food: 'High potassium foods', 
@@ -102,8 +123,8 @@ export async function checkFoodInteractions(
  * Predict medication adherence based on user patterns
  */
 export function predictAdherence(
-  medicationHistory: any[],
-  userPatterns: any
+  medicationHistory: MedicationHistoryRecord[],
+  userPatterns: UserPatterns
 ): { predicted: number; factors: string[] } {
   // In a real implementation, this would use machine learning
   // Here's a simplified mock version

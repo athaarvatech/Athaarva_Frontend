@@ -23,8 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications, Notification } from "@/contexts/NotificationContext";
 import { useSearch } from "@/contexts/SearchContext";
 import { useNavigation } from "@/contexts/NavigationContext";
-import { format, formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
