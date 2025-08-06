@@ -8,7 +8,6 @@ import React, {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 
 // Define types for our context
 export interface Appointment {
@@ -19,7 +18,6 @@ export interface Appointment {
   specialty?: string;
   date: Date;
   time: string;
-  endTime?: string;
   type: "in-person" | "video" | "phone";
   status: "confirmed" | "pending" | "completed" | "cancelled";
   location?: string | null;
@@ -87,7 +85,7 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
         } else {
           // Use mock data initially
           // This would be your API call in a real application
-          const mockAppointments = [];
+          const mockAppointments: Appointment[] = [];
           setAppointments(mockAppointments);
         }
       } catch (error) {

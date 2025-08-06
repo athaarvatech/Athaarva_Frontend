@@ -42,14 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Single optimized API call to get both user data and onboarding status
-      const [userResponse, onboardingResponse] = await Promise.all([
-        apiService.getCurrentUser(),
-        apiService.getOnboardingStatus()
-      ]);
+      // Get user data
+      const userResponse = await apiService.getCurrentUser();
       
-      setUser(userResponse);
-      setIsOnboardingCompleted(onboardingResponse.onboarding_completed);
+      setUser(userResponse.data);
+      // Note: onboarding status could be part of user data or checked separately
+      // setIsOnboardingCompleted(userResponse.data.is_onboarding_completed);
 
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -92,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_type');
     localStorage.removeItem('user_id');
-    apiService.clearToken();
+    apiService.clearAuth();
     setUser(null);
     setIsOnboardingCompleted(false);
     router.push('/auth');

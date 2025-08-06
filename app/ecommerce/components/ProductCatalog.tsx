@@ -189,7 +189,7 @@ export default function ProductCatalog() {
         >
           <div className="bg-gradient-to-r from-[#f1f9ff] to-[#f0f9f7] rounded-2xl p-8 md:p-12 border border-gray-100">
             <h3 className="text-3xl font-bold text-[#1E3E72] mb-4 font-['Montserrat']">
-              Can't find what you're looking for?
+              Can&apos;t find what you&apos;re looking for?
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
               Our procurement specialists are here to help you find the exact

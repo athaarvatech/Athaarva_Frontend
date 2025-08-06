@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
-  Badge as BadgeIcon,
   Minus,
   Plus,
   ShoppingCart,

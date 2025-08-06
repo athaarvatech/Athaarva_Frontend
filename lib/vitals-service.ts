@@ -2,8 +2,6 @@
  * Service for handling vital signs data and wearable device integrations
  */
 
-import { format } from 'date-fns';
-
 // Supported wearable device types
 export const SUPPORTED_DEVICES = [
   'Apple Watch',
@@ -17,6 +15,85 @@ export const SUPPORTED_DEVICES = [
   'Xiaomi Mi Band',
   'Polar'
 ];
+
+// Type definitions
+export interface BloodPressureValue {
+  systolic: number;
+  diastolic: number;
+}
+
+export interface VitalThreshold {
+  min?: number;
+  max?: number;
+  systolic?: number;
+  diastolic?: number;
+}
+
+export interface VitalThresholds {
+  warning: VitalThreshold;
+  critical: VitalThreshold;
+}
+
+export interface AllVitalThresholds {
+  bloodPressure: VitalThresholds;
+  heartRate: VitalThresholds;
+  oxygenSaturation: VitalThresholds;
+  temperature: VitalThresholds;
+  [key: string]: VitalThresholds;
+}
+
+export type VitalValue = number | string | BloodPressureValue;
+
+export interface Device {
+  id: string;
+  name: string;
+  type: string;
+  supported: boolean;
+  metrics: string[];
+}
+
+export interface ConnectedDevice {
+  id: string;
+  status: string;
+  lastSync: Date;
+}
+
+export interface HistoricalDataPoint {
+  timestamp: Date;
+  value: number;
+  trend?: 'up' | 'down' | 'stable';
+}
+
+export interface BloodPressureDataPoint {
+  timestamp: Date;
+  systolic: number;
+  diastolic: number;
+  trend?: 'up' | 'down' | 'stable';
+}
+
+export interface PredictionResult {
+  timestamp: Date;
+  predictedValue: number;
+  confidence: number;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+export interface VitalsInsight {
+  type: 'trend' | 'anomaly' | 'recommendation';
+  severity: 'info' | 'warning' | 'critical';
+  message: string;
+  metric: string;
+  value?: number;
+  recommendation?: string;
+}
+
+export interface Caregiver {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  relationship: string;
+}
 
 // Available vital metrics
 export const VITAL_METRICS = {
@@ -65,36 +142,42 @@ export const VITAL_METRICS = {
 // Interface for vital reading
 export interface VitalReading {
   type: string;
-  value: any;
+  value: VitalValue;
   timestamp: Date;
   source: string;
   deviceId?: string;
+  units?: string;
 }
 
 // Check if a vital reading is in critical range
-export const isCriticalReading = (reading: VitalReading, thresholds: any): boolean => {
+export const isCriticalReading = (reading: VitalReading, thresholds: AllVitalThresholds): boolean => {
   const metric = reading.type;
   const value = reading.value;
   
   if (metric === 'bloodPressure') {
-    const systolic = typeof value === 'string' ? parseInt(value.split('/')[0]) : value.systolic;
-    const diastolic = typeof value === 'string' ? parseInt(value.split('/')[1]) : value.diastolic;
+    const systolic = typeof value === 'string' ? 
+      parseInt(value.split('/')[0]) : 
+      typeof value === 'object' && 'systolic' in value ? (value as BloodPressureValue).systolic : 0;
+    const diastolic = typeof value === 'string' ? 
+      parseInt(value.split('/')[1]) : 
+      typeof value === 'object' && 'diastolic' in value ? (value as BloodPressureValue).diastolic : 0;
     
-    return systolic >= thresholds.bloodPressure.critical.systolic || 
-           diastolic >= thresholds.bloodPressure.critical.diastolic;
+    return systolic >= (thresholds.bloodPressure.critical.systolic || 0) || 
+           diastolic >= (thresholds.bloodPressure.critical.diastolic || 0);
   }
   
   const metricThresholds = thresholds[metric]?.critical;
   if (!metricThresholds) return false;
   
-  if (metricThresholds.min && value < metricThresholds.min) return true;
-  if (metricThresholds.max && value > metricThresholds.max) return true;
+  const numericValue = typeof value === 'number' ? value : parseFloat(String(value));
+  if (metricThresholds.min && numericValue < metricThresholds.min) return true;
+  if (metricThresholds.max && numericValue > metricThresholds.max) return true;
   
   return false;
 };
 
 // Check if a vital reading is in warning range (but not critical)
-export const isWarningReading = (reading: VitalReading, thresholds: any): boolean => {
+export const isWarningReading = (reading: VitalReading, thresholds: AllVitalThresholds): boolean => {
   const metric = reading.type;
   const value = reading.value;
   
@@ -102,18 +185,23 @@ export const isWarningReading = (reading: VitalReading, thresholds: any): boolea
   if (isCriticalReading(reading, thresholds)) return false;
   
   if (metric === 'bloodPressure') {
-    const systolic = typeof value === 'string' ? parseInt(value.split('/')[0]) : value.systolic;
-    const diastolic = typeof value === 'string' ? parseInt(value.split('/')[1]) : value.diastolic;
+    const systolic = typeof value === 'string' ? 
+      parseInt(value.split('/')[0]) : 
+      typeof value === 'object' && 'systolic' in value ? (value as BloodPressureValue).systolic : 0;
+    const diastolic = typeof value === 'string' ? 
+      parseInt(value.split('/')[1]) : 
+      typeof value === 'object' && 'diastolic' in value ? (value as BloodPressureValue).diastolic : 0;
     
-    return systolic >= thresholds.bloodPressure.warning.systolic || 
-           diastolic >= thresholds.bloodPressure.warning.diastolic;
+    return systolic >= (thresholds.bloodPressure.warning.systolic || 0) || 
+           diastolic >= (thresholds.bloodPressure.warning.diastolic || 0);
   }
   
   const metricThresholds = thresholds[metric]?.warning;
   if (!metricThresholds) return false;
   
-  if (metricThresholds.min && value < metricThresholds.min) return true;
-  if (metricThresholds.max && value > metricThresholds.max) return true;
+  const numericValue = typeof value === 'number' ? value : parseFloat(String(value));
+  if (metricThresholds.min && numericValue < metricThresholds.min) return true;
+  if (metricThresholds.max && numericValue > metricThresholds.max) return true;
   
   return false;
 };
@@ -125,7 +213,11 @@ export const formatVitalReading = (reading: VitalReading): string => {
   switch (type) {
     case 'bloodPressure':
       if (typeof value === 'string') return value;
-      return `${value.systolic}/${value.diastolic} mmHg`;
+      if (typeof value === 'object' && 'systolic' in value) {
+        const bpValue = value as BloodPressureValue;
+        return `${bpValue.systolic}/${bpValue.diastolic} mmHg`;
+      }
+      return `${value} mmHg`;
       
     case 'heartRate':
       return `${value} bpm`;
@@ -176,7 +268,7 @@ export const offlineCache = {
       const cachedReadings = JSON.parse(cachedReadingsJson);
       
       // Convert ISO strings back to Date objects
-      return cachedReadings.map(reading => ({
+      return cachedReadings.map((reading: VitalReading & { timestamp: string }) => ({
         ...reading,
         timestamp: new Date(reading.timestamp)
       }));
@@ -193,7 +285,7 @@ export const offlineCache = {
       if (!cachedReadingsJson) return;
       
       const cachedReadings = JSON.parse(cachedReadingsJson);
-      const remainingReadings = cachedReadings.filter(reading => 
+      const remainingReadings = cachedReadings.filter((reading: VitalReading & { id: string }) => 
         !syncedReadingIds.includes(reading.id)
       );
       
@@ -221,7 +313,7 @@ export const offlineCache = {
 // Functions for wearable device integration
 export const wearableSync = {
   // Mock function to simulate device discovery
-  discoverDevices: async (): Promise<any[]> => {
+  discoverDevices: async (): Promise<Device[]> => {
     // This would use Web Bluetooth API or device-specific SDKs in a real implementation
     return new Promise(resolve => {
       setTimeout(() => {
@@ -246,7 +338,7 @@ export const wearableSync = {
   },
   
   // Connect to a device
-  connectDevice: async (deviceId: string): Promise<any> => {
+  connectDevice: async (deviceId: string): Promise<ConnectedDevice> => {
     // This would use device-specific connection logic in a real implementation
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -293,11 +385,13 @@ export const wearableSync = {
 // Functions for predictive analytics
 export const predictiveAnalytics = {
   // Predict blood pressure for next 7 days
-  predictBloodPressure: (historicalData: any[]): any[] => {
+  predictBloodPressure: (historicalData: BloodPressureDataPoint[]): PredictionResult[] => {
     // In a real implementation, this would use a statistical model or ML
     // For demo purposes, we'll create synthetic predictions
+    if (historicalData.length === 0) return [];
+    
     const lastReading = historicalData[historicalData.length - 1];
-    const predictions = [];
+    const predictions: PredictionResult[] = [];
     
     for (let i = 1; i <= 7; i++) {
       const date = new Date();
@@ -307,11 +401,15 @@ export const predictiveAnalytics = {
       const systolicVariation = Math.floor(Math.random() * 7) - 3; // -3 to +3
       const diastolicVariation = Math.floor(Math.random() * 5) - 2; // -2 to +2
       
+      const predictedSystolic = lastReading.systolic + systolicVariation;
+      const predictedDiastolic = lastReading.diastolic + diastolicVariation;
+      
       predictions.push({
-        date: format(date, 'yyyy-MM-dd'),
-        systolic: lastReading.systolic + systolicVariation,
-        diastolic: lastReading.diastolic + diastolicVariation,
-        prediction: true
+        timestamp: date,
+        predictedValue: (predictedSystolic + predictedDiastolic) / 2, // Average for single value
+        confidence: Math.max(0.5, 1 - (i * 0.1)), // Decreasing confidence
+        riskLevel: predictedSystolic > 140 || predictedDiastolic > 90 ? 'high' : 
+                  predictedSystolic > 130 || predictedDiastolic > 85 ? 'medium' : 'low'
       });
     }
     
@@ -319,34 +417,31 @@ export const predictiveAnalytics = {
   },
   
   // Predict hydration risk
-  predictHydrationRisk: (historicalData: any[]): any[] => {
+  predictHydrationRisk: (historicalData: HistoricalDataPoint[]): PredictionResult[] => {
     // Again, simplified for demo purposes
+    if (historicalData.length === 0) return [];
+    
     const lastValue = historicalData[historicalData.length - 1].value;
-    const predictions = [];
+    const predictions: PredictionResult[] = [];
     
     for (let i = 1; i <= 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
       
       // Create a pattern that shows dehydration risk on days 3-5
-      let value;
-      let risk = false;
-      let warning = false;
+      let value: number;
       
       if (i >= 3 && i <= 5) {
         value = Math.max(lastValue - 10 + (i - 3) * 2, 50);
-        risk = value < 60;
-        warning = value >= 60 && value < 65;
       } else {
         value = lastValue + Math.floor(Math.random() * 5) - 2;
       }
       
       predictions.push({
-        date: format(date, 'yyyy-MM-dd'),
-        value,
-        prediction: true,
-        risk,
-        warning
+        timestamp: date,
+        predictedValue: value,
+        confidence: Math.max(0.4, 1 - (i * 0.1)),
+        riskLevel: value < 60 ? 'high' : value < 65 ? 'medium' : 'low'
       });
     }
     
@@ -354,46 +449,54 @@ export const predictiveAnalytics = {
   },
   
   // Generate AI insights based on vital trends
-  generateInsights: (vitalsData: any): any[] => {
-    const insights = [];
+  generateInsights: (vitalsData: VitalReading[]): VitalsInsight[] => {
+    const insights: VitalsInsight[] = [];
+    
+    // Group readings by type
+    const groupedData: { [key: string]: VitalReading[] } = {};
+    vitalsData.forEach(reading => {
+      if (!groupedData[reading.type]) {
+        groupedData[reading.type] = [];
+      }
+      groupedData[reading.type].push(reading);
+    });
     
     // Blood pressure insights
-    const bpData = vitalsData.bloodPressure.readings;
-    const latestBP = bpData[bpData.length - 1];
-    const prevBP = bpData[bpData.length - 2];
-    
-    if (latestBP.systolic > prevBP.systolic + 5) {
-      insights.push({
-        title: "Rising Blood Pressure Trend",
-        description: `Your systolic blood pressure has increased by ${latestBP.systolic - prevBP.systolic} points in your last reading.`,
-        type: "warning",
-        confidence: 0.82,
-        recommendation: "Consider reducing sodium intake and monitoring more frequently."
-      });
-    } else if (latestBP.systolic < prevBP.systolic - 5) {
-      insights.push({
-        title: "Improving Blood Pressure Trend",
-        description: "Your blood pressure readings are showing improvement over the last few days.",
-        type: "positive",
-        confidence: 0.86,
-        recommendation: "Continue your current medication and exercise regimen."
-      });
+    if (groupedData.bloodPressure && groupedData.bloodPressure.length >= 2) {
+      const bpData = groupedData.bloodPressure.sort((a, b) => 
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      const latestBP = bpData[bpData.length - 1];
+      const prevBP = bpData[bpData.length - 2];
+      
+      if (typeof latestBP.value === 'object' && typeof prevBP.value === 'object' && 
+          'systolic' in latestBP.value && 'systolic' in prevBP.value) {
+        const latest = latestBP.value as BloodPressureValue;
+        const prev = prevBP.value as BloodPressureValue;
+        
+        if (latest.systolic > prev.systolic + 5) {
+          insights.push({
+            type: "trend",
+            severity: "warning",
+            message: `Your systolic blood pressure has increased by ${latest.systolic - prev.systolic} points in your last reading.`,
+            metric: "bloodPressure",
+            value: latest.systolic,
+            recommendation: "Consider reducing sodium intake and monitoring more frequently."
+          });
+        } else if (latest.systolic < prev.systolic - 5) {
+          insights.push({
+            type: "trend",
+            severity: "info",
+            message: "Your blood pressure readings are showing improvement over the last few days.",
+            metric: "bloodPressure",
+            value: latest.systolic,
+            recommendation: "Continue your current medication and exercise regimen."
+          });
+        }
+      }
     }
     
-    // Check for correlations
-    const hrData = vitalsData.heartRate.readings;
-    const hydrationData = vitalsData.hydrationLevel.readings;
-    
-    if (hrData[hrData.length - 1].value > 80 && hydrationData[hydrationData.length - 1].value < 65) {
-      insights.push({
-        title: "Potential Dehydration Detected",
-        description: "Elevated heart rate combined with lower hydration levels may indicate dehydration.",
-        type: "warning",
-        confidence: 0.75,
-        recommendation: "Increase fluid intake and rest if experiencing fatigue."
-      });
-    }
-    
+    // Add more insights for other vital types as needed
     return insights;
   }
 };
@@ -401,7 +504,7 @@ export const predictiveAnalytics = {
 // Functions for alert management
 export const alertManagement = {
   // Send alert to caregivers
-  notifyCaregivers: async (reading: VitalReading, caregivers: any[]): Promise<boolean> => {
+  notifyCaregivers: async (reading: VitalReading, caregivers: Caregiver[]): Promise<boolean> => {
     // This would integrate with SMS/email services in a real implementation
     console.log(`Alert would be sent to ${caregivers.length} caregivers about ${reading.type}`);
     return true;
@@ -415,7 +518,7 @@ export const alertManagement = {
   }
 };
 
-export default {
+const vitalsService = {
   SUPPORTED_DEVICES,
   VITAL_METRICS,
   isCriticalReading,
@@ -426,3 +529,5 @@ export default {
   predictiveAnalytics,
   alertManagement
 };
+
+export default vitalsService;
