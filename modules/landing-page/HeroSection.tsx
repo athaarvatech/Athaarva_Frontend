@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { LogIn, Play, Shield, Users, TrendingUp } from "lucide-react";
+import { LogIn, Play, Shield, Users, TrendingUp, ShoppingCart } from "lucide-react";
 import MedicalLogo from "@/components/ui/MedicalLogo";
 
 interface HeroSectionProps {
@@ -105,16 +105,29 @@ function HeroSection({ onDemoClick }: HeroSectionProps) {
             </div>
           </motion.div>
           
-          <motion.button
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            onClick={() => router.push('/auth')}
-            className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center space-x-2 border border-white/20"
-          >
-            <LogIn className="w-5 h-5" />
-            <span className="font-medium">Login</span>
-          </motion.button>
+          <div className="flex items-center space-x-4">
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              onClick={() => router.push('/ecommerce')}
+              className="px-4 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center space-x-2 border border-white/20"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span className="font-medium hidden sm:inline">Store</span>
+            </motion.button>
+            
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              onClick={() => router.push('/auth')}
+              className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center space-x-2 border border-white/20"
+            >
+              <LogIn className="w-5 h-5" />
+              <span className="font-medium">Login</span>
+            </motion.button>
+          </div>
         </div>
       </nav>
 
@@ -158,6 +171,14 @@ function HeroSection({ onDemoClick }: HeroSectionProps) {
             >
               <Play className="w-6 h-6" />
               <span>Book a Demo</span>
+            </button>
+            
+            <button 
+              onClick={() => router.push('/ecommerce')}
+              className="group px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-semibold text-lg hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-emerald-400/25 flex items-center space-x-3 min-w-64"
+            >
+              <ShoppingCart className="w-6 h-6" />
+              <span>Visit Store</span>
             </button>
             
             <button className="group px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-2xl font-semibold text-lg hover:bg-white/20 transition-all duration-300 border border-white/20 hover:scale-105 transform min-w-64">
