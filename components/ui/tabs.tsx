@@ -62,17 +62,8 @@ const TabsContent = React.forwardRef<
   
   React.useEffect(() => {
     setIsMounted(true);
-    // We'll use a quick check - if there's an error when this component mounts,
-    // we know we're not in a Tabs context, but we need to be mounted first to catch it
-    try {
-      const dummyElement = document.createElement('div');
-      // This line will throw if we're not in a TabsContext
-      new TabsPrimitive.Content({ children: dummyElement });
-      setIsInTabsContext(true);
-    } catch (e) {
-      setIsInTabsContext(false);
-      console.warn("TabsContent is being used outside of a Tabs component - falling back to div");
-    }
+    // Simplified approach - assume we're in context
+    setIsInTabsContext(true);
   }, []);
   
   // Before mount, render nothing to avoid errors during SSR

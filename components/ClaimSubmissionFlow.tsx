@@ -367,7 +367,7 @@ const ClaimSubmissionFlow: React.FC<ClaimSubmissionFlowProps> = ({
               </h3>
               <p className="text-gray-600 mb-6">
                 Your claim has been submitted and will be processed within 5-7
-                business days. You'll receive updates via email and in your
+                business days. You&apos;ll receive updates via email and in your
                 claims dashboard.
               </p>
               <p className="text-sm text-gray-500 mb-6">

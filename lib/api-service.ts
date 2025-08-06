@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { AxiosRequestHeaders } from 'axios';
-// Removed AxiosInstance import as it's not explicitly exported by 'axios'
 import { API_CONFIG, DEFAULT_HEADERS, REQUEST_TIMEOUT } from './api-config';
 
-// Types
-export interface ApiResponse<T = any> {
+// API types
+export interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
   status: number;
@@ -19,6 +17,18 @@ export interface AuthTokens {
 
 export interface User {
   id: number;
+  full_name: string;
+  email: string;
+  user_type: 'doctor' | 'patient';
+  is_verified: boolean;
+}
+
+export interface ConfigHeaders {
+  [key: string]: string;
+}
+
+export interface UserProfile {
+  id: number;
   email: string;
   full_name: string;
   phone?: string;
@@ -28,9 +38,57 @@ export interface User {
   created_at: string;
 }
 
+export interface DoctorOnboardingData {
+  specialization: string;
+  license_number: string;
+  clinic_address: string;
+  contact_hours: string;
+}
+
+export interface PatientOnboardingData {
+  date_of_birth: string;
+  emergency_contact: string;
+  medical_history?: string;
+  current_medications?: string;
+}
+
+export interface DoctorProfile {
+  id: number;
+  full_name: string;
+  email: string;
+  specialization: string;
+  license_number: string;
+  clinic_address: string;
+  contact_hours: string;
+}
+
+export interface PatientProfile {
+  id: number;
+  full_name: string;
+  email: string;
+  date_of_birth: string;
+  emergency_contact: string;
+  medical_history?: string;
+  current_medications?: string;
+}
+
+export interface MedicalHistory {
+  id: number;
+  patient_id: number;
+  record_type: string;
+  date: string;
+  description: string;
+}
+
+export interface RequestConfig {
+  headers?: ConfigHeaders;
+}
+
+export type RequestData = unknown;
+
 // Create axios instance
 class ApiService {
-  private api: axios.AxiosInstance;
+  private api: ReturnType<typeof axios.create>;
   private token: string | null = null;
 
   constructor() {
@@ -42,210 +100,195 @@ class ApiService {
 
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
-      (config) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (config: any) => {
         const token = this.getToken();
-        if (token) {
+        if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (error: any) => {
         return Promise.reject(error);
       }
     );
 
     // Response interceptor for error handling
     this.api.interceptors.response.use(
-      (response) => response,
-      (error) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (response: any) => response,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (error: any) => {
         if (error.response?.status === 401) {
-          // Token expired or invalid
-          this.clearToken();
-          // Redirect to login if needed
+          this.clearAuth();
           if (typeof window !== 'undefined') {
-            window.location.href = '/auth';
+            window.location.href = '/auth/login';
           }
         }
         return Promise.reject(error);
       }
     );
-
-    // Load token from localStorage on initialization
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('access_token');
-    }
   }
 
   // Token management
-  setToken(token: string) {
+  setToken(token: string): void {
     this.token = token;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', token);
+      localStorage.setItem('token', token);
     }
   }
 
   getToken(): string | null {
-    if (typeof window !== 'undefined' && !this.token) {
-      this.token = localStorage.getItem('access_token');
+    if (this.token) return this.token;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('token');
     }
-    return this.token;
+    return null;
   }
 
-  clearToken() {
+  clearAuth(): void {
     this.token = null;
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   }
 
-  // Generic API methods
-  async get<T>(url: string, config?: AxiosRequestHeaders): Promise<T> {
-    const response = await this.api.get<T>(url, config);
-    return response.data;
+  // HTTP methods
+  async get<T>(url: string, config?: RequestConfig): Promise<T> {
+    const response = await this.api.get(url, config);
+    return response.data as T;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestHeaders): Promise<T> {
-    const response = await this.api.post<T>(url, data, config);
-    return response.data;
+  async post<T>(url: string, data?: RequestData, config?: RequestConfig): Promise<T> {
+    const response = await this.api.post(url, data, config);
+    return response.data as T;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestHeaders): Promise<T> {
-    const response = await this.api.put<T>(url, data, config);
-    return response.data;
+  async put<T>(url: string, data?: RequestData, config?: RequestConfig): Promise<T> {
+    const response = await this.api.put(url, data, config);
+    return response.data as T;
   }
 
-  async delete<T>(url: string, config?: AxiosRequestHeaders): Promise<T> {
-    const response = await this.api.delete<T>(url, config);
-    return response.data;
+  async delete<T>(url: string, config?: RequestConfig): Promise<T> {
+    const response = await this.api.delete(url, config);
+    return response.data as T;
   }
 
-  // Authentication methods
-  async signup(userData: {
+  // Authentication endpoints
+  async login(email: string, password: string): Promise<ApiResponse<AuthTokens>> {
+    const response = await this.post<ApiResponse<AuthTokens>>('/auth/login/', {
+      email,
+      password
+    });
+    
+    if (response.data?.access_token) {
+      this.setToken(response.data.access_token);
+    }
+    
+    return response;
+  }
+
+  async register(userData: {
     email: string;
     password: string;
-    confirm_password: string;
     full_name: string;
-    phone: string;
-    user_type: 'patient' | 'doctor' | 'hospital';
-  }): Promise<AuthTokens> {
-    const response = await this.post<AuthTokens>(API_CONFIG.ENDPOINTS.AUTH.SIGNUP, userData);
-    this.setToken(response.access_token);
-    return response;
+    user_type: 'doctor' | 'patient';
+  }): Promise<ApiResponse<User>> {
+    return this.post<ApiResponse<User>>('/auth/register/', userData);
   }
 
-  async signin(credentials: {
-    email: string;
-    password: string;
-  }): Promise<AuthTokens> {
-    const response = await this.post<AuthTokens>(API_CONFIG.ENDPOINTS.AUTH.SIGNIN, credentials);
-    this.setToken(response.access_token);
-    return response;
-  }
-
-  async getCurrentUser(): Promise<User> {
-    return this.get<User>(API_CONFIG.ENDPOINTS.AUTH.ME);
-  }
-
-  async verifyToken(): Promise<{ valid: boolean; user_id: number; user_type: string }> {
-    return this.post(API_CONFIG.ENDPOINTS.AUTH.VERIFY_TOKEN);
-  }
-
-  // OTP verification methods
-  async verifyOtp(otpData: {
-    email: string;
-    otp_code: string;
-  }): Promise<AuthTokens> {
-    const response = await this.post<AuthTokens>(API_CONFIG.ENDPOINTS.AUTH.VERIFY_OTP, otpData);
-    this.setToken(response.access_token);
-    return response;
-  }
-
-  async resendOtp(email: string): Promise<{ message: string }> {
-    return this.post(API_CONFIG.ENDPOINTS.AUTH.RESEND_OTP, { email });
-  }
-
-  // Password reset methods
-  async forgotPassword(email: string): Promise<{ message: string }> {
-    return this.post(API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
-  }
-
-  async resetPassword(resetData: {
-    reset_token: string;
-    email: string;
-    new_password: string;
-    confirm_password: string;
-  }): Promise<{ message: string }> {
-    return this.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, resetData);
-  }
-
-  // Doctor methods
-  async getDoctorSpecializations(): Promise<Array<{ id: number; name: string; description?: string }>> {
-    return this.get(API_CONFIG.ENDPOINTS.DOCTORS.SPECIALIZATIONS);
-  }
-
-  async completeDoctorOnboarding(onboardingData: any): Promise<any> {
-    return this.post(API_CONFIG.ENDPOINTS.DOCTORS.ONBOARDING, onboardingData);
-  }
-
-  async getDoctorProfile(): Promise<any> {
-    return this.get(API_CONFIG.ENDPOINTS.DOCTORS.PROFILE);
-  }
-
-  async updateDoctorProfile(profileData: any): Promise<{ message: string }> {
-    return this.put(API_CONFIG.ENDPOINTS.DOCTORS.PROFILE, profileData);
-  }
-
-  async getDoctorSchedule(): Promise<any> {
-    return this.get(API_CONFIG.ENDPOINTS.DOCTORS.SCHEDULE);
-  }
-
-  // Patient methods
-  async completePatientOnboarding(onboardingData: any): Promise<any> {
-    return this.post(API_CONFIG.ENDPOINTS.PATIENTS.ONBOARDING, onboardingData);
-  }
-
-  async getPatientProfile(): Promise<any> {
-    return this.get(API_CONFIG.ENDPOINTS.PATIENTS.PROFILE);
-  }
-
-  async updatePatientProfile(profileData: any): Promise<{ message: string }> {
-    return this.put(API_CONFIG.ENDPOINTS.PATIENTS.PROFILE, profileData);
-  }
-
-  async getPatientMedicalHistory(): Promise<any> {
-    return this.get(API_CONFIG.ENDPOINTS.PATIENTS.MEDICAL_HISTORY);
-  }
-
-  // Onboarding methods
-  async getOnboardingStatus(): Promise<{
-    user_type: string;
-    profile_exists: boolean;
-    onboarding_completed: boolean;
-    needs_onboarding: boolean;
-  }> {
-    return this.get(API_CONFIG.ENDPOINTS.ONBOARDING.STATUS);
-  }
-
-  async getNextOnboardingStep(): Promise<{
-    next_step: string;
-    step_number: number;
-  }> {
-    return this.get(API_CONFIG.ENDPOINTS.ONBOARDING.NEXT_STEP);
-  }
-
-  // Utility methods
-  isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
-
-  logout() {
-    this.clearToken();
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth';
+  async logout(): Promise<void> {
+    try {
+      await this.post('/auth/logout/');
+    } finally {
+      this.clearAuth();
     }
+  }
+
+  async refreshToken(): Promise<ApiResponse<AuthTokens>> {
+    const response = await this.post<ApiResponse<AuthTokens>>('/auth/refresh/');
+    
+    if (response.data?.access_token) {
+      this.setToken(response.data.access_token);
+    }
+    
+    return response;
+  }
+
+  async resetPassword(email: string): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>('/auth/password-reset/', {
+      email
+    });
+  }
+
+  async confirmPasswordReset(
+    token: string,
+    password: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>('/auth/password-reset-confirm/', {
+      token,
+      password
+    });
+  }
+
+  async verifyEmail(token: string): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>('/auth/verify-email/', {
+      token
+    });
+  }
+
+  async resendVerificationEmail(email: string): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>('/auth/resend-verification/', {
+      email
+    });
+  }
+
+  // Profile endpoints
+  async getCurrentUser(): Promise<ApiResponse<UserProfile>> {
+    return this.get<ApiResponse<UserProfile>>('/auth/user/');
+  }
+
+  async updateProfile(profileData: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
+    return this.put<ApiResponse<UserProfile>>('/auth/user/', profileData);
+  }
+
+  // Doctor specific endpoints
+  async completeDoctorOnboarding(onboardingData: DoctorOnboardingData): Promise<ApiResponse<DoctorProfile>> {
+    return this.post<ApiResponse<DoctorProfile>>('/doctors/onboarding/', onboardingData);
+  }
+
+  async getDoctorProfile(): Promise<ApiResponse<DoctorProfile>> {
+    return this.get<ApiResponse<DoctorProfile>>('/doctors/profile/');
+  }
+
+  async updateDoctorProfile(profileData: Partial<DoctorProfile>): Promise<{ message: string }> {
+    return this.put<{ message: string }>('/doctors/profile/', profileData);
+  }
+
+  async getDoctorSchedule(): Promise<ApiResponse<unknown>> {
+    return this.get<ApiResponse<unknown>>('/doctors/schedule/');
+  }
+
+  // Patient specific endpoints
+  async completePatientOnboarding(onboardingData: PatientOnboardingData): Promise<ApiResponse<PatientProfile>> {
+    return this.post<ApiResponse<PatientProfile>>('/patients/onboarding/', onboardingData);
+  }
+
+  async getPatientProfile(): Promise<ApiResponse<PatientProfile>> {
+    return this.get<ApiResponse<PatientProfile>>('/patients/profile/');
+  }
+
+  async updatePatientProfile(profileData: Partial<PatientProfile>): Promise<{ message: string }> {
+    return this.put<{ message: string }>('/patients/profile/', profileData);
+  }
+
+  async getPatientMedicalHistory(): Promise<ApiResponse<MedicalHistory[]>> {
+    return this.get<ApiResponse<MedicalHistory[]>>('/patients/medical-history/');
   }
 }
 
-// Create and export a singleton instance
+// Create and export singleton instance
 const apiService = new ApiService();
 export default apiService;

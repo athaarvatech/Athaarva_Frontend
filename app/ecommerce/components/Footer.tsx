@@ -97,7 +97,7 @@ export default function Footer() {
             </div>
 
             <p className="text-white/80 mb-6 leading-relaxed">
-              India's leading B2B medical equipment and supply platform, serving
+              India&apos;s leading B2B medical equipment and supply platform, serving
               healthcare institutions with certified products and reliable
               procurement solutions.
             </p>

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
-import { useNavigation, BreadcrumbItem } from '@/contexts/NavigationContext';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 const Breadcrumbs = () => {
   const { breadcrumbs } = useNavigation();

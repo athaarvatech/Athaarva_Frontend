@@ -6,7 +6,6 @@ import {
   Shield,
   Users,
   Clock,
-  TrendingUp,
   FileText,
   Settings,
   Award,
