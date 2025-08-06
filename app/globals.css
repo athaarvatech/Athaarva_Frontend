@@ -1,0 +1,330 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* HealthCare Modern Theme Variables */
+:root {
+  /* HealthCare Brand Colors */
+  --healthcare-primary: #007C7C;
+  --healthcare-secondary: #20B2AA;
+  --healthcare-teal: #008080;
+  --healthcare-emerald: #50C878;
+  --healthcare-indigo: #4F46E5;
+  --healthcare-cool-white: #FAFAFA;
+  --healthcare-soft-grey: #F3F4F6;
+  --healthcare-dark: #1F2937;
+
+  /* Legacy Support */
+  --color-primary: #06B6D4;
+  --color-primary-light: #ECFEFF;
+  --color-secondary: #4A6572;
+  --color-accent: #F9A826;
+  --color-positive: #34D399;
+  --color-danger: #F87171;
+  --color-warning: #FBBF24;
+  --color-background: #FFFFFF;
+  --color-surface: #F9FAFB;
+
+  /* Modern Shadow System */
+  --healthcare-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --healthcare-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --healthcare-shadow-md: 0 6px 10px -1px rgba(0, 0, 0, 0.1), 0 2px 5px -1px rgba(0, 0, 0, 0.06);
+  --healthcare-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --healthcare-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Border Radius System */
+  --healthcare-radius-sm: 0.375rem;
+  --healthcare-radius: 0.5rem;
+  --healthcare-radius-md: 0.75rem;
+  --healthcare-radius-lg: 1rem;
+  --healthcare-radius-xl: 1.5rem;
+  --healthcare-radius-2xl: 2rem;
+  --healthcare-radius-3xl: 3rem;
+  
+  /* Z-Index System */
+  --healthcare-z-dropdown: 50;
+  --healthcare-z-modal: 100;
+  --healthcare-z-tooltip: 60;
+  --healthcare-z-sticky: 30;
+}
+
+/* Modern Typography */
+body {
+  font-family: 'Inter', 'Satoshi', sans-serif;
+  color: #1F2937;
+  background-color: #FFFFFF;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Modern Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', 'Satoshi', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 124, 124, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 124, 124, 0.3);
+  }
+}
+
+/* Utility Classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.8s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.8s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Custom Slider Styles */
+.slider {
+  background: linear-gradient(to right, #007C7C, #20B2AA);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom Calendar Styles */
+.calendar-cell-hover:hover {
+  background-color: var(--color-primary-light);
+}
+
+.appointment-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.appointment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Draggable Element Styles */
+.draggable-element {
+  cursor: grab;
+}
+
+.draggable-element:active {
+  cursor: grabbing;
+}
+
+/* Zendenta-inspired Button Styles */
+.zendenta-btn {
+  @apply rounded-md font-medium transition duration-200;
+}
+
+.zendenta-btn-primary {
+  @apply bg-cyan-600 text-white hover:bg-cyan-700;
+}
+
+.zendenta-btn-secondary {
+  @apply bg-slate-100 text-slate-700 hover:bg-slate-200;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Accessibility improvements */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@layer utilities {
+  .animate-fade-in-down {
+    animation: fadeInDown 0.5s ease-out;
+  }
+
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* UI Component Consistency */
+.healthcare-shadow-sm {
+  box-shadow: var(--healthcare-shadow-sm);
+}
+
+.healthcare-shadow {
+  box-shadow: var(--healthcare-shadow);
+}
+
+.healthcare-shadow-md {
+  box-shadow: var(--healthcare-shadow-md);
+}
+
+.healthcare-shadow-lg {
+  box-shadow: var(--healthcare-shadow-lg);
+}
+
+/* Dialog/Modal Background */
+.dialog-backdrop {
+  @apply fixed inset-0 bg-black/80 z-[var(--healthcare-z-modal)] backdrop-blur-sm;
+}
+
+/* Dialog/Modal Content */
+.dialog-content {
+  @apply bg-white shadow-lg rounded-xl border border-gray-200 z-[calc(var(--healthcare-z-modal)+10)];
+}
+
+/* Dropdown Content */
+.dropdown-content {
+  @apply bg-white shadow-md rounded-lg border border-gray-200 z-[var(--healthcare-z-dropdown)];
+}
+
+/* Tooltip Content */
+.tooltip-content {
+  @apply bg-white shadow-md rounded-md border border-gray-200 z-[var(--healthcare-z-tooltip)];
+}
+
+/* Responsive Breakpoints - Match these with tailwind.config.js */
+.responsive-container {
+  @apply w-full px-4 mx-auto;
+  @apply sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px];
+}
+
+

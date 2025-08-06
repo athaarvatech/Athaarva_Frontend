@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Stethoscope -->
+  <g fill="#006D77" stroke="#006D77" stroke-width="3">
+    <!-- Left earpiece -->
+    <path d="M20 30 C15 25, 5 25, 5 35 C5 45, 15 45, 20 40 Z" fill="#006D77"/>
+    <!-- Right earpiece -->
+    <path d="M50 30 C55 25, 65 25, 65 35 C65 45, 55 45, 50 40 Z" fill="#006D77"/>
+    <!-- Connecting tubes -->
+    <path d="M20 40 Q25 50, 30 60 L40 90" stroke-width="4" fill="none"/>
+    <path d="M50 40 Q45 50, 40 60 L40 90" stroke-width="4" fill="none"/>
+    <!-- Main tube -->
+    <path d="M40 90 L40 130" stroke-width="6" fill="none"/>
+    <!-- Bell -->
+    <circle cx="40" cy="140" r="12" fill="#006D77" stroke="none"/>
+    <circle cx="40" cy="140" r="8" fill="white"/>
+  </g>
+
+  <!-- Brain (right side) -->
+  <g fill="#4ECDC4" stroke="#006D77" stroke-width="2">
+    <!-- Brain outline -->
+    <path d="M110 40 C105 35, 100 30, 110 25 C120 20, 130 25, 135 30 C140 25, 150 25, 155 30 C160 35, 165 40, 170 45 C175 50, 175 60, 170 65 C175 70, 175 80, 170 85 C165 90, 160 95, 155 100 C150 105, 140 105, 135 100 C130 105, 120 105, 115 100 C110 95, 105 90, 100 85 C95 80, 95 70, 100 65 C95 60, 95 50, 100 45 C105 40, 110 40, 110 40 Z" fill="#4ECDC4"/>
+    
+    <!-- Brain circuit patterns -->
+    <g stroke="#006D77" stroke-width="1.5" fill="none">
+      <!-- Vertical lines -->
+      <line x1="120" y1="45" x2="120" y2="65"/>
+      <line x1="135" y1="50" x2="135" y2="70"/>
+      <line x1="150" y1="45" x2="150" y2="65"/>
+      
+      <!-- Horizontal connectors -->
+      <line x1="115" y1="55" x2="125" y2="55"/>
+      <line x1="130" y1="60" x2="140" y2="60"/>
+      <line x1="145" y1="55" x2="155" y2="55"/>
+      
+      <!-- Connection nodes -->
+      <circle cx="115" cy="55" r="2" fill="#006D77"/>
+      <circle cx="125" cy="55" r="2" fill="#006D77"/>
+      <circle cx="130" cy="60" r="2" fill="#006D77"/>
+      <circle cx="140" cy="60" r="2" fill="#006D77"/>
+      <circle cx="145" cy="55" r="2" fill="#006D77"/>
+      <circle cx="155" cy="55" r="2" fill="#006D77"/>
+      
+      <!-- Additional circuit elements -->
+      <line x1="110" y1="70" x2="125" y2="75"/>
+      <line x1="140" y1="75" x2="160" y2="70"/>
+      <circle cx="110" cy="70" r="2" fill="#006D77"/>
+      <circle cx="125" cy="75" r="2" fill="#006D77"/>
+      <circle cx="140" cy="75" r="2" fill="#006D77"/>
+      <circle cx="160" cy="70" r="2" fill="#006D77"/>
+    </g>
+  </g>
+
+  <!-- Hospital building (bottom) -->
+  <g fill="#83C5BE">
+    <!-- Main building -->
+    <rect x="80" y="120" width="40" height="40" fill="#006D77"/>
+    <!-- Side buildings -->
+    <rect x="65" y="130" width="15" height="30" fill="#006D77"/>
+    <rect x="120" y="130" width="15" height="30" fill="#006D77"/>
+    
+    <!-- Medical cross -->
+    <rect x="95" y="125" width="3" height="15" fill="white"/>
+    <rect x="89" y="131" width="15" height="3" fill="white"/>
+    
+    <!-- Windows -->
+    <rect x="70" y="135" width="4" height="4" fill="#4ECDC4"/>
+    <rect x="70" y="145" width="4" height="4" fill="#4ECDC4"/>
+    <rect x="85" y="140" width="4" height="4" fill="#4ECDC4"/>
+    <rect x="105" y="140" width="4" height="4" fill="#4ECDC4"/>
+    <rect x="125" y="135" width="4" height="4" fill="#4ECDC4"/>
+    <rect x="125" y="145" width="4" height="4" fill="#4ECDC4"/>
+  </g>
+
+  <!-- Connecting elements -->
+  <g stroke="#006D77" stroke-width="2" fill="none">
+    <!-- Connection from stethoscope to brain -->
+    <path d="M60 80 Q80 85, 100 70"/>
+    <!-- Connection from brain to hospital -->
+    <path d="M135 105 Q125 115, 100 120"/>
+  </g>
+</svg>
