@@ -23,6 +23,8 @@ export interface HospitalOnboardingData {
     logoFile: File | null;
     faviconUrl: string;
     faviconFile: File | null;
+    backgroundImageUrl: string;
+    backgroundImageFile: File | null;
     primaryColor: string;
     secondaryColor: string;
     buttonStyle: 'filled' | 'outline';
@@ -86,6 +88,8 @@ const initialData: HospitalOnboardingData = {
     logoFile: null,
     faviconUrl: '',
     faviconFile: null,
+    backgroundImageUrl: '',
+    backgroundImageFile: null,
     primaryColor: '#007C7C',
     secondaryColor: '#20B2AA',
     buttonStyle: 'filled',
@@ -160,22 +164,18 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
           basics.state &&
           basics.pincode
         );
-      case 2: // Branding
+      case 2: // Branding & Subdomain
         const branding = data.branding;
+        const login = data.loginPage;
         return !!(
           branding.primaryColor &&
           branding.secondaryColor &&
           branding.buttonStyle &&
           branding.accentStyle &&
-          branding.typography
+          branding.typography &&
+          login.subdomain
         );
-      case 3: // Login Page & Subdomain
-        const login = data.loginPage;
-        return !!(
-          login.subdomain &&
-          login.heading
-        );
-      case 4: // Admin Setup
+      case 3: // Admin Setup
         const admin = data.adminSetup;
         return !!(
           admin.fullName &&
@@ -191,7 +191,7 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   };
 
   const nextStep = () => {
-    if (currentStep < 4 && isStepValid(currentStep)) {
+    if (currentStep < 3 && isStepValid(currentStep)) {
       setCurrentStep(prev => prev + 1);
     }
   };

@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload,
   Palette,
   Image as ImageIcon,
   CheckCircle,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Globe,
+  ExternalLink,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContext";
@@ -25,12 +26,6 @@ const colorPresets = [
   { name: 'Trust Purple', primary: '#6B46C1', secondary: '#9F7AEA' },
   { name: 'Warm Orange', primary: '#EA580C', secondary: '#FB923C' },
   { name: 'Professional Gray', primary: '#374151', secondary: '#6B7280' },
-];
-
-const fontOptions = [
-  { value: 'Inter', label: 'Inter', description: 'Modern and clean (default)' },
-  { value: 'Sora', label: 'Sora', description: 'Friendly and approachable' },
-  { value: 'Manrope', label: 'Manrope', description: 'Professional and trustworthy' },
 ];
 
 interface FileUploadProps {
@@ -242,10 +237,84 @@ function ColorPicker({
 
 export default function BrandingStep() {
   const { data, updateData } = useHospitalOnboarding();
+  const [subdomainValidation, setSubdomainValidation] = useState<{
+    isChecking: boolean;
+    isValid: boolean | null;
+    message: string;
+  }>({
+    isChecking: false,
+    isValid: null,
+    message: '',
+  });
+
+  // Debounced subdomain validation
+  useEffect(() => {
+    if (!data.loginPage.subdomain || data.loginPage.subdomain.length < 2) {
+      setSubdomainValidation({
+        isChecking: false,
+        isValid: null,
+        message: '',
+      });
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkSubdomainAvailability(data.loginPage.subdomain);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [data.loginPage.subdomain]);
+
+  const sanitizeSubdomain = (value: string): string => {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const checkSubdomainAvailability = async (subdomain: string) => {
+    setSubdomainValidation({
+      isChecking: true,
+      isValid: null,
+      message: 'Checking availability...',
+    });
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock validation logic
+      const isAvailable = !['admin', 'api', 'www', 'mail', 'test', 'dev'].includes(subdomain);
+      
+      setSubdomainValidation({
+        isChecking: false,
+        isValid: isAvailable,
+        message: isAvailable 
+          ? `${subdomain}.atharva.com is available!` 
+          : `${subdomain}.atharva.com is not available. Try another name.`,
+      });
+    } catch {
+      setSubdomainValidation({
+        isChecking: false,
+        isValid: false,
+        message: 'Error checking availability. Please try again.',
+      });
+    }
+  };
+
+  const handleSubdomainChange = (value: string) => {
+    const sanitized = sanitizeSubdomain(value);
+    updateData('loginPage', { subdomain: sanitized });
+  };
+
+  const generatePreviewUrl = () => {
+    return data.loginPage.subdomain 
+      ? `${data.loginPage.subdomain}.atharva.com/login`
+      : 'your-hospital.atharva.com/login';
+  };
 
   const handleLogoUpload = (file: File) => {
-    // In a real implementation, you would upload to a cloud service
-    // For now, we'll create a local URL
     const url = URL.createObjectURL(file);
     updateData('branding', { 
       logoFile: file,
@@ -253,11 +322,11 @@ export default function BrandingStep() {
     });
   };
 
-  const handleFaviconUpload = (file: File) => {
+  const handleBackgroundImageUpload = (file: File) => {
     const url = URL.createObjectURL(file);
     updateData('branding', { 
-      faviconFile: file,
-      faviconUrl: url
+      backgroundImageFile: file,
+      backgroundImageUrl: url
     });
   };
 
@@ -270,6 +339,100 @@ export default function BrandingStep() {
 
   return (
     <div className="space-y-4">
+      {/* Subdomain & URL Setup */}
+      <Card className="border border-gray-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Globe className="h-5 w-5 text-blue-600" />
+            Subdomain & URL Setup
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Subdomain Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="subdomain" className="text-sm font-medium text-gray-700">
+                Preferred Subdomain <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex">
+                <Input
+                  id="subdomain"
+                  value={data.loginPage.subdomain}
+                  onChange={(e) => handleSubdomainChange(e.target.value)}
+                  placeholder="sunrise"
+                  className={cn(
+                    "h-9 rounded-r-none border-r-0",
+                    subdomainValidation.isValid === false && "border-red-300 focus:border-red-500",
+                    subdomainValidation.isValid === true && "border-green-300 focus:border-green-500"
+                  )}
+                />
+                <div className="px-3 py-2 bg-gray-50 border border-l-0 rounded-r-md text-sm text-gray-600 whitespace-nowrap flex items-center">
+                  .atharva.com
+                </div>
+              </div>
+              
+              {subdomainValidation.isChecking && (
+                <div className="flex items-center gap-1 text-blue-600 text-xs">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>{subdomainValidation.message}</span>
+                </div>
+              )}
+              
+              {!subdomainValidation.isChecking && subdomainValidation.isValid === true && (
+                <div className="flex items-center gap-1 text-green-600 text-xs">
+                  <CheckCircle className="h-3 w-3" />
+                  <span>{subdomainValidation.message}</span>
+                </div>
+              )}
+              
+              {!subdomainValidation.isChecking && subdomainValidation.isValid === false && (
+                <div className="flex items-center gap-1 text-red-600 text-xs">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>{subdomainValidation.message}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="customDomain" className="text-sm font-medium text-gray-700">
+                Custom Domain (Optional)
+              </Label>
+              <Input
+                id="customDomain"
+                value={data.loginPage.customDomain}
+                onChange={(e) => updateData('loginPage', { customDomain: e.target.value })}
+                placeholder="login.yourhospital.com"
+                className="h-9 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+              <div className="text-xs text-gray-500">
+                Use your own domain (future feature)
+              </div>
+            </div>
+          </div>
+
+          {/* Preview URL */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-blue-900">Your Login URL</div>
+                <div className="text-sm text-blue-700 font-mono">
+                  {generatePreviewUrl()}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs text-blue-700 border-blue-300 hover:bg-blue-100"
+                disabled={!data.loginPage.subdomain}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Preview
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Logo & Assets */}
       <Card className="border border-gray-200 shadow-sm">
         <CardHeader className="pb-3">
@@ -292,14 +455,14 @@ export default function BrandingStep() {
             />
 
             <FileUploader
-              title="Favicon (Optional)"
-              description="Small icon for browser tabs"
-              accept="image/png,image/x-icon,image/vnd.microsoft.icon"
+              title="Background Image (Optional)"
+              description="Background for login page"
+              accept="image/png,image/jpeg,image/webp"
               maxSize="1MB"
-              recommendedSize="32x32px"
-              currentFile={data.branding.faviconFile}
-              currentUrl={data.branding.faviconUrl}
-              onFileSelect={handleFaviconUpload}
+              recommendedSize="1920x1080px"
+              currentFile={data.branding.backgroundImageFile}
+              currentUrl={data.branding.backgroundImageUrl}
+              onFileSelect={handleBackgroundImageUpload}
             />
           </div>
 
@@ -329,7 +492,6 @@ export default function BrandingStep() {
               label="Primary Color *"
               value={data.branding.primaryColor}
               onChange={(color) => updateData('branding', { primaryColor: color })}
-              presets={colorPresets}
             />
 
             <ColorPicker
@@ -365,77 +527,6 @@ export default function BrandingStep() {
                   <span>{preset.name}</span>
                 </Button>
               ))}
-            </div>
-          </div>
-
-          {/* Style Options Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Button Style *</Label>
-              <RadioGroup
-                value={data.branding.buttonStyle}
-                onValueChange={(value: 'filled' | 'outline') => 
-                  updateData('branding', { buttonStyle: value })
-                }
-                className="space-y-1"
-              >
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="filled" id="filled" />
-                  <Label htmlFor="filled" className="text-sm">Filled</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="outline" id="outline" />
-                  <Label htmlFor="outline" className="text-sm">Outline</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Accent Style *</Label>
-              <RadioGroup
-                value={data.branding.accentStyle}
-                onValueChange={(value: 'subtle' | 'strong') => 
-                  updateData('branding', { accentStyle: value })
-                }
-                className="space-y-1"
-              >
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="subtle" id="subtle" />
-                  <Label htmlFor="subtle" className="text-sm">Subtle</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="strong" id="strong" />
-                  <Label htmlFor="strong" className="text-sm">Strong</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="typography" className="text-sm font-medium">
-                Typography *
-              </Label>
-              <Select 
-                value={data.branding.typography} 
-                onValueChange={(value: 'Inter' | 'Sora' | 'Manrope') => 
-                  updateData('branding', { typography: value })
-                }
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select font" />
-                </SelectTrigger>
-                <SelectContent>
-                  {fontOptions.map((font) => (
-                    <SelectItem key={font.value} value={font.value}>
-                      <div>
-                        <div className="font-medium" style={{ fontFamily: font.value }}>
-                          {font.label}
-                        </div>
-                        <div className="text-xs text-gray-500">{font.description}</div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </CardContent>

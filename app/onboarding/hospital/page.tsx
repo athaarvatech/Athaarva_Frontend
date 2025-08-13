@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Building2,
   Palette,
-  Globe,
   UserPlus,
   X,
   Eye,
@@ -22,7 +21,6 @@ import { useHospitalOnboarding, HospitalOnboardingProvider } from "@/contexts/Ho
 // Import step components
 import HospitalBasicsStep from "./components/HospitalBasicsStep";
 import BrandingStep from "./components/BrandingStep";
-import LoginPageStep from "./components/LoginPageStep";
 import AdminSetupStep from "./components/AdminSetupStep";
 import PreviewModal from "./components/PreviewModal";
 
@@ -45,22 +43,14 @@ const steps: StepConfig[] = [
   },
   {
     id: 2,
-    title: "Branding",
-    description: "Upload logos and customize your visual identity",
+    title: "Branding & Subdomain",
+    description: "Upload logos, customize identity and set your URL",
     icon: Palette,
     component: BrandingStep,
     showPreview: true,
   },
   {
     id: 3,
-    title: "Login Page & Subdomain",
-    description: "Set up your branded login page and URL",
-    icon: Globe,
-    component: LoginPageStep,
-    showPreview: true,
-  },
-  {
-    id: 4,
     title: "Admin Setup & Review",
     description: "Create admin account and finalize setup",
     icon: UserPlus,
