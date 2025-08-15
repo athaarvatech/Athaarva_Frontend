@@ -5,9 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface HospitalOnboardingData {
   hospitalBasics: {
     hospitalName: string;
-    legalName: string;
-    sameAsHospitalName: boolean;
-    type: 'clinic' | 'nursing_home' | 'hospital_4_16' | 'multi_specialty' | '';
+    licenseNumber: string;
     bedCapacity: number;
     primaryContact: string;
     officialEmail: string;
@@ -16,30 +14,17 @@ export interface HospitalOnboardingData {
     city: string;
     state: string;
     pincode: string;
-    country: string;
   };
   branding: {
     logoUrl: string;
     logoFile: File | null;
-    faviconUrl: string;
-    faviconFile: File | null;
     backgroundImageUrl: string;
     backgroundImageFile: File | null;
     primaryColor: string;
     secondaryColor: string;
-    buttonStyle: 'filled' | 'outline';
-    accentStyle: 'subtle' | 'strong';
-    typography: 'Inter' | 'Sora' | 'Manrope';
   };
   loginPage: {
     subdomain: string;
-    customDomain: string;
-    heading: string;
-    welcomeText: string;
-    supportEmail: string;
-    supportPhone: string;
-    termsUrl: string;
-    privacyUrl: string;
   };
   adminSetup: {
     fullName: string;
@@ -47,7 +32,6 @@ export interface HospitalOnboardingData {
     phone: string;
     password: string;
     confirmPassword: string;
-    twoFaPreference: 'email' | 'sms';
   };
 }
 
@@ -70,9 +54,7 @@ export interface HospitalOnboardingContextType {
 const initialData: HospitalOnboardingData = {
   hospitalBasics: {
     hospitalName: '',
-    legalName: '',
-    sameAsHospitalName: true,
-    type: '',
+    licenseNumber: '',
     bedCapacity: 16,
     primaryContact: '',
     officialEmail: '',
@@ -81,30 +63,17 @@ const initialData: HospitalOnboardingData = {
     city: '',
     state: '',
     pincode: '',
-    country: 'India',
   },
   branding: {
     logoUrl: '',
     logoFile: null,
-    faviconUrl: '',
-    faviconFile: null,
     backgroundImageUrl: '',
     backgroundImageFile: null,
     primaryColor: '#007C7C',
     secondaryColor: '#20B2AA',
-    buttonStyle: 'filled',
-    accentStyle: 'subtle',
-    typography: 'Inter',
   },
   loginPage: {
     subdomain: '',
-    customDomain: '',
-    heading: '',
-    welcomeText: '',
-    supportEmail: '',
-    supportPhone: '',
-    termsUrl: '',
-    privacyUrl: '',
   },
   adminSetup: {
     fullName: '',
@@ -112,7 +81,6 @@ const initialData: HospitalOnboardingData = {
     phone: '',
     password: '',
     confirmPassword: '',
-    twoFaPreference: 'email',
   },
 };
 
@@ -153,8 +121,7 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         const basics = data.hospitalBasics;
         return !!(
           basics.hospitalName &&
-          (basics.sameAsHospitalName || basics.legalName) &&
-          basics.type &&
+          basics.licenseNumber &&
           basics.bedCapacity > 0 &&
           basics.primaryContact &&
           basics.officialEmail &&
@@ -170,9 +137,6 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         return !!(
           branding.primaryColor &&
           branding.secondaryColor &&
-          branding.buttonStyle &&
-          branding.accentStyle &&
-          branding.typography &&
           login.subdomain
         );
       case 3: // Admin Setup
@@ -244,16 +208,6 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   useEffect(() => {
     loadFromLocalStorage();
   }, []);
-
-  // Auto-update login page heading when hospital name changes
-  useEffect(() => {
-    if (data.hospitalBasics.hospitalName && !data.loginPage.heading) {
-      updateData('loginPage', {
-        heading: `Welcome to ${data.hospitalBasics.hospitalName}`,
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.hospitalBasics.hospitalName]);
 
   // Auto-generate subdomain from hospital name
   useEffect(() => {

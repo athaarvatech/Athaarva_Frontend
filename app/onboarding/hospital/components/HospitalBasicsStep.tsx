@@ -5,23 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Building2, 
   MapPin,
   User,
   AlertCircle,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContext";
-
-const hospitalTypes = [
-  { value: 'clinic', label: 'Clinic', description: 'Small practice, outpatient care' },
-  { value: 'nursing_home', label: 'Nursing Home', description: 'Long-term care facility' },
-  { value: 'hospital_4_16', label: 'Hospital (4-16 beds)', description: 'Small to medium hospital' },
-  { value: 'multi_specialty', label: 'Multi-specialty', description: 'Large hospital with multiple departments' },
-];
 
 const states = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 
@@ -46,6 +39,12 @@ export default function HospitalBasicsStep() {
     return phoneRegex.test(phone.replace(/\D/g, ''));
   };
 
+  const validateLicenseNumber = (license: string): boolean => {
+    // Basic validation for license number (adjust regex as per Indian medical license format)
+    const licenseRegex = /^[A-Z0-9]{6,20}$/;
+    return licenseRegex.test(license.replace(/\s/g, ''));
+  };
+
   const handleInputChange = (field: string, value: string | number) => {
     updateData('hospitalBasics', { [field]: value });
 
@@ -54,6 +53,11 @@ export default function HospitalBasicsStep() {
       setValidationState(prev => ({
         ...prev,
         hospitalName: typeof value === 'string' && value.trim().length >= 2
+      }));
+    } else if (field === 'licenseNumber') {
+      setValidationState(prev => ({
+        ...prev,
+        licenseNumber: typeof value === 'string' && validateLicenseNumber(value)
       }));
     } else if (field === 'officialEmail') {
       setValidationState(prev => ({
@@ -68,13 +72,6 @@ export default function HospitalBasicsStep() {
     }
   };
 
-  const handleSameAsHospitalName = (checked: boolean) => {
-    updateData('hospitalBasics', { 
-      sameAsHospitalName: checked,
-      legalName: checked ? data.hospitalBasics.hospitalName : data.hospitalBasics.legalName
-    });
-  };
-
   return (
     <div className="space-y-4">
       {/* Hospital Identity Section */}
@@ -86,7 +83,7 @@ export default function HospitalBasicsStep() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* First Row - Hospital Name & Type */}
+          {/* First Row - Hospital Name & License Number */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="hospitalName" className="text-sm font-medium text-gray-700">
@@ -113,58 +110,34 @@ export default function HospitalBasicsStep() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="hospitalType" className="text-sm font-medium text-gray-700">
-                Hospital Type <span className="text-red-500">*</span>
+              <Label htmlFor="licenseNumber" className="text-sm font-medium text-gray-700">
+                Medical License Number <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={data.hospitalBasics.type || ''}
-                onValueChange={(value) => handleInputChange('type', value)}
-              >
-                <SelectTrigger className="h-9 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                  <SelectValue placeholder="Select hospital type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hospitalTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div>
-                        <div className="font-medium">{type.label}</div>
-                        <div className="text-xs text-gray-500">{type.description}</div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Second Row - Legal Name */}
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="legalName" className="text-sm font-medium text-gray-700">
-                Legal Name (as per registration)
-              </Label>
-              <div className="flex items-center gap-1.5">
-                <Checkbox
-                  id="sameAsHospitalName"
-                  checked={data.hospitalBasics.sameAsHospitalName || false}
-                  onCheckedChange={handleSameAsHospitalName}
-                />
-                <Label htmlFor="sameAsHospitalName" className="text-xs text-gray-600">
-                  Same as hospital name
-                </Label>
+              <Input
+                id="licenseNumber"
+                placeholder="Enter medical license number"
+                value={data.hospitalBasics.licenseNumber || ''}
+                onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
+                className={cn(
+                  "h-9",
+                  validationState.licenseNumber === false 
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                )}
+              />
+              {validationState.licenseNumber === false && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Please enter a valid license number
+                </p>
+              )}
+              <div className="text-xs text-gray-500">
+                As per medical council registration
               </div>
             </div>
-            <Input
-              id="legalName"
-              placeholder="Legal name of the organization"
-              value={data.hospitalBasics.legalName || ''}
-              onChange={(e) => handleInputChange('legalName', e.target.value)}
-              disabled={data.hospitalBasics.sameAsHospitalName}
-              className="h-9 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            />
           </div>
 
-          {/* Third Row - Primary Contact & Bed Capacity */}
+          {/* Second Row - Primary Contact & Bed Capacity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="primaryContact" className="text-sm font-medium text-gray-700">

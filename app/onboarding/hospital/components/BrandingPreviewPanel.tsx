@@ -60,14 +60,12 @@ function LoginPagePreview({
           )}
           
           <h1 className={cn("text-2xl font-bold mb-2", textColor)}>
-            {data.loginPage.heading || `Welcome to ${data.hospitalBasics.hospitalName || 'Your Hospital'}`}
+            {`Welcome to ${data.hospitalBasics.hospitalName || 'Your Hospital'}`}
           </h1>
           
-          {data.loginPage.welcomeText && (
-            <p className={cn("text-sm", mutedColor)}>
-              {data.loginPage.welcomeText}
-            </p>
-          )}
+          <p className={cn("text-sm", mutedColor)}>
+            Secure access to your healthcare services
+          </p>
         </div>
 
         {/* Login Form */}
@@ -103,16 +101,11 @@ function LoginPagePreview({
               </div>
 
               <Button
-                className={cn(
-                  "w-full",
-                  data.branding.buttonStyle === 'filled' 
-                    ? `bg-[${data.branding.primaryColor}] hover:bg-[${data.branding.primaryColor}]/90 text-white`
-                    : `border-[${data.branding.primaryColor}] text-[${data.branding.primaryColor}] hover:bg-[${data.branding.primaryColor}] hover:text-white`
-                )}
+                className="w-full"
                 style={{
-                  backgroundColor: data.branding.buttonStyle === 'filled' ? data.branding.primaryColor : 'transparent',
+                  backgroundColor: data.branding.primaryColor,
                   borderColor: data.branding.primaryColor,
-                  color: data.branding.buttonStyle === 'filled' ? 'white' : data.branding.primaryColor,
+                  color: 'white',
                 }}
                 disabled
               >
@@ -143,37 +136,8 @@ function LoginPagePreview({
 
         {/* Footer */}
         <div className="mt-6 text-center space-y-2">
-          {(data.loginPage.supportEmail || data.loginPage.supportPhone) && (
-            <div className={cn("text-xs", mutedColor)}>
-              Need help?{' '}
-              {data.loginPage.supportEmail && (
-                <a href={`mailto:${data.loginPage.supportEmail}`} className="hover:underline">
-                  Email Support
-                </a>
-              )}
-              {data.loginPage.supportEmail && data.loginPage.supportPhone && ' • '}
-              {data.loginPage.supportPhone && (
-                <a href={`tel:${data.loginPage.supportPhone}`} className="hover:underline">
-                  Call Support
-                </a>
-              )}
-            </div>
-          )}
-          
           <div className={cn("text-xs", mutedColor)}>
-            {data.loginPage.termsUrl && (
-              <a href={data.loginPage.termsUrl} className="hover:underline mr-4">
-                Terms of Service
-              </a>
-            )}
-            {data.loginPage.privacyUrl && (
-              <a href={data.loginPage.privacyUrl} className="hover:underline">
-                Privacy Policy
-              </a>
-            )}
-            {!data.loginPage.termsUrl && !data.loginPage.privacyUrl && (
-              <span>Powered by Atharva</span>
-            )}
+            © 2024 {data.hospitalBasics.hospitalName || 'Hospital Name'}. All rights reserved.
           </div>
         </div>
       </div>
@@ -263,16 +227,11 @@ function BrandingPreview() {
         <div className="space-y-2">
           <Button
             size="sm"
-            className={cn(
-              "w-full",
-              data.branding.buttonStyle === 'filled' 
-                ? 'text-white'
-                : 'bg-transparent'
-            )}
+            className="w-full text-white"
             style={{
-              backgroundColor: data.branding.buttonStyle === 'filled' ? data.branding.primaryColor : 'transparent',
+              backgroundColor: data.branding.primaryColor,
               borderColor: data.branding.primaryColor,
-              color: data.branding.buttonStyle === 'filled' ? 'white' : data.branding.primaryColor,
+              color: 'white',
             }}
             disabled
           >
@@ -290,25 +249,6 @@ function BrandingPreview() {
           >
             Secondary Button
           </Button>
-        </div>
-      </div>
-
-      {/* Typography */}
-      <div className="space-y-3">
-        <h4 className="font-medium text-sm">Typography</h4>
-        <div className="space-y-2">
-          <div 
-            className="text-lg font-semibold"
-            style={{ fontFamily: data.branding.typography }}
-          >
-            {data.hospitalBasics.hospitalName || 'Hospital Name'}
-          </div>
-          <div 
-            className="text-sm text-gray-600"
-            style={{ fontFamily: data.branding.typography }}
-          >
-            Sample body text in {data.branding.typography} font
-          </div>
         </div>
       </div>
     </div>

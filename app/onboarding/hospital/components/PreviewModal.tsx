@@ -209,7 +209,7 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                   transition={{ duration: 0.5, delay: 0.2 }}
                   className="text-lg text-white/90 leading-relaxed max-w-md drop-shadow-md"
                 >
-                  {data.loginPage.welcomeText || 'Join thousands of healthcare providers and patients who trust us for comprehensive healthcare management with holistic care approach.'}
+                  Join thousands of healthcare providers and patients who trust us for comprehensive healthcare management with holistic care approach.
                 </motion.p>
               </div>
 
@@ -295,7 +295,7 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                       Welcome to {data.hospitalBasics.hospitalName || 'Atharva'}
                     </CardTitle>
                     <p className="text-gray-700">
-                      {data.loginPage.welcomeText || 'Secure access to your healthcare services'}
+                      Secure access to your healthcare services
                     </p>
                   </motion.div>
                 </CardHeader>
