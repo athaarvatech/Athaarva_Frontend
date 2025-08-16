@@ -47,7 +47,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     return <>{children}</>;
   }
     // Ecommerce page - no guards needed, accessible to all
-  if (pathname?.startsWith("/onboarding/hospital")) {
+  if (pathname?.startsWith("/onboarding/Hospital")) {
+    return <>{children}</>;
+  }
+  if (pathname?.startsWith("/Admin")) {
     return <>{children}</>;
   }
   // Auth routes - redirect if already authenticated
