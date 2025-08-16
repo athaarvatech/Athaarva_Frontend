@@ -53,13 +53,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   if (pathname?.startsWith("/Admin")) {
     return <>{children}</>;
   }
+  if (pathname?.startsWith("/Admin")) {
+    return <>{children}</>;
+  }
   // Auth routes - redirect if already authenticated
-  if (pathname?.startsWith("/auth")) {
-    return (
-      <PublicRouteGuard>
-        {children}
-      </PublicRouteGuard>
-    );
+  if (pathname?.startsWith("/onboarding/patient")) {
+    return <PublicRouteGuard>{children}</PublicRouteGuard>;
   }
 
   // Onboarding routes - only allow if not completed

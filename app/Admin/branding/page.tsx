@@ -41,11 +41,14 @@ interface BrandingData {
 
 const HospitalBrandingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop"
+  );
   const [formData, setFormData] = useState<BrandingData>({
     hospitalName: "Atharva Healthcare",
     tagline: "Your Health, Our Priority",
-    description: "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
+    description:
+      "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
     primaryColor: "#007C7C",
     secondaryColor: "#20B2AA",
     accentColor: "#50C878",
@@ -58,11 +61,36 @@ const HospitalBrandingPage = () => {
   });
 
   const predefinedColors = [
-    { name: "Teal", primary: "#007C7C", secondary: "#20B2AA", accent: "#50C878" },
-    { name: "Blue Medical", primary: "#0056B3", secondary: "#4A90E2", accent: "#7CB9E8" },
-    { name: "Green Health", primary: "#2E8B57", secondary: "#3CB371", accent: "#90EE90" },
-    { name: "Purple Care", primary: "#6A5ACD", secondary: "#9370DB", accent: "#DDA0DD" },
-    { name: "Orange Vitality", primary: "#FF6B35", secondary: "#FF8C69", accent: "#FFA07A" },
+    {
+      name: "Teal",
+      primary: "#007C7C",
+      secondary: "#20B2AA",
+      accent: "#50C878",
+    },
+    {
+      name: "Blue Medical",
+      primary: "#0056B3",
+      secondary: "#4A90E2",
+      accent: "#7CB9E8",
+    },
+    {
+      name: "Green Health",
+      primary: "#2E8B57",
+      secondary: "#3CB371",
+      accent: "#90EE90",
+    },
+    {
+      name: "Purple Care",
+      primary: "#6A5ACD",
+      secondary: "#9370DB",
+      accent: "#DDA0DD",
+    },
+    {
+      name: "Orange Vitality",
+      primary: "#FF6B35",
+      secondary: "#FF8C69",
+      accent: "#FFA07A",
+    },
   ];
 
   const handleInputChange = (field: keyof BrandingData, value: string) => {
@@ -72,7 +100,9 @@ const HospitalBrandingPage = () => {
     }));
   };
 
-  const handleColorSchemeSelect = (colorScheme: typeof predefinedColors[0]) => {
+  const handleColorSchemeSelect = (
+    colorScheme: (typeof predefinedColors)[0]
+  ) => {
     setFormData((prev) => ({
       ...prev,
       primaryColor: colorScheme.primary,
@@ -85,7 +115,8 @@ const HospitalBrandingPage = () => {
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         toast.error("Logo file size must be less than 5MB");
         return;
       }
@@ -101,10 +132,13 @@ const HospitalBrandingPage = () => {
     }
   };
 
-  const handleBackgroundUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
         toast.error("Background image file size must be less than 10MB");
         return;
       }
@@ -139,7 +173,8 @@ const HospitalBrandingPage = () => {
     setFormData({
       hospitalName: "Atharva Healthcare",
       tagline: "Your Health, Our Priority",
-      description: "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
+      description:
+        "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
       primaryColor: "#007C7C",
       secondaryColor: "#20B2AA",
       accentColor: "#50C878",
@@ -162,8 +197,10 @@ const HospitalBrandingPage = () => {
         accent: formData.accentColor,
       },
     };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -172,7 +209,7 @@ const HospitalBrandingPage = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     toast.success("Branding guide exported successfully");
   };
 
@@ -185,8 +222,12 @@ const HospitalBrandingPage = () => {
             <Palette className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-[#1F2937] tracking-tight">Hospital Branding</h1>
-            <p className="text-[#6B7280] text-lg">Customize your hospital&apos;s visual identity and brand assets</p>
+            <h1 className="text-3xl font-bold text-[#1F2937] tracking-tight">
+              Hospital Branding
+            </h1>
+            <p className="text-[#6B7280] text-lg">
+              Customize your hospital&apos;s visual identity and brand assets
+            </p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -194,11 +235,17 @@ const HospitalBrandingPage = () => {
             <Download className="mr-2 h-4 w-4" />
             Export Guide
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setPreviewMode(previewMode === "desktop" ? "mobile" : "desktop")}
+          <Button
+            variant="outline"
+            onClick={() =>
+              setPreviewMode(previewMode === "desktop" ? "mobile" : "desktop")
+            }
           >
-            {previewMode === "desktop" ? <Smartphone className="mr-2 h-4 w-4" /> : <Monitor className="mr-2 h-4 w-4" />}
+            {previewMode === "desktop" ? (
+              <Smartphone className="mr-2 h-4 w-4" />
+            ) : (
+              <Monitor className="mr-2 h-4 w-4" />
+            )}
             {previewMode === "desktop" ? "Mobile" : "Desktop"} Preview
           </Button>
         </div>
@@ -220,33 +267,54 @@ const HospitalBrandingPage = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <Label htmlFor="hospitalName" className="text-sm font-medium text-slate-700">Hospital Name *</Label>
+                  <Label
+                    htmlFor="hospitalName"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Hospital Name *
+                  </Label>
                   <Input
                     id="hospitalName"
                     value={formData.hospitalName}
-                    onChange={(e) => handleInputChange("hospitalName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("hospitalName", e.target.value)
+                    }
                     placeholder="Enter hospital name"
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="tagline" className="text-sm font-medium text-slate-700">Tagline</Label>
+                  <Label
+                    htmlFor="tagline"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Tagline
+                  </Label>
                   <Input
                     id="tagline"
                     value={formData.tagline}
-                    onChange={(e) => handleInputChange("tagline", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("tagline", e.target.value)
+                    }
                     placeholder="Enter hospital tagline"
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="description" className="text-sm font-medium text-slate-700">Description</Label>
+                  <Label
+                    htmlFor="description"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Description
+                  </Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
                     placeholder="Brief description of your hospital"
                     rows={3}
                     className="mt-1"
@@ -255,21 +323,35 @@ const HospitalBrandingPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="website" className="text-sm font-medium text-slate-700">Website</Label>
+                    <Label
+                      htmlFor="website"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Website
+                    </Label>
                     <Input
                       id="website"
                       value={formData.website}
-                      onChange={(e) => handleInputChange("website", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("website", e.target.value)
+                      }
                       placeholder="https://yourwebsite.com"
                       className="mt-1"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone</Label>
+                    <Label
+                      htmlFor="phone"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Phone
+                    </Label>
                     <Input
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       placeholder="(555) 123-4567"
                       className="mt-1"
                     />
@@ -277,7 +359,12 @@ const HospitalBrandingPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium text-slate-700">Contact Email</Label>
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Contact Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -289,11 +376,18 @@ const HospitalBrandingPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="address" className="text-sm font-medium text-slate-700">Address</Label>
+                  <Label
+                    htmlFor="address"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Address
+                  </Label>
                   <Textarea
                     id="address"
                     value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
                     placeholder="Hospital address"
                     rows={2}
                     className="mt-1"
@@ -314,7 +408,9 @@ const HospitalBrandingPage = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">Hospital Logo</Label>
+                  <Label className="text-sm font-medium text-slate-700">
+                    Hospital Logo
+                  </Label>
                   <div className="mt-2 flex items-center gap-4">
                     {formData.logoUrl ? (
                       <div className="flex items-center gap-3">
@@ -330,7 +426,7 @@ const HospitalBrandingPage = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setFormData(prev => ({ ...prev, logoUrl: "" }));
+                            setFormData((prev) => ({ ...prev, logoUrl: "" }));
                           }}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
@@ -353,18 +449,24 @@ const HospitalBrandingPage = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => document.getElementById("logo-upload")?.click()}
+                        onClick={() =>
+                          document.getElementById("logo-upload")?.click()
+                        }
                       >
                         <Upload className="mr-2 h-4 w-4" />
                         Upload Logo
                       </Button>
-                      <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 5MB. Recommended: 200x200px</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        PNG, JPG up to 5MB. Recommended: 200x200px
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">Login Background Image (Optional)</Label>
+                  <Label className="text-sm font-medium text-slate-700">
+                    Login Background Image (Optional)
+                  </Label>
                   <div className="mt-2 flex items-center gap-4">
                     {formData.backgroundImageUrl ? (
                       <div className="flex items-center gap-3">
@@ -380,7 +482,10 @@ const HospitalBrandingPage = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setFormData(prev => ({ ...prev, backgroundImageUrl: "" }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              backgroundImageUrl: "",
+                            }));
                           }}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
@@ -403,12 +508,16 @@ const HospitalBrandingPage = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => document.getElementById("background-upload")?.click()}
+                        onClick={() =>
+                          document.getElementById("background-upload")?.click()
+                        }
                       >
                         <Upload className="mr-2 h-4 w-4" />
                         Upload Background
                       </Button>
-                      <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB. Recommended: 1920x1080px</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        PNG, JPG up to 10MB. Recommended: 1920x1080px
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -427,7 +536,9 @@ const HospitalBrandingPage = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700 mb-3 block">Predefined Themes</Label>
+                  <Label className="text-sm font-medium text-slate-700 mb-3 block">
+                    Predefined Themes
+                  </Label>
                   <div className="grid gap-3 md:grid-cols-2">
                     {predefinedColors.map((scheme) => (
                       <Button
@@ -452,7 +563,9 @@ const HospitalBrandingPage = () => {
                               style={{ backgroundColor: scheme.accent }}
                             />
                           </div>
-                          <span className="text-sm font-medium">{scheme.name}</span>
+                          <span className="text-sm font-medium">
+                            {scheme.name}
+                          </span>
                         </div>
                       </Button>
                     ))}
@@ -461,18 +574,27 @@ const HospitalBrandingPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <Label htmlFor="primaryColor" className="text-sm font-medium text-slate-700">Primary Color</Label>
+                    <Label
+                      htmlFor="primaryColor"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Primary Color
+                    </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         type="color"
                         id="primaryColor"
                         value={formData.primaryColor}
-                        onChange={(e) => handleInputChange("primaryColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("primaryColor", e.target.value)
+                        }
                         className="w-12 h-9 p-1 border rounded"
                       />
                       <Input
                         value={formData.primaryColor}
-                        onChange={(e) => handleInputChange("primaryColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("primaryColor", e.target.value)
+                        }
                         placeholder="#007C7C"
                         className="flex-1"
                       />
@@ -480,18 +602,27 @@ const HospitalBrandingPage = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="secondaryColor" className="text-sm font-medium text-slate-700">Secondary Color</Label>
+                    <Label
+                      htmlFor="secondaryColor"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Secondary Color
+                    </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         type="color"
                         id="secondaryColor"
                         value={formData.secondaryColor}
-                        onChange={(e) => handleInputChange("secondaryColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("secondaryColor", e.target.value)
+                        }
                         className="w-12 h-9 p-1 border rounded"
                       />
                       <Input
                         value={formData.secondaryColor}
-                        onChange={(e) => handleInputChange("secondaryColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("secondaryColor", e.target.value)
+                        }
                         placeholder="#20B2AA"
                         className="flex-1"
                       />
@@ -499,18 +630,27 @@ const HospitalBrandingPage = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="accentColor" className="text-sm font-medium text-slate-700">Accent Color</Label>
+                    <Label
+                      htmlFor="accentColor"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Accent Color
+                    </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         type="color"
                         id="accentColor"
                         value={formData.accentColor}
-                        onChange={(e) => handleInputChange("accentColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("accentColor", e.target.value)
+                        }
                         className="w-12 h-9 p-1 border rounded"
                       />
                       <Input
                         value={formData.accentColor}
-                        onChange={(e) => handleInputChange("accentColor", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("accentColor", e.target.value)
+                        }
                         placeholder="#50C878"
                         className="flex-1"
                       />
@@ -536,14 +676,14 @@ const HospitalBrandingPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div 
+                <div
                   className={`mx-auto border border-slate-200 rounded-xl overflow-hidden shadow-lg ${
                     previewMode === "desktop" ? "w-full max-w-md" : "w-48"
                   }`}
                   style={{
-                    background: formData.backgroundImageUrl 
+                    background: formData.backgroundImageUrl
                       ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${formData.backgroundImageUrl})`
-                      : `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`
+                      : `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
                   }}
                 >
                   <div className="p-8 text-center text-white">
@@ -554,44 +694,58 @@ const HospitalBrandingPage = () => {
                           alt="Hospital Logo"
                           width={previewMode === "desktop" ? 64 : 48}
                           height={previewMode === "desktop" ? 64 : 48}
-                          className={`object-contain ${previewMode === "desktop" ? "h-16" : "h-12"}`}
+                          className={`object-contain ${
+                            previewMode === "desktop" ? "h-16" : "h-12"
+                          }`}
                         />
                       </div>
                     )}
-                    
-                    <h1 className={`font-bold mb-2 ${previewMode === "desktop" ? "text-2xl" : "text-lg"}`}>
+
+                    <h1
+                      className={`font-bold mb-2 ${
+                        previewMode === "desktop" ? "text-2xl" : "text-lg"
+                      }`}
+                    >
                       {formData.hospitalName}
                     </h1>
-                    
+
                     {formData.tagline && (
-                      <p className={`mb-4 opacity-90 ${previewMode === "desktop" ? "text-sm" : "text-xs"}`}>
+                      <p
+                        className={`mb-4 opacity-90 ${
+                          previewMode === "desktop" ? "text-sm" : "text-xs"
+                        }`}
+                      >
                         {formData.tagline}
                       </p>
                     )}
 
                     <div className="space-y-3">
-                      <div 
+                      <div
                         className={`bg-white/20 backdrop-blur-sm rounded-lg p-3 ${
                           previewMode === "desktop" ? "text-sm" : "text-xs"
                         }`}
                       >
                         <p>Login Form Preview</p>
                       </div>
-                      
-                      <button 
+
+                      <button
                         className={`w-full py-2 rounded-lg font-medium transition-colors ${
                           previewMode === "desktop" ? "text-sm" : "text-xs"
                         }`}
-                        style={{ 
+                        style={{
                           backgroundColor: formData.accentColor,
-                          color: "white"
+                          color: "white",
                         }}
                       >
                         Sign In
                       </button>
                     </div>
 
-                    <div className={`mt-6 space-y-1 text-white/80 ${previewMode === "desktop" ? "text-xs" : "text-[10px]"}`}>
+                    <div
+                      className={`mt-6 space-y-1 text-white/80 ${
+                        previewMode === "desktop" ? "text-xs" : "text-[10px]"
+                      }`}
+                    >
                       <p>{formData.phone}</p>
                       <p>{formData.email}</p>
                     </div>
@@ -600,24 +754,26 @@ const HospitalBrandingPage = () => {
 
                 {/* Color Swatches */}
                 <div className="mt-6 space-y-3">
-                  <h4 className="text-sm font-medium text-slate-700">Color Palette</h4>
+                  <h4 className="text-sm font-medium text-slate-700">
+                    Color Palette
+                  </h4>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="text-center">
-                      <div 
+                      <div
                         className="w-full h-10 rounded-lg border shadow-sm"
                         style={{ backgroundColor: formData.primaryColor }}
                       />
                       <p className="text-xs text-slate-600 mt-1">Primary</p>
                     </div>
                     <div className="text-center">
-                      <div 
+                      <div
                         className="w-full h-10 rounded-lg border shadow-sm"
                         style={{ backgroundColor: formData.secondaryColor }}
                       />
                       <p className="text-xs text-slate-600 mt-1">Secondary</p>
                     </div>
                     <div className="text-center">
-                      <div 
+                      <div
                         className="w-full h-10 rounded-lg border shadow-sm"
                         style={{ backgroundColor: formData.accentColor }}
                       />
@@ -638,7 +794,7 @@ const HospitalBrandingPage = () => {
                 <AlertCircle className="h-4 w-4" />
                 <span>Changes will be applied to all user interfaces</span>
               </div>
-              
+
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -649,7 +805,7 @@ const HospitalBrandingPage = () => {
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Reset to Default
                 </Button>
-                
+
                 <Button
                   type="submit"
                   disabled={isLoading}

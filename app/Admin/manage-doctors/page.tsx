@@ -128,30 +128,50 @@ const ManageDoctorsPage = () => {
     },
   ]);
 
-  const departments = ["all", "Cardiology Department", "Emergency Department", "Pediatric Ward", "Operating Theater"];
+  const departments = [
+    "all",
+    "Cardiology Department",
+    "Emergency Department",
+    "Pediatric Ward",
+    "Operating Theater",
+  ];
   const statuses = ["all", "active", "inactive", "pending"];
 
   // Filter doctors
   const filteredDoctors = doctors.filter((doctor) => {
-    const matchesSearch = 
+    const matchesSearch =
       doctor.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || doctor.status === statusFilter;
-    const matchesDepartment = departmentFilter === "all" || doctor.department === departmentFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || doctor.status === statusFilter;
+    const matchesDepartment =
+      departmentFilter === "all" || doctor.department === departmentFilter;
+
     return matchesSearch && matchesStatus && matchesDepartment;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-200">
+            Active
+          </Badge>
+        );
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Inactive</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            Inactive
+          </Badge>
+        );
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            Pending
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -159,17 +179,19 @@ const ManageDoctorsPage = () => {
 
   const handleStatusToggle = (doctor: Doctor) => {
     const newStatus = doctor.status === "active" ? "inactive" : "active";
-    setDoctors(prev => 
-      prev.map(d => 
-        d.id === doctor.id ? { ...d, status: newStatus } : d
-      )
+    setDoctors((prev) =>
+      prev.map((d) => (d.id === doctor.id ? { ...d, status: newStatus } : d))
     );
-    toast.success(`Doctor ${newStatus === "active" ? "activated" : "deactivated"} successfully`);
+    toast.success(
+      `Doctor ${
+        newStatus === "active" ? "activated" : "deactivated"
+      } successfully`
+    );
   };
 
   const handleDeleteDoctor = () => {
     if (selectedDoctor) {
-      setDoctors(prev => prev.filter(d => d.id !== selectedDoctor.id));
+      setDoctors((prev) => prev.filter((d) => d.id !== selectedDoctor.id));
       toast.success("Doctor removed successfully");
       setDeleteDialogOpen(false);
       setSelectedDoctor(null);
@@ -207,7 +229,7 @@ const ManageDoctorsPage = () => {
             <p className="text-gray-600">View and manage all doctor accounts</p>
           </div>
         </div>
-        
+
         <div className="flex gap-3">
           <Button asChild className="bg-[#007C7C] hover:bg-[#006666]">
             <Link href="/Admin/add-doctor">
@@ -226,12 +248,14 @@ const ManageDoctorsPage = () => {
               <Users className="h-5 w-5 text-[#007C7C]" />
               <div>
                 <p className="text-sm text-gray-600">Total Doctors</p>
-                <p className="text-xl font-bold text-[#007C7C]">{doctors.length}</p>
+                <p className="text-xl font-bold text-[#007C7C]">
+                  {doctors.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-green-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -239,13 +263,13 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Active</p>
                 <p className="text-xl font-bold text-green-600">
-                  {doctors.filter(d => d.status === "active").length}
+                  {doctors.filter((d) => d.status === "active").length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-gray-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -253,13 +277,13 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Inactive</p>
                 <p className="text-xl font-bold text-gray-600">
-                  {doctors.filter(d => d.status === "inactive").length}
+                  {doctors.filter((d) => d.status === "inactive").length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-yellow-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -267,7 +291,7 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Pending</p>
                 <p className="text-xl font-bold text-yellow-600">
-                  {doctors.filter(d => d.status === "pending").length}
+                  {doctors.filter((d) => d.status === "pending").length}
                 </p>
               </div>
             </div>
@@ -296,7 +320,7 @@ const ManageDoctorsPage = () => {
                 />
               </div>
             </div>
-            
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
@@ -304,13 +328,18 @@ const ManageDoctorsPage = () => {
               <SelectContent>
                 {statuses.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
+                    {status === "all"
+                      ? "All Statuses"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
-            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+
+            <Select
+              value={departmentFilter}
+              onValueChange={setDepartmentFilter}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by department" />
               </SelectTrigger>
@@ -322,7 +351,7 @@ const ManageDoctorsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Button
               variant="outline"
               onClick={() => {
@@ -372,7 +401,11 @@ const ManageDoctorsPage = () => {
                     <TableCell>{doctor.experience} years</TableCell>
                     <TableCell>{getStatusBadge(doctor.status)}</TableCell>
                     <TableCell>
-                      <span className={doctor.lastLogin === "Never" ? "text-red-500" : ""}>
+                      <span
+                        className={
+                          doctor.lastLogin === "Never" ? "text-red-500" : ""
+                        }
+                      >
                         {doctor.lastLogin}
                       </span>
                     </TableCell>
@@ -381,7 +414,9 @@ const ManageDoctorsPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toast.info("Edit functionality coming soon")}
+                          onClick={() =>
+                            toast.info("Edit functionality coming soon")
+                          }
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -396,9 +431,17 @@ const ManageDoctorsPage = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleStatusToggle(doctor)}
-                          className={doctor.status === "active" ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
+                          className={
+                            doctor.status === "active"
+                              ? "text-red-600 hover:text-red-700"
+                              : "text-green-600 hover:text-green-700"
+                          }
                         >
-                          {doctor.status === "active" ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                          {doctor.status === "active" ? (
+                            <ShieldOff className="h-4 w-4" />
+                          ) : (
+                            <Shield className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           variant="ghost"
@@ -414,7 +457,7 @@ const ManageDoctorsPage = () => {
                 ))}
               </TableBody>
             </Table>
-            
+
             {filteredDoctors.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <Eye className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -431,7 +474,8 @@ const ManageDoctorsPage = () => {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {selectedDoctor?.fullName}? This action cannot be undone.
+              Are you sure you want to remove {selectedDoctor?.fullName}? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -441,10 +485,7 @@ const ManageDoctorsPage = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteDoctor}
-            >
+            <Button variant="destructive" onClick={handleDeleteDoctor}>
               Delete Doctor
             </Button>
           </DialogFooter>
@@ -452,12 +493,16 @@ const ManageDoctorsPage = () => {
       </Dialog>
 
       {/* Reset Password Dialog */}
-      <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+      <Dialog
+        open={resetPasswordDialogOpen}
+        onOpenChange={setResetPasswordDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              Send a password reset email to {selectedDoctor?.fullName} at {selectedDoctor?.email}?
+              Send a password reset email to {selectedDoctor?.fullName} at{" "}
+              {selectedDoctor?.email}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -467,7 +512,10 @@ const ManageDoctorsPage = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleResetPassword} className="bg-[#007C7C] hover:bg-[#006666]">
+            <Button
+              onClick={handleResetPassword}
+              className="bg-[#007C7C] hover:bg-[#006666]"
+            >
               Send Reset Email
             </Button>
           </DialogFooter>

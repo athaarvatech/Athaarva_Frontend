@@ -16,7 +16,10 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHospitalOnboarding, HospitalOnboardingProvider } from "@/contexts/HospitalOnboardingContext";
+import {
+  useHospitalOnboarding,
+  HospitalOnboardingProvider,
+} from "@/contexts/HospitalOnboardingContext";
 
 // Import step components
 import HospitalBasicsStep from "./components/HospitalBasicsStep";
@@ -60,28 +63,25 @@ const steps: StepConfig[] = [
 
 function HospitalOnboardingContent() {
   const router = useRouter();
-  const {
-    data,
-    currentStep,
-    isStepValid,
-    nextStep,
-    previousStep,
-    resetData,
-  } = useHospitalOnboarding();
+  const { data, currentStep, isStepValid, nextStep, previousStep, resetData } =
+    useHospitalOnboarding();
 
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
 
-  const currentStepConfig = steps.find(step => step.id === currentStep);
+  const currentStepConfig = steps.find((step) => step.id === currentStep);
   const CurrentStepComponent = currentStepConfig?.component;
 
   // Check for unsaved changes
   const hasUnsavedChanges = () => {
-    return Object.values(data).some(section => 
-      Object.values(section).some(value => 
-        value !== "" && value !== null && value !== undefined && 
-        (Array.isArray(value) ? value.length > 0 : true)
+    return Object.values(data).some((section) =>
+      Object.values(section).some(
+        (value) =>
+          value !== "" &&
+          value !== null &&
+          value !== undefined &&
+          (Array.isArray(value) ? value.length > 0 : true)
       )
     );
   };
@@ -91,7 +91,7 @@ function HospitalOnboardingContent() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges()) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = "";
       }
     };
 
@@ -101,57 +101,113 @@ function HospitalOnboardingContent() {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleNext = () => {
-    if (currentStep === 4) {
+    if (currentStep === 3) {
       handleSubmit();
     } else {
       nextStep();
     }
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Clear localStorage after successful submission
-      localStorage.removeItem('hospital-onboarding-data');
-      localStorage.removeItem('hospital-onboarding-step');
-      
-      // Redirect to hospital admin dashboard
-      router.push('/hospital/dashboard');
-    } catch (error) {
-      console.error('Failed to create hospital:', error);
-      // Handle error (show toast, etc.)
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // const handleSubmit = async () => {
+  //   setIsSubmitting(true);
+
+  //   try {
+  //     // Simulate API call
+  //     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  //     // Clear localStorage after successful submission
+  //     localStorage.removeItem("hospital-onboarding-data");
+  //     localStorage.removeItem("hospital-onboarding-step");
+
+  //     // Redirect to hospital admin dashboard
+  //     router.push("/hospital/dashboard");
+  //   } catch (error) {
+  //     console.error("Failed to create hospital:", error);
+  //     // Handle error (show toast, etc.)
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleExit = () => {
     if (hasUnsavedChanges()) {
       setShowExitDialog(true);
     } else {
-      router.push('/');
+      router.push("/");
     }
   };
 
   const confirmExit = () => {
     resetData();
-    router.push('/');
+    router.push("/");
   };
+
+  // ...existing code...
+  // ...existing code...
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      // Map frontend fields to backend expected fields
+      const payload = {
+        hospital_name: data.hospitalBasics.hospitalName,
+        license_number: data.hospitalBasics.licenseNumber,
+        bed_capacity: data.hospitalBasics.bedCapacity,
+        primary_contact: data.hospitalBasics.primaryContact,
+        official_email: data.hospitalBasics.officialEmail,
+        phone: data.hospitalBasics.phone,
+        address: data.hospitalBasics.address,
+        city: data.hospitalBasics.city,
+        state: data.hospitalBasics.state,
+        pincode: data.hospitalBasics.pincode,
+        logo_url: data.branding.logoUrl || "",
+        background_image_url: data.branding.backgroundImageUrl || "",
+        primary_color: data.branding.primaryColor,
+        secondary_color: data.branding.secondaryColor,
+        subdomain: data.loginPage.subdomain,
+        admin_full_name: data.adminSetup.fullName,
+        admin_work_email: data.adminSetup.workEmail,
+        admin_phone: data.adminSetup.phone,
+        admin_password: data.adminSetup.password,
+      };
+
+      const response = await fetch(
+        "http://localhost:8000/hospitals/onboarding",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create hospital");
+      }
+
+      localStorage.removeItem("hospital-onboarding-data");
+      localStorage.removeItem("hospital-onboarding-step");
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to create hospital:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  // ...existing code...
+  // ...existing code...
 
   const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
 
@@ -276,7 +332,9 @@ function HospitalOnboardingContent() {
                           <div
                             className={cn(
                               "absolute left-3.5 top-7 w-0.5 h-6 transition-colors duration-200",
-                              currentStep > step.id ? "bg-healthcare-emerald/30" : "bg-gray-200"
+                              currentStep > step.id
+                                ? "bg-healthcare-emerald/30"
+                                : "bg-gray-200"
                             )}
                           />
                         )}
@@ -390,13 +448,11 @@ function HospitalOnboardingContent() {
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="hidden sm:inline">
-                            Creating...
-                          </span>
+                          <span className="hidden sm:inline">Creating...</span>
                         </>
-                      ) : currentStep === 4 ? (
+                      ) : currentStep === 3 ? (
                         <>
-                          <span className="hidden sm:inline">Create Hospital</span>
+                          <span className="hidden sm:inline">Submit</span>
                           <CheckCircle className="w-4 h-4" />
                         </>
                       ) : (
@@ -417,7 +473,7 @@ function HospitalOnboardingContent() {
       </div>
 
       {/* Preview Modal */}
-      <PreviewModal 
+      <PreviewModal
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
       />
@@ -449,11 +505,12 @@ function HospitalOnboardingContent() {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               <p className="text-gray-600 mb-6">
-                You have unsaved changes. Are you sure you want to exit? Your progress will be lost.
+                You have unsaved changes. Are you sure you want to exit? Your
+                progress will be lost.
               </p>
-              
+
               <div className="flex space-x-3">
                 <Button
                   variant="outline"

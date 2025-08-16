@@ -208,22 +208,31 @@ const AdminDashboard = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-[#007C7C]/20 text-[#007C7C] hover:bg-[#007C7C]/5"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
-          <Button asChild className="bg-gradient-to-r from-[#007C7C] to-[#20B2AA] hover:from-[#006666] hover:to-[#1a9999] text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button
+            asChild
+            className="bg-gradient-to-r from-[#007C7C] to-[#20B2AA] hover:from-[#006666] hover:to-[#1a9999] text-white shadow-lg hover:shadow-xl transition-all duration-300"
+          >
             <Link href="/Admin/add-doctor">
               <UserPlus className="mr-2 h-4 w-4" />
               Add Doctor
             </Link>
           </Button>
-          <Button asChild variant="outline" className="border-[#20B2AA] text-[#20B2AA] hover:bg-[#20B2AA] hover:text-white transition-all duration-300">
+          <Button
+            asChild
+            variant="outline"
+            className="border-[#20B2AA] text-[#20B2AA] hover:bg-[#20B2AA] hover:text-white transition-all duration-300"
+          >
             <Link href="/Admin/add-staff">
               <Users className="mr-2 h-4 w-4" />
               Add Staff
@@ -244,10 +253,14 @@ const AdminDashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-[#007C7C] mb-1">{stats.totalDoctors}</div>
+            <div className="text-3xl font-bold text-[#007C7C] mb-1">
+              {stats.totalDoctors}
+            </div>
             <div className="flex items-center text-sm">
               <ArrowUp className="h-3 w-3 text-emerald-600 mr-1" />
-              <span className="text-emerald-600 font-medium">+{stats.monthlyGrowth.doctors}%</span>
+              <span className="text-emerald-600 font-medium">
+                +{stats.monthlyGrowth.doctors}%
+              </span>
               <span className="text-[#6B7280] ml-1">from last month</span>
             </div>
           </CardContent>
@@ -263,10 +276,14 @@ const AdminDashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-[#20B2AA] mb-1">{stats.totalStaff}</div>
+            <div className="text-3xl font-bold text-[#20B2AA] mb-1">
+              {stats.totalStaff}
+            </div>
             <div className="flex items-center text-sm">
               <ArrowUp className="h-3 w-3 text-emerald-600 mr-1" />
-              <span className="text-emerald-600 font-medium">+{stats.monthlyGrowth.staff}%</span>
+              <span className="text-emerald-600 font-medium">
+                +{stats.monthlyGrowth.staff}%
+              </span>
               <span className="text-[#6B7280] ml-1">from last month</span>
             </div>
           </CardContent>
@@ -287,7 +304,9 @@ const AdminDashboard = () => {
             </div>
             <div className="flex items-center text-sm">
               <ArrowUp className="h-3 w-3 text-emerald-600 mr-1" />
-              <span className="text-emerald-600 font-medium">+{stats.monthlyGrowth.activeUsers}%</span>
+              <span className="text-emerald-600 font-medium">
+                +{stats.monthlyGrowth.activeUsers}%
+              </span>
               <span className="text-[#6B7280] ml-1">active users</span>
             </div>
           </CardContent>
@@ -303,10 +322,14 @@ const AdminDashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600 mb-1">{stats.pendingApprovals}</div>
+            <div className="text-3xl font-bold text-red-600 mb-1">
+              {stats.pendingApprovals}
+            </div>
             <div className="flex items-center text-sm">
               <Bell className="h-3 w-3 text-red-500 mr-1" />
-              <span className="text-red-600 font-medium">Require attention</span>
+              <span className="text-red-600 font-medium">
+                Require attention
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -361,8 +384,12 @@ const AdminDashboard = () => {
                           {activity.user.department}
                         </Badge>
                       </div>
-                      <p className="text-sm text-slate-600">{activity.message}</p>
-                      <p className="text-xs text-slate-500 mt-1">{activity.time}</p>
+                      <p className="text-sm text-slate-600">
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {activity.time}
+                      </p>
                     </div>
                     <div className="flex-shrink-0">
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -400,7 +427,10 @@ const AdminDashboard = () => {
                           {action.title}
                         </h4>
                         {action.count > 1 && (
-                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs px-2 py-0.5"
+                          >
                             {action.count}
                           </Badge>
                         )}
@@ -408,7 +438,9 @@ const AdminDashboard = () => {
                       <Badge className={getPriorityColor(action.priority)}>
                         <div className="flex items-center gap-1">
                           {getPriorityIcon(action.priority)}
-                          <span className="capitalize text-xs">{action.priority}</span>
+                          <span className="capitalize text-xs">
+                            {action.priority}
+                          </span>
                         </div>
                       </Badge>
                     </div>
@@ -416,10 +448,12 @@ const AdminDashboard = () => {
                       {action.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-500">Due: {action.dueDate}</span>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <span className="text-xs text-slate-500">
+                        Due: {action.dueDate}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         className="text-xs h-7 group-hover:bg-[#007C7C] group-hover:text-white group-hover:border-[#007C7C] transition-colors"
                       >
                         {action.action}
@@ -461,12 +495,16 @@ const AdminDashboard = () => {
                   <Stethoscope className="h-8 w-8 text-[#007C7C] group-hover:text-white" />
                 </div>
                 <div className="text-center">
-                  <span className="font-semibold text-slate-900 group-hover:text-[#007C7C]">Manage Doctors</span>
-                  <p className="text-xs text-slate-500 mt-1">View & edit doctor profiles</p>
+                  <span className="font-semibold text-slate-900 group-hover:text-[#007C7C]">
+                    Manage Doctors
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    View & edit doctor profiles
+                  </p>
                 </div>
               </Link>
             </Button>
-            
+
             <Button
               asChild
               variant="outline"
@@ -477,12 +515,16 @@ const AdminDashboard = () => {
                   <Users className="h-8 w-8 text-[#20B2AA] group-hover:text-white" />
                 </div>
                 <div className="text-center">
-                  <span className="font-semibold text-slate-900 group-hover:text-[#20B2AA]">Manage Staff</span>
-                  <p className="text-xs text-slate-500 mt-1">Oversee staff members</p>
+                  <span className="font-semibold text-slate-900 group-hover:text-[#20B2AA]">
+                    Manage Staff
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Oversee staff members
+                  </p>
                 </div>
               </Link>
             </Button>
-            
+
             <Button
               asChild
               variant="outline"
@@ -493,12 +535,16 @@ const AdminDashboard = () => {
                   <Shield className="h-8 w-8 text-[#50C878] group-hover:text-white" />
                 </div>
                 <div className="text-center">
-                  <span className="font-semibold text-slate-900 group-hover:text-[#50C878]">Hospital Branding</span>
-                  <p className="text-xs text-slate-500 mt-1">Customize hospital identity</p>
+                  <span className="font-semibold text-slate-900 group-hover:text-[#50C878]">
+                    Hospital Branding
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Customize hospital identity
+                  </p>
                 </div>
               </Link>
             </Button>
-            
+
             <Button
               asChild
               variant="outline"
@@ -509,8 +555,12 @@ const AdminDashboard = () => {
                   <Settings className="h-8 w-8 text-slate-600" />
                 </div>
                 <div className="text-center">
-                  <span className="font-semibold text-slate-900">System Settings</span>
-                  <p className="text-xs text-slate-500 mt-1">Configure system preferences</p>
+                  <span className="font-semibold text-slate-900">
+                    System Settings
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Configure system preferences
+                  </p>
                 </div>
               </Link>
             </Button>

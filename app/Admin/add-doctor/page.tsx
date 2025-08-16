@@ -95,7 +95,10 @@ const AddDoctorPage = () => {
 
   // Generate login ID based on name
   const generateLoginId = (name: string) => {
-    const cleanName = name.toLowerCase().replace(/[^a-z\s]/g, "").trim();
+    const cleanName = name
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "")
+      .trim();
     const nameParts = cleanName.split(" ");
     if (nameParts.length >= 2) {
       return `${nameParts[0]}.${nameParts[nameParts.length - 1]}`;
@@ -105,7 +108,8 @@ const AddDoctorPage = () => {
 
   // Generate random password
   const generatePassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
     let password = "";
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -184,7 +188,7 @@ const AddDoctorPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error("Please fix all errors before submitting");
       return;
@@ -206,7 +210,7 @@ const AddDoctorPage = () => {
 
       // Reset form
       resetForm();
-      
+
       // Optional: redirect to manage doctors page
       // router.push("/Admin/manage-doctors");
     } catch {
@@ -242,7 +246,9 @@ const AddDoctorPage = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Add New Doctor</h1>
-          <p className="text-gray-600">Create a new doctor account and send login credentials</p>
+          <p className="text-gray-600">
+            Create a new doctor account and send login credentials
+          </p>
         </div>
       </div>
 
@@ -262,7 +268,9 @@ const AddDoctorPage = () => {
                 <Input
                   id="fullName"
                   value={formData.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("fullName", e.target.value)
+                  }
                   placeholder="Dr. John Smith"
                   className={errors.fullName ? "border-red-500" : ""}
                 />
@@ -311,12 +319,16 @@ const AddDoctorPage = () => {
                 <Input
                   id="licenseNumber"
                   value={formData.licenseNumber}
-                  onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("licenseNumber", e.target.value)
+                  }
                   placeholder="MD123456"
                   className={errors.licenseNumber ? "border-red-500" : ""}
                 />
                 {errors.licenseNumber && (
-                  <p className="text-sm text-red-500 mt-1">{errors.licenseNumber}</p>
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.licenseNumber}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -335,9 +347,13 @@ const AddDoctorPage = () => {
                 <Label htmlFor="specialization">Specialization *</Label>
                 <Select
                   value={formData.specialization}
-                  onValueChange={(value) => handleInputChange("specialization", value)}
+                  onValueChange={(value) =>
+                    handleInputChange("specialization", value)
+                  }
                 >
-                  <SelectTrigger className={errors.specialization ? "border-red-500" : ""}>
+                  <SelectTrigger
+                    className={errors.specialization ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select specialization" />
                   </SelectTrigger>
                   <SelectContent>
@@ -349,7 +365,9 @@ const AddDoctorPage = () => {
                   </SelectContent>
                 </Select>
                 {errors.specialization && (
-                  <p className="text-sm text-red-500 mt-1">{errors.specialization}</p>
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.specialization}
+                  </p>
                 )}
               </div>
 
@@ -357,9 +375,13 @@ const AddDoctorPage = () => {
                 <Label htmlFor="department">Department *</Label>
                 <Select
                   value={formData.department}
-                  onValueChange={(value) => handleInputChange("department", value)}
+                  onValueChange={(value) =>
+                    handleInputChange("department", value)
+                  }
                 >
-                  <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+                  <SelectTrigger
+                    className={errors.department ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
@@ -371,7 +393,9 @@ const AddDoctorPage = () => {
                   </SelectContent>
                 </Select>
                 {errors.department && (
-                  <p className="text-sm text-red-500 mt-1">{errors.department}</p>
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.department}
+                  </p>
                 )}
               </div>
 
@@ -381,7 +405,9 @@ const AddDoctorPage = () => {
                   id="experience"
                   type="number"
                   value={formData.experience}
-                  onChange={(e) => handleInputChange("experience", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("experience", e.target.value)
+                  }
                   placeholder="5"
                   min="0"
                   max="50"
@@ -393,7 +419,9 @@ const AddDoctorPage = () => {
                 <Input
                   id="qualification"
                   value={formData.qualification}
-                  onChange={(e) => handleInputChange("qualification", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("qualification", e.target.value)
+                  }
                   placeholder="MD, MBBS, etc."
                 />
               </div>
@@ -435,9 +463,13 @@ const AddDoctorPage = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder="Generated password"
-                    className={`pr-16 ${errors.password ? "border-red-500" : ""}`}
+                    className={`pr-16 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
                   />
                   <div className="absolute right-1 top-1 flex gap-1">
                     <Button
@@ -457,7 +489,9 @@ const AddDoctorPage = () => {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleInputChange("password", generatePassword())}
+                      onClick={() =>
+                        handleInputChange("password", generatePassword())
+                      }
                       className="h-8 w-8 p-0"
                     >
                       <RotateCcw className="h-4 w-4" />
@@ -492,9 +526,11 @@ const AddDoctorPage = () => {
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <AlertCircle className="h-4 w-4" />
-                <span>Credentials will be sent to the doctor&apos;s email address</span>
+                <span>
+                  Credentials will be sent to the doctor&apos;s email address
+                </span>
               </div>
-              
+
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -505,7 +541,7 @@ const AddDoctorPage = () => {
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Reset Form
                 </Button>
-                
+
                 <Button
                   type="submit"
                   disabled={isLoading}

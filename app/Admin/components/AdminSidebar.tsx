@@ -82,7 +82,7 @@ const AdminSidebar = ({
             <span className="font-semibold text-[#007C7C]">Admin Panel</span>
           </div>
         )}
-        
+
         {/* Desktop collapse button */}
         <Button
           variant="ghost"

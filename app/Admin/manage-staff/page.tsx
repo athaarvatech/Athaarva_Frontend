@@ -142,33 +142,63 @@ const ManageStaffPage = () => {
     },
   ]);
 
-  const roles = ["all", "Registered Nurse", "Lab Technician", "Receptionist", "Pharmacist", "Physical Therapist", "Medical Assistant"];
-  const departments = ["all", "Intensive Care Unit", "Laboratory", "Outpatient Department", "Pharmacy", "Physical Therapy", "Emergency Department"];
+  const roles = [
+    "all",
+    "Registered Nurse",
+    "Lab Technician",
+    "Receptionist",
+    "Pharmacist",
+    "Physical Therapist",
+    "Medical Assistant",
+  ];
+  const departments = [
+    "all",
+    "Intensive Care Unit",
+    "Laboratory",
+    "Outpatient Department",
+    "Pharmacy",
+    "Physical Therapy",
+    "Emergency Department",
+  ];
   const statuses = ["all", "active", "inactive", "pending"];
 
   // Filter staff
   const filteredStaff = staff.filter((member) => {
-    const matchesSearch = 
+    const matchesSearch =
       member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || member.status === statusFilter;
+
+    const matchesStatus =
+      statusFilter === "all" || member.status === statusFilter;
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
-    const matchesDepartment = departmentFilter === "all" || member.department === departmentFilter;
-    
+    const matchesDepartment =
+      departmentFilter === "all" || member.department === departmentFilter;
+
     return matchesSearch && matchesStatus && matchesRole && matchesDepartment;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-200">
+            Active
+          </Badge>
+        );
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Inactive</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            Inactive
+          </Badge>
+        );
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            Pending
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -176,17 +206,21 @@ const ManageStaffPage = () => {
 
   const handleStatusToggle = (staffMember: Staff) => {
     const newStatus = staffMember.status === "active" ? "inactive" : "active";
-    setStaff(prev => 
-      prev.map(s => 
+    setStaff((prev) =>
+      prev.map((s) =>
         s.id === staffMember.id ? { ...s, status: newStatus } : s
       )
     );
-    toast.success(`Staff member ${newStatus === "active" ? "activated" : "deactivated"} successfully`);
+    toast.success(
+      `Staff member ${
+        newStatus === "active" ? "activated" : "deactivated"
+      } successfully`
+    );
   };
 
   const handleDeleteStaff = () => {
     if (selectedStaff) {
-      setStaff(prev => prev.filter(s => s.id !== selectedStaff.id));
+      setStaff((prev) => prev.filter((s) => s.id !== selectedStaff.id));
       toast.success("Staff member removed successfully");
       setDeleteDialogOpen(false);
       setSelectedStaff(null);
@@ -224,7 +258,7 @@ const ManageStaffPage = () => {
             <p className="text-gray-600">View and manage all staff accounts</p>
           </div>
         </div>
-        
+
         <div className="flex gap-3">
           <Button asChild className="bg-[#20B2AA] hover:bg-[#1a9a91]">
             <Link href="/Admin/add-staff">
@@ -243,12 +277,14 @@ const ManageStaffPage = () => {
               <Users className="h-5 w-5 text-[#20B2AA]" />
               <div>
                 <p className="text-sm text-gray-600">Total Staff</p>
-                <p className="text-xl font-bold text-[#20B2AA]">{staff.length}</p>
+                <p className="text-xl font-bold text-[#20B2AA]">
+                  {staff.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-green-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -256,13 +292,13 @@ const ManageStaffPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Active</p>
                 <p className="text-xl font-bold text-green-600">
-                  {staff.filter(s => s.status === "active").length}
+                  {staff.filter((s) => s.status === "active").length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-gray-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -270,13 +306,13 @@ const ManageStaffPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Inactive</p>
                 <p className="text-xl font-bold text-gray-600">
-                  {staff.filter(s => s.status === "inactive").length}
+                  {staff.filter((s) => s.status === "inactive").length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-yellow-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -284,7 +320,7 @@ const ManageStaffPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Pending</p>
                 <p className="text-xl font-bold text-yellow-600">
-                  {staff.filter(s => s.status === "pending").length}
+                  {staff.filter((s) => s.status === "pending").length}
                 </p>
               </div>
             </div>
@@ -313,7 +349,7 @@ const ManageStaffPage = () => {
                 />
               </div>
             </div>
-            
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
@@ -321,12 +357,14 @@ const ManageStaffPage = () => {
               <SelectContent>
                 {statuses.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
+                    {status === "all"
+                      ? "All Statuses"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by role" />
@@ -339,8 +377,11 @@ const ManageStaffPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            
-            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+
+            <Select
+              value={departmentFilter}
+              onValueChange={setDepartmentFilter}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by department" />
               </SelectTrigger>
@@ -352,7 +393,7 @@ const ManageStaffPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Button
               variant="outline"
               onClick={() => {
@@ -409,7 +450,11 @@ const ManageStaffPage = () => {
                     </TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
                     <TableCell>
-                      <span className={member.lastLogin === "Never" ? "text-red-500" : ""}>
+                      <span
+                        className={
+                          member.lastLogin === "Never" ? "text-red-500" : ""
+                        }
+                      >
                         {member.lastLogin}
                       </span>
                     </TableCell>
@@ -418,7 +463,9 @@ const ManageStaffPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toast.info("Edit functionality coming soon")}
+                          onClick={() =>
+                            toast.info("Edit functionality coming soon")
+                          }
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -433,9 +480,17 @@ const ManageStaffPage = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleStatusToggle(member)}
-                          className={member.status === "active" ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
+                          className={
+                            member.status === "active"
+                              ? "text-red-600 hover:text-red-700"
+                              : "text-green-600 hover:text-green-700"
+                          }
                         >
-                          {member.status === "active" ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                          {member.status === "active" ? (
+                            <ShieldOff className="h-4 w-4" />
+                          ) : (
+                            <Shield className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           variant="ghost"
@@ -451,7 +506,7 @@ const ManageStaffPage = () => {
                 ))}
               </TableBody>
             </Table>
-            
+
             {filteredStaff.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <Eye className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -468,7 +523,8 @@ const ManageStaffPage = () => {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {selectedStaff?.fullName}? This action cannot be undone.
+              Are you sure you want to remove {selectedStaff?.fullName}? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -478,10 +534,7 @@ const ManageStaffPage = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteStaff}
-            >
+            <Button variant="destructive" onClick={handleDeleteStaff}>
               Delete Staff
             </Button>
           </DialogFooter>
@@ -489,12 +542,16 @@ const ManageStaffPage = () => {
       </Dialog>
 
       {/* Reset Password Dialog */}
-      <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+      <Dialog
+        open={resetPasswordDialogOpen}
+        onOpenChange={setResetPasswordDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              Send a password reset email to {selectedStaff?.fullName} at {selectedStaff?.email}?
+              Send a password reset email to {selectedStaff?.fullName} at{" "}
+              {selectedStaff?.email}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -504,7 +561,10 @@ const ManageStaffPage = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleResetPassword} className="bg-[#20B2AA] hover:bg-[#1a9a91]">
+            <Button
+              onClick={handleResetPassword}
+              className="bg-[#20B2AA] hover:bg-[#1a9a91]"
+            >
               Send Reset Email
             </Button>
           </DialogFooter>

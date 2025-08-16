@@ -110,7 +110,10 @@ const AddStaffPage = () => {
 
   // Generate login ID based on name
   const generateLoginId = (name: string) => {
-    const cleanName = name.toLowerCase().replace(/[^a-z\s]/g, "").trim();
+    const cleanName = name
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "")
+      .trim();
     const nameParts = cleanName.split(" ");
     if (nameParts.length >= 2) {
       return `${nameParts[0]}.${nameParts[nameParts.length - 1]}`;
@@ -120,7 +123,8 @@ const AddStaffPage = () => {
 
   // Generate random password
   const generatePassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
     let password = "";
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -202,7 +206,7 @@ const AddStaffPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error("Please fix all errors before submitting");
       return;
@@ -256,7 +260,9 @@ const AddStaffPage = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Add New Staff</h1>
-          <p className="text-gray-600">Create a new staff account and send login credentials</p>
+          <p className="text-gray-600">
+            Create a new staff account and send login credentials
+          </p>
         </div>
       </div>
 
@@ -276,7 +282,9 @@ const AddStaffPage = () => {
                 <Input
                   id="fullName"
                   value={formData.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("fullName", e.target.value)
+                  }
                   placeholder="Jane Smith"
                   className={errors.fullName ? "border-red-500" : ""}
                 />
@@ -326,13 +334,17 @@ const AddStaffPage = () => {
                   <Input
                     id="employeeId"
                     value={formData.employeeId}
-                    onChange={(e) => handleInputChange("employeeId", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("employeeId", e.target.value)
+                    }
                     placeholder="EMP12345"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => handleInputChange("employeeId", generateEmployeeId())}
+                    onClick={() =>
+                      handleInputChange("employeeId", generateEmployeeId())
+                    }
                   >
                     Generate
                   </Button>
@@ -356,7 +368,9 @@ const AddStaffPage = () => {
                   value={formData.role}
                   onValueChange={(value) => handleInputChange("role", value)}
                 >
-                  <SelectTrigger className={errors.role ? "border-red-500" : ""}>
+                  <SelectTrigger
+                    className={errors.role ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -376,9 +390,13 @@ const AddStaffPage = () => {
                 <Label htmlFor="department">Department *</Label>
                 <Select
                   value={formData.department}
-                  onValueChange={(value) => handleInputChange("department", value)}
+                  onValueChange={(value) =>
+                    handleInputChange("department", value)
+                  }
                 >
-                  <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+                  <SelectTrigger
+                    className={errors.department ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
@@ -390,7 +408,9 @@ const AddStaffPage = () => {
                   </SelectContent>
                 </Select>
                 {errors.department && (
-                  <p className="text-sm text-red-500 mt-1">{errors.department}</p>
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.department}
+                  </p>
                 )}
               </div>
 
@@ -450,9 +470,13 @@ const AddStaffPage = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder="Generated password"
-                    className={`pr-16 ${errors.password ? "border-red-500" : ""}`}
+                    className={`pr-16 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
                   />
                   <div className="absolute right-1 top-1 flex gap-1">
                     <Button
@@ -472,7 +496,9 @@ const AddStaffPage = () => {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleInputChange("password", generatePassword())}
+                      onClick={() =>
+                        handleInputChange("password", generatePassword())
+                      }
                       className="h-8 w-8 p-0"
                     >
                       <RotateCcw className="h-4 w-4" />
@@ -507,9 +533,12 @@ const AddStaffPage = () => {
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <AlertCircle className="h-4 w-4" />
-                <span>Credentials will be sent to the staff member&apos;s email address</span>
+                <span>
+                  Credentials will be sent to the staff member&apos;s email
+                  address
+                </span>
               </div>
-              
+
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -520,7 +549,7 @@ const AddStaffPage = () => {
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Reset Form
                 </Button>
-                
+
                 <Button
                   type="submit"
                   disabled={isLoading}

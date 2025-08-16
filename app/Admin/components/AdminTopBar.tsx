@@ -67,22 +67,30 @@ const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
             <DropdownMenuContent align="end" className="w-80">
               <div className="p-3 border-b">
                 <h3 className="font-medium">Notifications</h3>
-                <p className="text-sm text-gray-500">You have 3 unread notifications</p>
+                <p className="text-sm text-gray-500">
+                  You have 3 unread notifications
+                </p>
               </div>
               <div className="max-h-64 overflow-y-auto">
                 <DropdownMenuItem className="flex-col items-start p-3">
                   <p className="font-medium">New doctor registration</p>
-                  <p className="text-sm text-gray-500">Dr. Sarah Johnson submitted registration</p>
+                  <p className="text-sm text-gray-500">
+                    Dr. Sarah Johnson submitted registration
+                  </p>
                   <p className="text-xs text-gray-400">2 minutes ago</p>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex-col items-start p-3">
                   <p className="font-medium">Staff password reset</p>
-                  <p className="text-sm text-gray-500">Nurse Mary requested password reset</p>
+                  <p className="text-sm text-gray-500">
+                    Nurse Mary requested password reset
+                  </p>
                   <p className="text-xs text-gray-400">1 hour ago</p>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex-col items-start p-3">
                   <p className="font-medium">System update</p>
-                  <p className="text-sm text-gray-500">Platform maintenance scheduled</p>
+                  <p className="text-sm text-gray-500">
+                    Platform maintenance scheduled
+                  </p>
                   <p className="text-xs text-gray-400">3 hours ago</p>
                 </DropdownMenuItem>
               </div>
@@ -111,7 +119,10 @@ const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/Admin/settings" className="flex items-center gap-2">
+                <Link
+                  href="/Admin/settings"
+                  className="flex items-center gap-2"
+                >
                   <Settings className="h-4 w-4" />
                   Settings
                 </Link>
