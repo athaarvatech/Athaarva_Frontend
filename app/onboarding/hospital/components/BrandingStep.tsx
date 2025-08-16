@@ -349,65 +349,47 @@ export default function BrandingStep() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Subdomain Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="subdomain" className="text-sm font-medium text-gray-700">
-                Preferred Subdomain <span className="text-red-500">*</span>
-              </Label>
-              <div className="flex">
-                <Input
-                  id="subdomain"
-                  value={data.loginPage.subdomain}
-                  onChange={(e) => handleSubdomainChange(e.target.value)}
-                  placeholder="sunrise"
-                  className={cn(
-                    "h-9 rounded-r-none border-r-0",
-                    subdomainValidation.isValid === false && "border-red-300 focus:border-red-500",
-                    subdomainValidation.isValid === true && "border-green-300 focus:border-green-500"
-                  )}
-                />
-                <div className="px-3 py-2 bg-gray-50 border border-l-0 rounded-r-md text-sm text-gray-600 whitespace-nowrap flex items-center">
-                  .atharva.com
-                </div>
-              </div>
-              
-              {subdomainValidation.isChecking && (
-                <div className="flex items-center gap-1 text-blue-600 text-xs">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>{subdomainValidation.message}</span>
-                </div>
-              )}
-              
-              {!subdomainValidation.isChecking && subdomainValidation.isValid === true && (
-                <div className="flex items-center gap-1 text-green-600 text-xs">
-                  <CheckCircle className="h-3 w-3" />
-                  <span>{subdomainValidation.message}</span>
-                </div>
-              )}
-              
-              {!subdomainValidation.isChecking && subdomainValidation.isValid === false && (
-                <div className="flex items-center gap-1 text-red-600 text-xs">
-                  <AlertCircle className="h-3 w-3" />
-                  <span>{subdomainValidation.message}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="customDomain" className="text-sm font-medium text-gray-700">
-                Custom Domain (Optional)
-              </Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="subdomain" className="text-sm font-medium text-gray-700">
+              Preferred Subdomain <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex">
               <Input
-                id="customDomain"
-                value={data.loginPage.customDomain}
-                onChange={(e) => updateData('loginPage', { customDomain: e.target.value })}
-                placeholder="login.yourhospital.com"
-                className="h-9 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                id="subdomain"
+                value={data.loginPage.subdomain}
+                onChange={(e) => handleSubdomainChange(e.target.value)}
+                placeholder="sunrise"
+                className={cn(
+                  "h-9 rounded-r-none border-r-0",
+                  subdomainValidation.isValid === false && "border-red-300 focus:border-red-500",
+                  subdomainValidation.isValid === true && "border-green-300 focus:border-green-500"
+                )}
               />
-              <div className="text-xs text-gray-500">
-                Use your own domain (future feature)
+              <div className="px-3 py-2 bg-gray-50 border border-l-0 rounded-r-md text-sm text-gray-600 whitespace-nowrap flex items-center">
+                .atharva.com
               </div>
             </div>
+            
+            {subdomainValidation.isChecking && (
+              <div className="flex items-center gap-1 text-blue-600 text-xs">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>{subdomainValidation.message}</span>
+              </div>
+            )}
+            
+            {!subdomainValidation.isChecking && subdomainValidation.isValid === true && (
+              <div className="flex items-center gap-1 text-green-600 text-xs">
+                <CheckCircle className="h-3 w-3" />
+                <span>{subdomainValidation.message}</span>
+              </div>
+            )}
+            
+            {!subdomainValidation.isChecking && subdomainValidation.isValid === false && (
+              <div className="flex items-center gap-1 text-red-600 text-xs">
+                <AlertCircle className="h-3 w-3" />
+                <span>{subdomainValidation.message}</span>
+              </div>
+            )}
           </div>
 
           {/* Preview URL */}

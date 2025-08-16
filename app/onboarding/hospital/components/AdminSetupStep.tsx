@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { 
   UserPlus,
@@ -280,29 +279,6 @@ export default function AdminSetupStep() {
               <PasswordStrengthIndicator password={data.adminSetup.password} />
             </div>
           )}
-
-          {/* 2FA Preference */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Two-Factor Authentication <span className="text-red-500">*</span>
-            </Label>
-            <RadioGroup
-              value={data.adminSetup.twoFaPreference}
-              onValueChange={(value: 'email' | 'sms') => 
-                updateData('adminSetup', { twoFaPreference: value })
-              }
-              className="flex gap-4"
-            >
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="email" id="email-2fa" />
-                <Label htmlFor="email-2fa" className="text-sm">Email OTP (Recommended)</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="sms" id="sms-2fa" />
-                <Label htmlFor="sms-2fa" className="text-sm">SMS OTP (Future)</Label>
-              </div>
-            </RadioGroup>
-          </div>
         </CardContent>
       </Card>
 
@@ -330,7 +306,7 @@ export default function AdminSetupStep() {
               </div>
               <div className="space-y-1 text-xs text-gray-600">
                 <div><span className="font-medium">Name:</span> {data.hospitalBasics.hospitalName}</div>
-                <div><span className="font-medium">Type:</span> {data.hospitalBasics.type}</div>
+                <div><span className="font-medium">License:</span> {data.hospitalBasics.licenseNumber}</div>
                 <div><span className="font-medium">Location:</span> {data.hospitalBasics.city}, {data.hospitalBasics.state}</div>
               </div>
             </div>
@@ -361,7 +337,6 @@ export default function AdminSetupStep() {
                     />
                   </div>
                 </div>
-                <div><span className="font-medium">Font:</span> {data.branding.typography}</div>
                 {data.branding.logoUrl && (
                   <div className="text-green-600">
                     <CheckCircle className="h-3 w-3 inline mr-1" />
@@ -390,7 +365,6 @@ export default function AdminSetupStep() {
                     {data.loginPage.subdomain}.atharva.com
                   </div>
                 </div>
-                <div><span className="font-medium">Heading:</span> {data.loginPage.heading}</div>
               </div>
             </div>
 
