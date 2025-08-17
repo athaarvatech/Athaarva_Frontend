@@ -8,11 +8,11 @@ import { AppProvider } from "@/contexts/AppContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { NavigationProvider } from "@/contexts/NavigationContext";
-import { 
-  PublicRouteGuard, 
-  ProtectedRouteGuard, 
-  OnboardingRouteGuard, 
-  DashboardRouteGuard 
+import {
+  PublicRouteGuard,
+  ProtectedRouteGuard,
+  OnboardingRouteGuard,
+  DashboardRouteGuard,
 } from "@/components/guards/RouteGuards";
 
 interface AppLayoutProps {
@@ -42,20 +42,23 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     return <>{children}</>;
   }
 
+  // Auth routes - no guards needed, completely open access
+  if (pathname?.startsWith("/auth")) {
+    return <>{children}</>;
+  }
+
   // Ecommerce page - no guards needed, accessible to all
   if (pathname?.startsWith("/ecommerce")) {
     return <>{children}</>;
   }
-    // Ecommerce page - no guards needed, accessible to all
+  // Ecommerce page - no guards needed, accessible to all
   if (pathname?.startsWith("/onboarding/Hospital")) {
     return <>{children}</>;
   }
   if (pathname?.startsWith("/Admin")) {
     return <>{children}</>;
   }
-  if (pathname?.startsWith("/Admin")) {
-    return <>{children}</>;
-  }
+
   // Auth routes - redirect if already authenticated
   if (pathname?.startsWith("/onboarding/patient")) {
     return <PublicRouteGuard>{children}</PublicRouteGuard>;
@@ -63,11 +66,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   // Onboarding routes - only allow if not completed
   if (pathname?.startsWith("/onboarding")) {
-    return (
-      <OnboardingRouteGuard>
-        {children}
-      </OnboardingRouteGuard>
-    );
+    return <OnboardingRouteGuard>{children}</OnboardingRouteGuard>;
   }
 
   // Doctor routes - only allow doctors with completed onboarding
