@@ -194,14 +194,20 @@ function HospitalOnboardingContent() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create hospital");
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to create hospital");
       }
 
+      // Clear local storage
       localStorage.removeItem("hospital-onboarding-data");
       localStorage.removeItem("hospital-onboarding-step");
-      router.push("/");
+
+      // Redirect to the subdomain URL
+      const subdomainUrl = `${data.loginPage.subdomain}.athaarva.com`;
+      window.location.href = `https://${subdomainUrl}`;
     } catch (error) {
       console.error("Failed to create hospital:", error);
+      // You might want to show an error toast here
     } finally {
       setIsSubmitting(false);
     }

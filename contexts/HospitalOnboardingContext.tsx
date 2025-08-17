@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export interface HospitalOnboardingData {
   hospitalBasics: {
@@ -53,43 +59,47 @@ export interface HospitalOnboardingContextType {
 
 const initialData: HospitalOnboardingData = {
   hospitalBasics: {
-    hospitalName: '',
-    licenseNumber: '',
+    hospitalName: "",
+    licenseNumber: "",
     bedCapacity: 16,
-    primaryContact: '',
-    officialEmail: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
+    primaryContact: "",
+    officialEmail: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
   },
   branding: {
-    logoUrl: '',
+    logoUrl: "",
     logoFile: null,
-    backgroundImageUrl: '',
+    backgroundImageUrl: "",
     backgroundImageFile: null,
-    primaryColor: '#007C7C',
-    secondaryColor: '#20B2AA',
+    primaryColor: "#007C7C",
+    secondaryColor: "#20B2AA",
   },
   loginPage: {
-    subdomain: '',
+    subdomain: "",
   },
   adminSetup: {
-    fullName: '',
-    workEmail: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    workEmail: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
   },
 };
 
-const HospitalOnboardingContext = createContext<HospitalOnboardingContextType | undefined>(undefined);
+const HospitalOnboardingContext = createContext<
+  HospitalOnboardingContextType | undefined
+>(undefined);
 
 export const useHospitalOnboarding = () => {
   const context = useContext(HospitalOnboardingContext);
   if (!context) {
-    throw new Error('useHospitalOnboarding must be used within a HospitalOnboardingProvider');
+    throw new Error(
+      "useHospitalOnboarding must be used within a HospitalOnboardingProvider"
+    );
   }
   return context;
 };
@@ -98,7 +108,9 @@ interface HospitalOnboardingProviderProps {
   children: ReactNode;
 }
 
-export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProps> = ({ children }) => {
+export const HospitalOnboardingProvider: React.FC<
+  HospitalOnboardingProviderProps
+> = ({ children }) => {
   const [data, setData] = useState<HospitalOnboardingData>(initialData);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -106,7 +118,7 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
     section: T,
     updates: Partial<HospitalOnboardingData[T]>
   ) => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -137,7 +149,8 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         return !!(
           branding.primaryColor &&
           branding.secondaryColor &&
-          login.subdomain
+          login.subdomain &&
+          login.subdomain.length >= 3
         );
       case 3: // Admin Setup
         const admin = data.adminSetup;
@@ -156,30 +169,30 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
 
   const nextStep = () => {
     if (currentStep < 3 && isStepValid(currentStep)) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   const previousStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
   const saveToLocalStorage = () => {
     try {
-      localStorage.setItem('hospital-onboarding-data', JSON.stringify(data));
-      localStorage.setItem('hospital-onboarding-step', currentStep.toString());
+      localStorage.setItem("hospital-onboarding-data", JSON.stringify(data));
+      localStorage.setItem("hospital-onboarding-step", currentStep.toString());
     } catch (error) {
-      console.error('Failed to save onboarding data:', error);
+      console.error("Failed to save onboarding data:", error);
     }
   };
 
   const loadFromLocalStorage = () => {
     try {
-      const savedData = localStorage.getItem('hospital-onboarding-data');
-      const savedStep = localStorage.getItem('hospital-onboarding-step');
-      
+      const savedData = localStorage.getItem("hospital-onboarding-data");
+      const savedStep = localStorage.getItem("hospital-onboarding-step");
+
       if (savedData) {
         setData(JSON.parse(savedData));
       }
@@ -187,21 +200,21 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         setCurrentStep(parseInt(savedStep, 10));
       }
     } catch (error) {
-      console.error('Failed to load onboarding data:', error);
+      console.error("Failed to load onboarding data:", error);
     }
   };
 
   const resetData = () => {
     setData(initialData);
     setCurrentStep(1);
-    localStorage.removeItem('hospital-onboarding-data');
-    localStorage.removeItem('hospital-onboarding-step');
+    localStorage.removeItem("hospital-onboarding-data");
+    localStorage.removeItem("hospital-onboarding-step");
   };
 
   // Auto-save to localStorage whenever data changes
   useEffect(() => {
     saveToLocalStorage();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, currentStep]);
 
   // Load data on mount
@@ -214,13 +227,13 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
     if (data.hospitalBasics.hospitalName && !data.loginPage.subdomain) {
       const subdomain = data.hospitalBasics.hospitalName
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-      
-      updateData('loginPage', { subdomain });
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      updateData("loginPage", { subdomain });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.hospitalBasics.hospitalName]);
 
   const value: HospitalOnboardingContextType = {

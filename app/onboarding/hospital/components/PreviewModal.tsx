@@ -19,31 +19,31 @@ interface PreviewModalProps {
   onClose: () => void;
 }
 
-type UserType = "patient" | "doctor" | "hospital";
+//type UserType = "patient" | "doctor" | "hospital";
 
-const userTypes = [
-  {
-    id: "patient" as UserType,
-    title: "Patient",
-    subtitle: "Access your health records",
-    icon: User,
-    gradient: "from-blue-500 to-blue-600"
-  },
-  {
-    id: "doctor" as UserType,
-    title: "Doctor",
-    subtitle: "Manage your practice",
-    icon: Stethoscope,
-    gradient: "from-emerald-500 to-emerald-600"
-  },
-  {
-    id: "hospital" as UserType,
-    title: "Hospital",
-    subtitle: "Complete system access",
-    icon: Building2,
-    gradient: "from-purple-500 to-purple-600"
-  }
-];
+// const userTypes = [
+//   {
+//     id: "patient" as UserType,
+//     title: "Patient",
+//     subtitle: "Access your health records",
+//     icon: User,
+//     gradient: "from-blue-500 to-blue-600"
+//   },
+//   {
+//     id: "doctor" as UserType,
+//     title: "Doctor",
+//     subtitle: "Manage your practice",
+//     icon: Stethoscope,
+//     gradient: "from-emerald-500 to-emerald-600"
+//   },
+//   {
+//     id: "hospital" as UserType,
+//     title: "Hospital",
+//     subtitle: "Complete system access",
+//     icon: Building2,
+//     gradient: "from-purple-500 to-purple-600"
+//   }
+// ];
 
 const trustFeatures = [
   {
@@ -65,7 +65,7 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
   
   // Authentication mode and UI state
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
-  const [selectedUserType, setSelectedUserType] = useState<UserType>("patient");
+  const [selectedUserType, setSelectedUserType] = useState("patient");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -322,7 +322,7 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                           className="space-y-4"
                         >
                           {/* User Type Selection */}
-                          <div className="space-y-3">
+                          {/* <div className="space-y-3">
                             <Label className="text-sm font-medium text-gray-700">
                               Select your role
                             </Label>
@@ -360,7 +360,7 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                                 </motion.div>
                               ))}
                             </RadioGroup>
-                          </div>
+                          </div> */}
 
                           {/* Sign In Form */}
                           <div className="space-y-4">
@@ -427,8 +427,8 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                                 style={{ backgroundColor: data.branding.primaryColor || '#007C7C' }}
                                 disabled
                               >
-                                <LogIn className="w-4 h-4 mr-2" />
-                                Sign In as {userTypes.find(t => t.id === selectedUserType)?.title}
+                                {/* <LogIn className="w-4 h-4 mr-2" />
+                                Sign In as {userTypes.find(t => t.id === selectedUserType)?.title} */}
                               </Button>
                             </motion.div>
                           </div>
@@ -586,8 +586,8 @@ export default function PreviewModal({ isOpen, onClose }: PreviewModalProps) {
                                 style={{ backgroundColor: data.branding.primaryColor || '#007C7C' }}
                                 disabled
                               >
-                                <UserPlus className="w-4 h-4 mr-2" />
-                                Create {userTypes.find(t => t.id === selectedUserType)?.title} Account
+                                {/* <UserPlus className="w-4 h-4 mr-2" />
+                                Create {userTypes.find(t => t.id === selectedUserType)?.title} Account */}
                               </Button>
                             </motion.div>
                           </div>
