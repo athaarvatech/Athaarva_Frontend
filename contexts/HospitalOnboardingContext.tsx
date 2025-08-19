@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, useMemo } from 'react';
 
 export interface HospitalOnboardingData {
   hospitalBasics: {
@@ -101,8 +101,9 @@ interface HospitalOnboardingProviderProps {
 export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProps> = ({ children }) => {
   const [data, setData] = useState<HospitalOnboardingData>(initialData);
   const [currentStep, setCurrentStep] = useState(1);
+  const subdomainGeneratedRef = useRef(false);
 
-  const updateData = <T extends keyof HospitalOnboardingData>(
+  const updateData = useCallback(<T extends keyof HospitalOnboardingData>(
     section: T,
     updates: Partial<HospitalOnboardingData[T]>
   ) => {
@@ -113,9 +114,9 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         ...updates,
       },
     }));
-  };
+  }, []);
 
-  const isStepValid = (step: number): boolean => {
+  const isStepValid = useCallback((step: number): boolean => {
     switch (step) {
       case 1: // Hospital Basics
         const basics = data.hospitalBasics;
@@ -152,30 +153,30 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       default:
         return false;
     }
-  };
+  }, [data]);
 
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     if (currentStep < 3 && isStepValid(currentStep)) {
       setCurrentStep(prev => prev + 1);
     }
-  };
+  }, [currentStep, isStepValid]);
 
-  const previousStep = () => {
+  const previousStep = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
     }
-  };
+  }, [currentStep]);
 
-  const saveToLocalStorage = () => {
+  const saveToLocalStorage = useCallback(() => {
     try {
       localStorage.setItem('hospital-onboarding-data', JSON.stringify(data));
       localStorage.setItem('hospital-onboarding-step', currentStep.toString());
     } catch (error) {
       console.error('Failed to save onboarding data:', error);
     }
-  };
+  }, [data, currentStep]);
 
-  const loadFromLocalStorage = () => {
+  const loadFromLocalStorage = useCallback(() => {
     try {
       const savedData = localStorage.getItem('hospital-onboarding-data');
       const savedStep = localStorage.getItem('hospital-onboarding-step');
@@ -189,29 +190,33 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
     } catch (error) {
       console.error('Failed to load onboarding data:', error);
     }
-  };
+  }, []);
 
-  const resetData = () => {
+  const resetData = useCallback(() => {
     setData(initialData);
     setCurrentStep(1);
+    subdomainGeneratedRef.current = false;
     localStorage.removeItem('hospital-onboarding-data');
     localStorage.removeItem('hospital-onboarding-step');
-  };
+  }, []);
 
-  // Auto-save to localStorage whenever data changes
+  // Auto-save to localStorage whenever data changes (with debouncing)
   useEffect(() => {
-    saveToLocalStorage();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, currentStep]);
+    const timeoutId = setTimeout(() => {
+      saveToLocalStorage();
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [data, currentStep, saveToLocalStorage]);
 
   // Load data on mount
   useEffect(() => {
     loadFromLocalStorage();
-  }, []);
+  }, [loadFromLocalStorage]);
 
-  // Auto-generate subdomain from hospital name
+  // Auto-generate subdomain from hospital name (only once)
   useEffect(() => {
-    if (data.hospitalBasics.hospitalName && !data.loginPage.subdomain) {
+    if (data.hospitalBasics.hospitalName && !data.loginPage.subdomain && !subdomainGeneratedRef.current) {
       const subdomain = data.hospitalBasics.hospitalName
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '-')
@@ -219,11 +224,11 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         .replace(/^-|-$/g, '');
       
       updateData('loginPage', { subdomain });
+      subdomainGeneratedRef.current = true;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.hospitalBasics.hospitalName]);
+  }, [data.hospitalBasics.hospitalName, data.loginPage.subdomain, updateData]);
 
-  const value: HospitalOnboardingContextType = {
+  const value: HospitalOnboardingContextType = useMemo(() => ({
     data,
     currentStep,
     isStepValid,
@@ -234,7 +239,17 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
     resetData,
     saveToLocalStorage,
     loadFromLocalStorage,
-  };
+  }), [
+    data,
+    currentStep,
+    isStepValid,
+    updateData,
+    nextStep,
+    previousStep,
+    resetData,
+    saveToLocalStorage,
+    loadFromLocalStorage,
+  ]);
 
   return (
     <HospitalOnboardingContext.Provider value={value}>

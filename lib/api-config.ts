@@ -13,6 +13,13 @@ export const API_CONFIG = {
       ME: '/api/v1/auth/me',
       VERIFY_TOKEN: '/api/v1/auth/verify-token',
     },
+    SUPER_ADMIN: {
+      LOGIN: '/api/v1/super-admin/login',
+      ME: '/api/v1/super-admin/me',
+      INVITATIONS: '/api/v1/super-admin/invitations',
+      VALIDATE_TOKEN: '/api/v1/super-admin/validate-token',
+      CLEANUP_EXPIRED: '/api/v1/super-admin/cleanup-expired',
+    },
     DOCTORS: {
       ONBOARDING: '/api/v1/doctors/onboarding',
       PROFILE: '/api/v1/doctors/profile',
@@ -23,6 +30,10 @@ export const API_CONFIG = {
       ONBOARDING: '/api/v1/patients/onboarding',
       PROFILE: '/api/v1/patients/profile',
       MEDICAL_HISTORY: '/api/v1/patients/medical-history',
+    },
+    HOSPITALS: {
+      ONBOARDING: '/hospitals/onboarding',
+      PROFILE: '/hospitals',
     },
     ONBOARDING: {
       STATUS: '/api/v1/onboarding/status',

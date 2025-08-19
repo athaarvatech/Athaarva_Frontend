@@ -52,10 +52,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     return <>{children}</>;
   }
   // Ecommerce page - no guards needed, accessible to all
-  if (pathname?.startsWith("/onboarding/Hospital")) {
+  if (pathname?.startsWith("/onboarding/hospital")) {
     return <>{children}</>;
   }
   if (pathname?.startsWith("/Admin")) {
+    return <>{children}</>;
+  }
+    if (pathname?.startsWith("/super-admin")) {
     return <>{children}</>;
   }
 

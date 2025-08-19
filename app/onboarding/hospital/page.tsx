@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,12 +14,14 @@ import {
   UserPlus,
   X,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useHospitalOnboarding,
   HospitalOnboardingProvider,
 } from "@/contexts/HospitalOnboardingContext";
+import { API_CONFIG } from "@/lib/api-config";
 
 // Import step components
 import HospitalBasicsStep from "./components/HospitalBasicsStep";
@@ -61,17 +63,176 @@ const steps: StepConfig[] = [
   },
 ];
 
-function HospitalOnboardingContent() {
+interface TokenValidationResponse {
+  valid: boolean;
+  invitation_id?: number;
+  email?: string;
+  expires_at?: string;
+  hospital_draft?: Record<string, unknown>;
+  message: string;
+}
+
+function HospitalOnboardingWrapper() {
   const router = useRouter();
-  const { data, currentStep, isStepValid, nextStep, previousStep, resetData } =
+  const searchParams = useSearchParams();
+  const [validationState, setValidationState] = useState<{
+    loading: boolean;
+    valid: boolean;
+    data?: TokenValidationResponse;
+    error?: string;
+  }>({
+    loading: true,
+    valid: false,
+  });
+
+  const token = searchParams.get('token');
+
+  useEffect(() => {
+    const validateToken = async () => {
+      if (!token) {
+        setValidationState({
+          loading: false,
+          valid: false,
+          error: 'No invitation token provided'
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.VALIDATE_TOKEN}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+
+        const data = await response.json();
+
+        if (data.valid) {
+          setValidationState({
+            loading: false,
+            valid: true,
+            data
+          });
+        } else {
+          setValidationState({
+            loading: false,
+            valid: false,
+            error: data.message || 'Invalid invitation token'
+          });
+        }
+      } catch (error) {
+        console.error('Token validation failed:', error);
+        setValidationState({
+          loading: false,
+          valid: false,
+          error: 'Failed to validate invitation token'
+        });
+      }
+    };
+
+    validateToken();
+  }, [token]);
+
+  if (validationState.loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-emerald-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 text-healthcare-primary mx-auto mb-4 animate-spin" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Validating Invitation
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we verify your invitation...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!validationState.valid) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-red-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="h-8 w-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Invalid Invitation
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {validationState.error}
+            </p>
+            <Button 
+              onClick={() => router.push('/')}
+              className="bg-healthcare-primary hover:bg-healthcare-primary/90"
+            >
+              Return to Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <HospitalOnboardingContent 
+      token={token} 
+      validationData={validationState.data}
+    />
+  );
+}
+
+function HospitalOnboardingContent({ 
+  token, 
+  validationData 
+}: { 
+  token?: string | null; 
+  validationData?: TokenValidationResponse;
+}) {
+  const router = useRouter();
+  const { data, currentStep, isStepValid, nextStep, previousStep, resetData, updateData } =
     useHospitalOnboarding();
 
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const dataPrefilled = useRef(false);
 
   const currentStepConfig = steps.find((step) => step.id === currentStep);
   const CurrentStepComponent = currentStepConfig?.component;
+
+  // Pre-fill form data from invitation (only once)
+  useEffect(() => {
+    if (validationData && !dataPrefilled.current) {
+      if (validationData.hospital_draft) {
+        const draft = validationData.hospital_draft as Record<string, unknown>;
+        // Update hospital basics if available in draft
+        if (draft?.hospital_name) {
+          updateData('hospitalBasics', {
+            hospitalName: String(draft.hospital_name) || '',
+            licenseNumber: String(draft.license_number) || '',
+            bedCapacity: Number(draft.bed_capacity) || 16,
+            primaryContact: String(draft.primary_contact) || '',
+            officialEmail: validationData.email || '',
+            phone: String(draft.phone) || '',
+            address: String(draft.address) || '',
+            city: String(draft.city) || '',
+            state: String(draft.state) || '',
+            pincode: String(draft.pincode) || '',
+          });
+        }
+      } else if (validationData.email) {
+        // At minimum, pre-fill the email from invitation
+        updateData('adminSetup', {
+          workEmail: validationData.email,
+        });
+      }
+      dataPrefilled.current = true;
+    }
+  }, [validationData, updateData]);
 
   // Check for unsaved changes
   const hasUnsavedChanges = () => {
@@ -182,8 +343,13 @@ function HospitalOnboardingContent() {
         admin_password: data.adminSetup.password,
       };
 
+      // Always use token-based API since this page requires a valid token
+      if (!token) {
+        throw new Error("No invitation token provided");
+      }
+
       const response = await fetch(
-        "http://localhost:8000/hospitals/onboarding",
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HOSPITALS.ONBOARDING}?token=${encodeURIComponent(token)}`,
         {
           method: "POST",
           headers: {
@@ -194,20 +360,24 @@ function HospitalOnboardingContent() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create hospital");
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to create hospital");
       }
+
+      await response.json(); // Consume the response
 
       localStorage.removeItem("hospital-onboarding-data");
       localStorage.removeItem("hospital-onboarding-step");
-      router.push("/");
+      
+      // Redirect to success page with hospital details
+      router.push(`/onboarding/success?subdomain=${encodeURIComponent(payload.subdomain)}`);
     } catch (error) {
       console.error("Failed to create hospital:", error);
+      // TODO: Show error toast/alert
     } finally {
       setIsSubmitting(false);
     }
   };
-  // ...existing code...
-  // ...existing code...
 
   const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
 
@@ -538,7 +708,7 @@ function HospitalOnboardingContent() {
 export default function HospitalOnboardingPage() {
   return (
     <HospitalOnboardingProvider>
-      <HospitalOnboardingContent />
+      <HospitalOnboardingWrapper />
     </HospitalOnboardingProvider>
   );
 }
