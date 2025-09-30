@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -14,13 +14,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart, Product } from "../contexts/CartContext";
+import { ProductService } from "../lib/products";
+import type { ShopifyProduct } from "../lib/shopify";
 
 export default function FeaturedProducts() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const { addItem } = useCart();
+  const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addItem, addToCart } = useCart();
 
-  const featuredProducts: Product[] = [
+  // Load Shopify featured products
+  useEffect(() => {
+    const loadFeaturedProducts = async () => {
+      try {
+        const products = await ProductService.getFeaturedProducts();
+        setShopifyProducts(products);
+      } catch (error) {
+        console.error('Error loading featured products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFeaturedProducts();
+  }, []);
+
+  // Use Shopify products if available, otherwise fallback to mock data
+  const mockFeaturedProducts: Product[] = [
     {
       id: "prod-1",
       name: "Surgical Gloves (Pack of 100)",
@@ -118,8 +139,13 @@ export default function FeaturedProducts() {
     },
   ];
 
+  // Combine Shopify products with mock data for display
+  const displayProducts = shopifyProducts.length > 0 
+    ? shopifyProducts.map(product => ProductService.convertToLegacyProduct(product))
+    : mockFeaturedProducts;
+
   const productsPerSlide = 3;
-  const maxSlides = Math.ceil(featuredProducts.length / productsPerSlide);
+  const maxSlides = Math.ceil(displayProducts.length / productsPerSlide);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % maxSlides);
@@ -129,9 +155,9 @@ export default function FeaturedProducts() {
     setCurrentSlide((prev) => (prev - 1 + maxSlides) % maxSlides);
   };
 
-  const getCurrentProducts = () => {
+  const getCurrentProducts = (): Product[] => {
     const start = currentSlide * productsPerSlide;
-    return featuredProducts.slice(start, start + productsPerSlide);
+    return displayProducts.slice(start, start + productsPerSlide);
   };
 
   const updateQuantity = (productId: string, change: number) => {
@@ -141,10 +167,29 @@ export default function FeaturedProducts() {
     }));
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = async (product: Product) => {
     const quantity = quantities[product.id] || 1;
-    for (let i = 0; i < quantity; i++) {
-      addItem(product);
+    
+    // Check if this is a Shopify product
+    const shopifyProduct = shopifyProducts.find(sp => sp.id === product.id);
+    
+    if (shopifyProduct && shopifyProduct.variants.edges.length > 0) {
+      // Use Shopify cart for Shopify products
+      const variantId = shopifyProduct.variants.edges[0].node.id;
+      try {
+        await addToCart(variantId, quantity);
+      } catch (error) {
+        console.error('Error adding Shopify product to cart:', error);
+        // Fallback to legacy cart
+        for (let i = 0; i < quantity; i++) {
+          addItem(product);
+        }
+      }
+    } else {
+      // Use legacy cart for mock products
+      for (let i = 0; i < quantity; i++) {
+        addItem(product);
+      }
     }
   };
 
@@ -169,35 +214,52 @@ export default function FeaturedProducts() {
 
         {/* Carousel Container */}
         <div className="relative">
-          {/* Navigation Buttons */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-50 rounded-full p-3 border-gray-200"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-12">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="aspect-[4/3] bg-gray-200 animate-pulse" />
+                    <div className="p-6">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-4" />
+                      <div className="h-8 bg-gray-200 rounded animate-pulse w-1/2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Navigation Buttons */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prevSlide}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-50 rounded-full p-3 border-gray-200"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-50 rounded-full p-3 border-gray-200"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-50 rounded-full p-3 border-gray-200"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
 
-          {/* Products Grid */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-12"
-            key={currentSlide}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {getCurrentProducts().map((product, index) => (
+              {/* Products Grid */}
               <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-12"
+                key={currentSlide}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {getCurrentProducts().map((product: Product, index: number) => (
+                  <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -263,7 +325,7 @@ export default function FeaturedProducts() {
 
                       {/* Specs */}
                       <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                        {product.specs.slice(0, 3).map((spec, i) => (
+                        {product.specs.slice(0, 3).map((spec: string, i: number) => (
                           <li key={i} className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 bg-[#14967f] rounded-full flex-shrink-0"></div>
                             {spec}
@@ -332,19 +394,21 @@ export default function FeaturedProducts() {
               </motion.div>
             ))}
           </motion.div>
-
-          {/* Slide Indicators */}
-          <div className="flex justify-center mt-8 gap-2">
-            {Array.from({ length: maxSlides }, (_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                  index === currentSlide ? "bg-[#1E3E72]" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
+              
+              {/* Slide Indicators */}
+              <div className="flex justify-center mt-8 gap-2">
+                {Array.from({ length: maxSlides }, (_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+                      index === currentSlide ? "bg-[#1E3E72]" : "bg-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

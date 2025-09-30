@@ -8,7 +8,7 @@ interface User {
   id: number;
   email: string;
   full_name: string;
-  user_type: 'patient' | 'doctor' | 'hospital';
+  user_type: 'patient' | 'doctor' | 'hospital' | 'hospital_admin';
   is_verified: boolean;
   is_active: boolean;
 }
@@ -43,11 +43,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Get user data
-      const userResponse = await apiService.getCurrentUser();
-      
-      setUser(userResponse.data);
-      // Note: onboarding status could be part of user data or checked separately
-      // setIsOnboardingCompleted(userResponse.data.is_onboarding_completed);
+      const userData = await apiService.getCurrentUser();
+
+      setUser({
+        id: userData.id,
+        email: userData.email,
+        full_name: userData.full_name,
+        user_type: userData.user_type,
+        is_verified: userData.is_verified,
+        is_active: userData.is_active,
+      });
+
+      try {
+        const onboardingStatus = await apiService.getOnboardingStatus();
+        setIsOnboardingCompleted(onboardingStatus.onboarding_completed);
+      } catch (statusError) {
+        console.warn('Failed to fetch onboarding status:', statusError);
+      }
 
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -55,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user_type');
       localStorage.removeItem('user_id');
+      apiService.clearAuth();
       setUser(null);
       setIsOnboardingCompleted(false);
     } finally {
@@ -72,11 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     
     // Quick user data update instead of full checkAuth
-    const userData: User = {
+      const userData: User = {
       id: userId,
       email: '', // Will be populated by checkAuth
       full_name: '',
-      user_type: userType as 'patient' | 'doctor' | 'hospital',
+         user_type: userType as 'patient' | 'doctor' | 'hospital' | 'hospital_admin',
+      // hospital-admin accounts authenticate through hospital admin role
       is_verified: true,
       is_active: true
     };

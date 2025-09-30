@@ -19,12 +19,40 @@ export default function SuperAdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   // Check if already authenticated
   useEffect(() => {
-    if (SuperAdminAPIService.isAuthenticated()) {
-      router.push('/super-admin/invites');
-    }
+    let isActive = true;
+
+    const verifyExistingSession = async () => {
+      if (!SuperAdminAPIService.isAuthenticated()) {
+        if (isActive) {
+          setIsCheckingSession(false);
+        }
+        return;
+      }
+
+      let redirected = false;
+
+      try {
+        await SuperAdminAPIService.getProfile();
+        redirected = true;
+        router.replace('/super-admin/invites');
+      } catch {
+        SuperAdminAPIService.logout();
+      } finally {
+        if (isActive && !redirected) {
+          setIsCheckingSession(false);
+        }
+      }
+    };
+
+    verifyExistingSession();
+
+    return () => {
+      isActive = false;
+    };
   }, [router]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -48,6 +76,32 @@ export default function SuperAdminLoginPage() {
   };
 
   const isFormValid = formData.email && formData.password;
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="absolute inset-0 opacity-30">
+          <div
+            className="w-full h-full bg-repeat"
+            style={{
+              backgroundImage: `url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.03"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')`,
+            }}
+          ></div>
+        </div>
+
+        <div className="relative flex flex-col items-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-full shadow-lg">
+            <Shield className="h-8 w-8 text-white" />
+          </div>
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-white">Checking session…</h1>
+            <p className="text-slate-300 mt-2">Hang tight while we verify your access.</p>
+          </div>
+          <div className="w-12 h-12 border-4 border-white/60 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
@@ -132,7 +186,7 @@ export default function SuperAdminLoginPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={!isFormValid || isLoading}
+                disabled={!isFormValid || isLoading || isCheckingSession}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (

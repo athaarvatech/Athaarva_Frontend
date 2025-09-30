@@ -362,8 +362,6 @@ function HospitalOnboardingContent({
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to create hospital");
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to create hospital");
       }
 
       await response.json(); // Consume the response

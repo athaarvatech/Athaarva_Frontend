@@ -249,7 +249,7 @@ export default function BrandingStep() {
 
   // Debounced subdomain validation
   useEffect(() => {
-    if (!data.loginPage.subdomain || data.loginPage.subdomain.length < 2) {
+    if (!data.loginPage.subdomain || data.loginPage.subdomain.length < 3) {
       setSubdomainValidation({
         isChecking: false,
         isValid: null,
@@ -307,6 +307,12 @@ export default function BrandingStep() {
     const sanitized = sanitizeSubdomain(value);
     updateData('loginPage', { subdomain: sanitized });
   };
+
+  const subdomainError = !data.loginPage.subdomain
+    ? 'Please choose a subdomain to continue.'
+    : data.loginPage.subdomain.length < 3
+      ? 'Subdomain must be at least 3 characters.'
+      : null;
 
   const generatePreviewUrl = () => {
     return data.loginPage.subdomain 
@@ -370,25 +376,34 @@ export default function BrandingStep() {
               </div>
             </div>
             
-            {subdomainValidation.isChecking && (
-              <div className="flex items-center gap-1 text-blue-600 text-xs">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span>{subdomainValidation.message}</span>
-              </div>
-            )}
-            
-            {!subdomainValidation.isChecking && subdomainValidation.isValid === true && (
-              <div className="flex items-center gap-1 text-green-600 text-xs">
-                <CheckCircle className="h-3 w-3" />
-                <span>{subdomainValidation.message}</span>
-              </div>
-            )}
-            
-            {!subdomainValidation.isChecking && subdomainValidation.isValid === false && (
+            {subdomainError ? (
               <div className="flex items-center gap-1 text-red-600 text-xs">
                 <AlertCircle className="h-3 w-3" />
-                <span>{subdomainValidation.message}</span>
+                <span>{subdomainError}</span>
               </div>
+            ) : (
+              <>
+                {subdomainValidation.isChecking && (
+                  <div className="flex items-center gap-1 text-blue-600 text-xs">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>{subdomainValidation.message}</span>
+                  </div>
+                )}
+                
+                {!subdomainValidation.isChecking && subdomainValidation.isValid === true && (
+                  <div className="flex items-center gap-1 text-green-600 text-xs">
+                    <CheckCircle className="h-3 w-3" />
+                    <span>{subdomainValidation.message}</span>
+                  </div>
+                )}
+                
+                {!subdomainValidation.isChecking && subdomainValidation.isValid === false && (
+                  <div className="flex items-center gap-1 text-red-600 text-xs">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{subdomainValidation.message}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

@@ -12,6 +12,7 @@ export const API_CONFIG = {
       RESET_PASSWORD: '/api/v1/auth/reset-password',
       ME: '/api/v1/auth/me',
       VERIFY_TOKEN: '/api/v1/auth/verify-token',
+      HOSPITAL_LOGIN: '/api/v1/auth/hospital/login',
     },
     SUPER_ADMIN: {
       LOGIN: '/api/v1/super-admin/login',
@@ -25,6 +26,7 @@ export const API_CONFIG = {
       PROFILE: '/api/v1/doctors/profile',
       SPECIALIZATIONS: '/api/v1/doctors/specializations',
       SCHEDULE: '/api/v1/doctors/schedule',
+      INVITE: '/api/v1/doctors/invite',
     },
     PATIENTS: {
       ONBOARDING: '/api/v1/patients/onboarding',

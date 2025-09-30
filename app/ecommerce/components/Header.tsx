@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -12,9 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCart } from "../contexts/CartContext";
+import SearchDropdown from "./SearchDropdown";
 
 export default function Header() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { itemCount, toggleCart } = useCart();
 
@@ -73,14 +72,10 @@ export default function Header() {
           {/* Search and Actions */}
           <div className="flex items-center space-x-4">
             {/* Search Bar - Hidden on mobile */}
-            <div className="hidden lg:block relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
+            <div className="hidden lg:block">
+              <SearchDropdown 
                 placeholder="Search by product, brand, or SKU..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-80 border-gray-300 focus:border-[#1E3E72] focus:ring-[#1E3E72]"
+                className="w-80"
               />
             </div>
 
@@ -139,14 +134,11 @@ export default function Header() {
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {/* Mobile Search */}
-              <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
+              <div className="mb-3">
+                <SearchDropdown 
                   placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border-gray-300"
+                  className="w-full"
+                  onSelect={() => setIsMobileMenuOpen(false)}
                 />
               </div>
 

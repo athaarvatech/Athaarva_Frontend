@@ -19,7 +19,7 @@ export interface User {
   id: number;
   full_name: string;
   email: string;
-  user_type: 'doctor' | 'patient';
+  user_type: 'doctor' | 'patient' | 'hospital_admin';
   is_verified: boolean;
 }
 
@@ -32,10 +32,17 @@ export interface UserProfile {
   email: string;
   full_name: string;
   phone?: string;
-  user_type: 'patient' | 'doctor' | 'hospital';
+  user_type: 'patient' | 'doctor' | 'hospital_admin' | 'hospital';
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
+}
+
+export interface OnboardingStatus {
+  user_type: 'patient' | 'doctor' | 'hospital_admin' | 'hospital';
+  profile_exists: boolean;
+  onboarding_completed: boolean;
+  needs_onboarding: boolean;
 }
 
 export interface DoctorOnboardingData {
@@ -123,7 +130,7 @@ class ApiService {
         if (error.response?.status === 401) {
           this.clearAuth();
           if (typeof window !== 'undefined') {
-            window.location.href = '/auth/login';
+            window.location.href = '/auth';
           }
         }
         return Promise.reject(error);
@@ -152,6 +159,11 @@ class ApiService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_type');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('hospital_id');
+      localStorage.removeItem('hospital_code');
     }
   }
 
@@ -246,8 +258,8 @@ class ApiService {
   }
 
   // Profile endpoints
-  async getCurrentUser(): Promise<ApiResponse<UserProfile>> {
-    return this.get<ApiResponse<UserProfile>>('/auth/user/');
+  async getCurrentUser(): Promise<UserProfile> {
+    return this.get<UserProfile>(API_CONFIG.ENDPOINTS.AUTH.ME);
   }
 
   async updateProfile(profileData: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
@@ -269,6 +281,10 @@ class ApiService {
 
   async getDoctorSchedule(): Promise<ApiResponse<unknown>> {
     return this.get<ApiResponse<unknown>>('/doctors/schedule/');
+  }
+
+  async getOnboardingStatus(): Promise<OnboardingStatus> {
+    return this.get<OnboardingStatus>(API_CONFIG.ENDPOINTS.ONBOARDING.STATUS);
   }
 
   // Patient specific endpoints

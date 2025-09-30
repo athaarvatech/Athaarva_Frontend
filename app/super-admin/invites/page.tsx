@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,26 +87,18 @@ export default function SuperAdminInvitesPage() {
   const [isSending, setIsSending] = useState(false);
 
   // Check authentication on mount
-  useEffect(() => {
-    if (!SuperAdminAPIService.isAuthenticated()) {
-      router.push('/super-admin/login');
-      return;
-    }
-    loadProfile();
-    loadInvitations();
-  }, [router, currentPage, statusFilter]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const profileData = await SuperAdminAPIService.getProfile();
       setProfile(profileData);
     } catch (err) {
       console.error('Failed to load profile:', err);
-      router.push('/super-admin/login');
+      SuperAdminAPIService.logout();
+      router.replace('/super-admin/login');
     }
-  };
+  }, [router]);
 
-  const loadInvitations = async () => {
+  const loadInvitations = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await SuperAdminAPIService.getInvitations({
@@ -123,7 +115,20 @@ export default function SuperAdminInvitesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, statusFilter]);
+
+  useEffect(() => {
+    if (!SuperAdminAPIService.isAuthenticated()) {
+      router.replace('/super-admin/login');
+      return;
+    }
+
+    if (!profile) {
+      loadProfile();
+    }
+
+    loadInvitations();
+  }, [router, profile, loadProfile, loadInvitations]);
 
   const handleCreateInvitation = async () => {
     setIsSending(true);

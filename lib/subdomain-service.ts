@@ -155,7 +155,32 @@ export class SubdomainService {
   /**
    * Get the full subdomain URL
    */
-  static getSubdomainUrl(subdomain: string): string {
-    return `https://${subdomain}.athaarva.com`;
+  static getSubdomainUrl(subdomain: string, path: string = ""): string {
+    const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+
+    const configuredDomain = process.env.NEXT_PUBLIC_TENANT_BASE_DOMAIN;
+    if (configuredDomain) {
+      const normalizedDomain = configuredDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      const protocol = configuredDomain.startsWith("https://")
+        ? "https"
+        : configuredDomain.startsWith("http://")
+        ? "http"
+        : normalizedDomain.includes("localhost") || normalizedDomain.includes(":")
+        ? "http"
+        : "https";
+      return `${protocol}://${subdomain}.${normalizedDomain}${normalizedPath}`;
+    }
+
+    if (typeof window !== "undefined") {
+      const { protocol, host } = window.location;
+      const [hostname, port] = host.split(":");
+
+      if (hostname.endsWith("localhost")) {
+        const portSegment = port ? `:${port}` : "";
+        return `${protocol}//${subdomain}.localhost${portSegment}${normalizedPath}`;
+      }
+    }
+
+    return `https://${subdomain}.athaarva.com${normalizedPath}`;
   }
 }

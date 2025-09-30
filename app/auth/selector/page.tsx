@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { API_CONFIG } from "@/lib/api-config";
+import { SubdomainService } from "@/lib/subdomain-service";
 
 interface Hospital {
   id: number;
@@ -111,8 +112,8 @@ export default function HospitalSelectorPage() {
 
   const handleHospitalSelect = (hospital: Hospital) => {
     setSelectedHospital(hospital);
-    // Redirect to hospital's subdomain auth page
-    window.location.href = `https://${hospital.subdomain}.athaarva.com/auth`;
+    // Redirect to hospital's subdomain auth page (supports localhost & custom domains)
+    window.location.href = SubdomainService.getSubdomainUrl(hospital.subdomain, "/auth");
   };
 
   return (
@@ -169,52 +170,57 @@ export default function HospitalSelectorPage() {
                 </div>
               ) : (
                 <AnimatePresence>
-                  {filteredHospitals.map((hospital, index) => (
-                    <motion.div
-                      key={hospital.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={cn(
-                        "p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md",
-                        selectedHospital?.id === hospital.id
-                          ? "border-healthcare-primary bg-healthcare-primary/5"
-                          : "border-gray-200 hover:border-healthcare-primary/50"
-                      )}
-                      onClick={() => handleHospitalSelect(hospital)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          {hospital.branding?.logo_url ? (
-                            <Image
-                              src={hospital.branding.logo_url}
-                              alt={`${hospital.hospital_name} logo`}
-                              width={40}
-                              height={40}
-                              className="rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
-                          
-                          <div>
-                            <h3 className="font-semibold text-gray-900">
-                              {hospital.hospital_name}
-                            </h3>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Globe className="h-3 w-3 mr-1" />
-                              {hospital.subdomain}.athaarva.com
+                  {filteredHospitals.map((hospital, index) => {
+                    const url = SubdomainService.getSubdomainUrl(hospital.subdomain);
+                    const displayDomain = url.replace(/^https?:\/\//, "");
+
+                    return (
+                      <motion.div
+                        key={hospital.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={cn(
+                          "p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md",
+                          selectedHospital?.id === hospital.id
+                            ? "border-healthcare-primary bg-healthcare-primary/5"
+                            : "border-gray-200 hover:border-healthcare-primary/50"
+                        )}
+                        onClick={() => handleHospitalSelect(hospital)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            {hospital.branding?.logo_url ? (
+                              <Image
+                                src={hospital.branding.logo_url}
+                                alt={`${hospital.hospital_name} logo`}
+                                width={40}
+                                height={40}
+                                className="rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Building2 className="h-5 w-5 text-gray-400" />
+                              </div>
+                            )}
+
+                            <div>
+                              <h3 className="font-semibold text-gray-900">
+                                {hospital.hospital_name}
+                              </h3>
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Globe className="h-3 w-3 mr-1" />
+                                {displayDomain}
+                              </div>
                             </div>
                           </div>
+
+                          <ArrowRight className="h-5 w-5 text-gray-400" />
                         </div>
-                        
-                        <ArrowRight className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
               )}
             </div>

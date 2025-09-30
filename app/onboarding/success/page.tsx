@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SubdomainService } from "@/lib/subdomain-service";
 import { CheckCircle, Building2, Globe, ArrowRight } from "lucide-react";
 
 export default function OnboardingSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const subdomain = searchParams.get('subdomain');
+  const [tenantUrl, setTenantUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect to home after 10 seconds if no action is taken
@@ -21,10 +23,18 @@ export default function OnboardingSuccessPage() {
     return () => clearTimeout(timer);
   }, [router]);
 
+  useEffect(() => {
+    if (subdomain) {
+      setTenantUrl(SubdomainService.getSubdomainUrl(subdomain));
+    } else {
+      setTenantUrl(null);
+    }
+  }, [subdomain]);
+
   const handleGoToPortal = () => {
     if (subdomain) {
-      // Redirect to the hospital's login page
-      window.location.href = `https://${subdomain}.athaarva.com`;
+      // Redirect to the hospital's login page (honors localhost/custom domains)
+      window.location.href = SubdomainService.getSubdomainUrl(subdomain, "/auth");
     } else {
       router.push('/');
     }
@@ -65,7 +75,7 @@ export default function OnboardingSuccessPage() {
             </motion.div>
 
             {/* Hospital Details */}
-            {subdomain && (
+            {tenantUrl && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -79,7 +89,7 @@ export default function OnboardingSuccessPage() {
                 <div className="flex items-center justify-center space-x-2">
                   <Globe className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                    {subdomain}.athaarva.com
+                    {tenantUrl.replace(/^https?:\/\//, "")}
                   </span>
                 </div>
               </motion.div>

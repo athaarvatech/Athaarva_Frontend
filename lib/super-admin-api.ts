@@ -57,6 +57,9 @@ export class SuperAdminAPIService {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.logout();
+      }
       const error = await response.json();
       throw new Error(error.detail || 'Failed to get profile');
     }
@@ -81,6 +84,9 @@ export class SuperAdminAPIService {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.logout();
+      }
       const error = await response.json();
       throw new Error(error.detail || 'Failed to create invitation');
     }
@@ -123,6 +129,9 @@ export class SuperAdminAPIService {
     );
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.logout();
+      }
       const error = await response.json();
       throw new Error(error.detail || 'Failed to get invitations');
     }
@@ -144,6 +153,9 @@ export class SuperAdminAPIService {
     );
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.logout();
+      }
       const error = await response.json();
       throw new Error(error.detail || 'Failed to revoke invitation');
     }
@@ -185,6 +197,9 @@ export class SuperAdminAPIService {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.logout();
+      }
       const error = await response.json();
       throw new Error(error.detail || 'Failed to cleanup expired invitations');
     }
