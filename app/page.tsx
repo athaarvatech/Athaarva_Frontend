@@ -5,10 +5,10 @@ import HeroSection from "@/modules/landing-page/HeroSection";
 import SocialProofSection from "@/modules/landing-page/SocialProofSection";
 import FeatureHighlights from "@/modules/landing-page/FeatureHighlights";
 import DemoRequestForm from "@/modules/landing-page/DemoRequestForm";
-import ProductDemoSection from "@/modules/landing-page/ProductDemoSection";
-import CostCalculatorSection from "@/modules/landing-page/CostCalculatorSection";
+//import ProductDemoSection from "@/modules/landing-page/ProductDemoSection";
+//import CostCalculatorSection from "@/modules/landing-page/CostCalculatorSection";
 import PricingSection from "@/modules/landing-page/PricingSection";
-import MobileShowcaseSection from "@/modules/landing-page/MobileShowcaseSection";
+//import MobileShowcaseSection from "@/modules/landing-page/MobileShowcaseSection";
 import FAQSection from "@/modules/landing-page/FAQSection";
 import Footer from "@/modules/landing-page/Footer";
 
@@ -28,10 +28,10 @@ function LandingPage() {
       />
       <SocialProofSection />
       <FeatureHighlights />
-      <ProductDemoSection onDemoClick={() => setShowDemoForm(true)} />
-      <CostCalculatorSection onDemoClick={() => setShowDemoForm(true)} />
+      {/* <ProductDemoSection onDemoClick={() => setShowDemoForm(true)} /> */}
+      {/* <CostCalculatorSection onDemoClick={() => setShowDemoForm(true)} /> */}
       <PricingSection onDemoClick={() => setShowDemoForm(true)} />
-      <MobileShowcaseSection />
+      {/* <MobileShowcaseSection /> */}
       <FAQSection />
       <Footer />
     </div>

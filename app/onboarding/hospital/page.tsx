@@ -198,6 +198,7 @@ function HospitalOnboardingContent({
 
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const dataPrefilled = useRef(false);
 
@@ -316,10 +317,71 @@ function HospitalOnboardingContent({
 
   // ...existing code...
   // ...existing code...
+  const uploadBrandingAsset = async (
+    file: File,
+    type: "logo" | "background"
+  ): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("asset_type", type);
+
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOADS.BRANDING}?asset_type=${type}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({}));
+      const detail = errorPayload?.detail ?? "Failed to upload branding asset";
+      throw new Error(detail);
+    }
+
+    const payload = await response.json();
+    if (!payload?.url) {
+      throw new Error("Upload response missing image URL");
+    }
+
+    return new URL(payload.url, API_CONFIG.BASE_URL).toString();
+  };
+
+  const normalizeBrandingUrl = (url: string | null | undefined): string => {
+    if (!url) {
+      return "";
+    }
+
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+
+    return new URL(url, API_CONFIG.BASE_URL).toString();
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
+      let logoUrl = data.branding.logoUrl;
+      if (data.branding.logoFile) {
+        logoUrl = await uploadBrandingAsset(data.branding.logoFile, "logo");
+        updateData("branding", { logoUrl, logoFile: null });
+      }
+
+      let backgroundImageUrl = data.branding.backgroundImageUrl;
+      if (data.branding.backgroundImageFile) {
+        backgroundImageUrl = await uploadBrandingAsset(
+          data.branding.backgroundImageFile,
+          "background"
+        );
+        updateData("branding", { backgroundImageUrl, backgroundImageFile: null });
+      }
+
+      const resolvedLogoUrl = normalizeBrandingUrl(logoUrl);
+      const resolvedBackgroundUrl = normalizeBrandingUrl(backgroundImageUrl);
+
       // Map frontend fields to backend expected fields
       const payload = {
         hospital_name: data.hospitalBasics.hospitalName,
@@ -332,8 +394,8 @@ function HospitalOnboardingContent({
         city: data.hospitalBasics.city,
         state: data.hospitalBasics.state,
         pincode: data.hospitalBasics.pincode,
-        logo_url: data.branding.logoUrl || "",
-        background_image_url: data.branding.backgroundImageUrl || "",
+  logo_url: resolvedLogoUrl,
+  background_image_url: resolvedBackgroundUrl,
         primary_color: data.branding.primaryColor,
         secondary_color: data.branding.secondaryColor,
         subdomain: data.loginPage.subdomain,
@@ -373,7 +435,7 @@ function HospitalOnboardingContent({
       router.push(`/onboarding/success?subdomain=${encodeURIComponent(payload.subdomain)}`);
     } catch (error) {
       console.error("Failed to create hospital:", error);
-      // TODO: Show error toast/alert
+      setSubmitError((error as Error)?.message || "Failed to create hospital");
     } finally {
       setIsSubmitting(false);
     }
@@ -633,6 +695,11 @@ function HospitalOnboardingContent({
                       )}
                     </Button>
                   </div>
+                  {submitError && (
+                    <div className="mt-3 text-sm text-red-600">
+                      {submitError}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

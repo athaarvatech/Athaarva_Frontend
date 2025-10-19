@@ -85,6 +85,17 @@ export default function HospitalAuthPage() {
     }));
   }, [subdomain, activeRole]);
 
+  const resolveAssetUrl = (url?: string | null) => {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+    if (url.startsWith("/")) {
+      return `${API_CONFIG.BASE_URL}${url}`;
+    }
+    return url;
+  };
+
   useEffect(() => {
     const fetchHospitalData = async () => {
       try {
@@ -240,7 +251,7 @@ export default function HospitalAuthPage() {
       {hospital?.branding?.background_image && (
         <div 
           className="absolute inset-0 opacity-10 bg-cover bg-center"
-          style={{ backgroundImage: `url(${hospital.branding.background_image})` }}
+          style={{ backgroundImage: `url(${resolveAssetUrl(hospital.branding.background_image)})` }}
         />
       )}
       
@@ -250,7 +261,7 @@ export default function HospitalAuthPage() {
           <div className="flex items-center justify-center mb-4">
             {hospital?.branding?.logo_url ? (
               <Image
-                src={hospital.branding.logo_url}
+                src={resolveAssetUrl(hospital.branding.logo_url)}
                 alt={hospital.hospital_name}
                 width={80}
                 height={80}

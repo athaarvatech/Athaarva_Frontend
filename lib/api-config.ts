@@ -37,6 +37,9 @@ export const API_CONFIG = {
       ONBOARDING: '/hospitals/onboarding',
       PROFILE: '/hospitals',
     },
+    UPLOADS: {
+      BRANDING: '/api/v1/uploads/branding',
+    },
     ONBOARDING: {
       STATUS: '/api/v1/onboarding/status',
       NEXT_STEP: '/api/v1/onboarding/next-step',
