@@ -15,7 +15,8 @@ import {
   Lock,
   Building2,
   ArrowRight,
-  Loader2
+  Loader2,
+  Stethoscope
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ interface HospitalBranding {
   secondary_color?: string;
   hero_text?: string;
   welcome_message?: string;
+  background_image_url?: string;
 }
 
 interface Hospital {
@@ -86,22 +88,31 @@ const containerVariants = {
   }
 };
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5
+    }
+  }
+};
+
 const formVariants = {
   hidden: { opacity: 0, x: 20 },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.4,
-      ease: [0.6, -0.05, 0.01, 0.99]
+      duration: 0.4
     }
   },
   exit: {
     opacity: 0,
     x: -20,
     transition: {
-      duration: 0.3,
-      ease: [0.6, -0.05, 0.01, 0.99]
+      duration: 0.3
     }
   }
 };
@@ -286,17 +297,35 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Dynamic Background with Hospital Branding */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-br opacity-90"
-        style={{
-          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
-        }}
-      />
+      {hospital?.branding?.background_image_url ? (
+        <div className="absolute inset-0">
+          <Image
+            src={hospital.branding.background_image_url}
+            alt="Hospital Background"
+            fill
+            className="object-cover opacity-20"
+            priority
+          />
+          <div 
+            className="absolute inset-0 bg-gradient-to-br opacity-80"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+            }}
+          />
+        </div>
+      ) : (
+        <div 
+          className="absolute inset-0 bg-gradient-to-br opacity-90"
+          style={{
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+          }}
+        />
+      )}
       
       {/* Animated Background Pattern */}
       <div className="absolute inset-0">
         <motion.div 
-          className="absolute -top-32 -right-32 w-64 h-64 bg-white/5 rounded-full blur-3xl"
+          className="absolute -top-32 -right-32 w-96 h-96 bg-white/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.1, 1],
             rotate: [0, 90, 180]
@@ -308,7 +337,7 @@ export default function AuthPage() {
           }}
         />
         <motion.div 
-          className="absolute -bottom-32 -left-32 w-64 h-64 bg-white/5 rounded-full blur-3xl"
+          className="absolute -bottom-32 -left-32 w-96 h-96 bg-white/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
             rotate: [180, 270, 360]
@@ -319,10 +348,22 @@ export default function AuthPage() {
             ease: "linear"
           }}
         />
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
       </div>
 
       <motion.div 
-        className="relative w-full max-w-6xl mx-auto px-4 h-screen flex items-center z-10"
+        className="relative w-full max-w-6xl mx-auto px-4 min-h-screen flex items-center z-10 py-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -335,16 +376,14 @@ export default function AuthPage() {
             transition={{ duration: 0.6 }}
             className="hidden lg:block space-y-6"
           >
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-2xl">
-              <div className="space-y-3">
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
+              <div className="space-y-4">
                 <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  variants={itemVariants}
                   className="flex items-center space-x-3"
                 >
                   <motion.div 
-                    className="w-18 h-18 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center p-1"
+                    className="w-20 h-20 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center p-2"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ duration: 0.2 }}
                   >
@@ -352,33 +391,29 @@ export default function AuthPage() {
                       <Image 
                         src={hospital.branding.logo_url} 
                         alt="Hospital Logo" 
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 object-contain"
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <Building2 className="w-12 h-12 text-gray-600" />
                     )}
                   </motion.div>
-                  <h1 className="text-3xl font-bold text-white drop-shadow-lg">
+                  <h1 className="text-4xl font-bold text-white drop-shadow-lg">
                     {hospitalName}
                   </h1>
                 </motion.div>
                 
                 <motion.h2 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="text-4xl font-bold text-white leading-tight drop-shadow-lg"
+                  variants={itemVariants}
+                  className="text-5xl font-bold text-white leading-tight drop-shadow-lg"
                 >
                   {heroText}
                 </motion.h2>
                 
                 <motion.p 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-lg text-white/90 leading-relaxed max-w-md drop-shadow-md"
+                  variants={itemVariants}
+                  className="text-xl text-white/90 leading-relaxed max-w-md drop-shadow-md"
                 >
                   {hospital?.branding?.welcome_message || "Join thousands of patients who trust us for comprehensive healthcare management with holistic care approach."}
                 </motion.p>
@@ -386,26 +421,26 @@ export default function AuthPage() {
 
               {/* Trust Features */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="space-y-3 mt-6"
+                variants={itemVariants}
+                className="space-y-4 mt-8"
               >
                 {trustFeatures.map((feature, index) => (
                   <motion.div
                     key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
                     className="flex items-center space-x-3 group cursor-pointer"
                     whileHover={{ x: 5 }}
-                    transition={{ duration: 0.2 }}
                   >
                     <motion.div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30"
+                      className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <feature.icon className="w-5 h-5 text-white" />
+                      <feature.icon className="w-6 h-6 text-white" />
                     </motion.div>
-                    <span className="text-white font-medium group-hover:text-opacity-80 transition-colors duration-200 drop-shadow-md">
+                    <span className="text-white font-medium text-lg group-hover:text-opacity-80 transition-colors duration-200 drop-shadow-md">
                       {feature.text}
                     </span>
                   </motion.div>
@@ -414,10 +449,8 @@ export default function AuthPage() {
 
               {/* Stats */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="grid grid-cols-3 gap-4 pt-6 border-t border-white/20 mt-6"
+                variants={itemVariants}
+                className="grid grid-cols-3 gap-6 pt-8 border-t border-white/20 mt-8"
               >
                 {[
                   { value: "10K+", label: "Doctors" },
@@ -430,10 +463,10 @@ export default function AuthPage() {
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <motion.div className="text-3xl font-bold text-white drop-shadow-lg">
+                    <motion.div className="text-4xl font-bold text-white drop-shadow-lg">
                       {stat.value}
                     </motion.div>
-                    <div className="text-sm text-white/80 font-medium">{stat.label}</div>
+                    <div className="text-base text-white/80 font-medium">{stat.label}</div>
                   </motion.div>
                 ))}
               </motion.div>
@@ -452,16 +485,36 @@ export default function AuthPage() {
               transition={{ duration: 0.3 }}
             >
               <Card className="shadow-2xl bg-white/95 backdrop-blur-xl overflow-hidden border border-white/20">
-                <CardHeader className="text-center pb-4 bg-gradient-to-b from-white/50 to-white/30 backdrop-blur-sm">
+                <CardHeader className="text-center pb-6 bg-gradient-to-b from-white/50 to-white/30 backdrop-blur-sm">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                   >
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden mb-4 flex justify-center">
+                      <motion.div 
+                        className="w-16 h-16 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center p-2"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {hospital?.branding?.logo_url ? (
+                          <Image 
+                            src={hospital.branding.logo_url} 
+                            alt="Hospital Logo" 
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <Stethoscope className="w-10 h-10 text-gray-600" />
+                        )}
+                      </motion.div>
+                    </div>
                     <CardTitle className="text-3xl font-bold text-gray-900 mb-2 drop-shadow-sm">
                       Welcome to {hospitalName}
                     </CardTitle>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 text-base">
                       Patient access to your healthcare services
                     </p>
                   </motion.div>
@@ -766,6 +819,28 @@ export default function AuthPage() {
                   </form>
                 </CardContent>
               </Card>
+            </motion.div>
+
+            {/* Mobile Trust Features */}
+            <motion.div 
+              className="lg:hidden mt-8 flex justify-center gap-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              {trustFeatures.map((feature, index) => (
+                <motion.div 
+                  key={index} 
+                  className="flex flex-col items-center space-y-2"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs text-white font-medium text-center drop-shadow-md">{feature.text.split(' ')[0]}</span>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
         </div>

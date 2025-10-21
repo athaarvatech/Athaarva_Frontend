@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContext";
+import { uploadHospitalLogo, uploadHospitalBackground } from "@/lib/blob-storage";
 
 const colorPresets = [
   { name: 'Healthcare Teal', primary: '#007C7C', secondary: '#20B2AA' },
@@ -30,13 +31,14 @@ const colorPresets = [
 
 interface FileUploadProps {
   accept: string;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File) => Promise<void>;
   currentFile: File | null;
   currentUrl: string;
   title: string;
   description: string;
   maxSize: string;
   recommendedSize?: string;
+  isUploading?: boolean;
 }
 
 function FileUploader({ 
@@ -47,13 +49,14 @@ function FileUploader({
   title, 
   description, 
   maxSize,
-  recommendedSize 
+  recommendedSize,
+  isUploading = false
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string>('');
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     setError('');
     
     // Validate file type
@@ -68,14 +71,18 @@ function FileUploader({
       return;
     }
 
-    // Validate file size (1MB = 1048576 bytes)
-    const maxSizeBytes = 1048576;
+    // Validate file size (2MB = 2097152 bytes)
+    const maxSizeBytes = 2097152;
     if (file.size > maxSizeBytes) {
-      setError('File size too large. Please select a file under 1MB.');
+      setError('File size too large. Please select a file under 2MB.');
       return;
     }
 
-    onFileSelect(file);
+    try {
+      await onFileSelect(file);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -105,12 +112,13 @@ function FileUploader({
         className={cn(
           "border-2 border-dashed rounded-lg p-3 text-center transition-colors cursor-pointer",
           dragOver ? "border-healthcare-primary bg-blue-50" : "border-gray-300 hover:border-gray-400",
-          error && "border-red-300"
+          error && "border-red-300",
+          isUploading && "opacity-50 cursor-not-allowed"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => !isUploading && fileInputRef.current?.click()}
       >
         <input
           ref={fileInputRef}
@@ -121,15 +129,25 @@ function FileUploader({
             if (file) handleFileSelect(file);
           }}
           className="hidden"
+          disabled={isUploading}
         />
         
-        {currentFile || currentUrl ? (
+        {isUploading ? (
+          <div className="space-y-1.5">
+            <div className="w-12 h-12 mx-auto bg-blue-100 rounded-lg flex items-center justify-center">
+              <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+            </div>
+            <p className="text-xs font-medium text-blue-700">
+              Uploading to cloud storage...
+            </p>
+          </div>
+        ) : currentFile || currentUrl ? (
           <div className="space-y-1.5">
             <div className="w-12 h-12 mx-auto bg-green-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <p className="text-xs font-medium text-green-700">
-              {currentFile ? currentFile.name : 'Current file'}
+              {currentFile ? currentFile.name : 'Uploaded to cloud'}
             </p>
             <Button
               type="button"
@@ -246,6 +264,8 @@ export default function BrandingStep() {
     isValid: null,
     message: '',
   });
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false);
 
   // Debounced subdomain validation
   useEffect(() => {
@@ -320,20 +340,36 @@ export default function BrandingStep() {
       : 'your-hospital.atharva.com/login';
   };
 
-  const handleLogoUpload = (file: File) => {
-    const url = URL.createObjectURL(file);
-    updateData('branding', { 
-      logoFile: file,
-      logoUrl: url
-    });
+  const handleLogoUpload = async (file: File) => {
+    setIsUploadingLogo(true);
+    try {
+      const result = await uploadHospitalLogo(file);
+      updateData('branding', { 
+        logoFile: file,
+        logoUrl: result.url
+      });
+    } catch (error) {
+      console.error('Logo upload failed:', error);
+      throw error; // Re-throw to show error in FileUploader
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
-  const handleBackgroundImageUpload = (file: File) => {
-    const url = URL.createObjectURL(file);
-    updateData('branding', { 
-      backgroundImageFile: file,
-      backgroundImageUrl: url
-    });
+  const handleBackgroundImageUpload = async (file: File) => {
+    setIsUploadingBackground(true);
+    try {
+      const result = await uploadHospitalBackground(file);
+      updateData('branding', { 
+        backgroundImageFile: file,
+        backgroundImageUrl: result.url
+      });
+    } catch (error) {
+      console.error('Background upload failed:', error);
+      throw error; // Re-throw to show error in FileUploader
+    } finally {
+      setIsUploadingBackground(false);
+    }
   };
 
   const applyColorPreset = (preset: typeof colorPresets[0]) => {
@@ -442,24 +478,26 @@ export default function BrandingStep() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileUploader
               title="Hospital Logo *"
-              description="PNG or SVG format, max 1MB"
+              description="PNG or SVG format, max 2MB"
               accept="image/png,image/svg+xml,image/jpeg"
-              maxSize="1MB"
+              maxSize="2MB"
               recommendedSize="200x200px"
               currentFile={data.branding.logoFile}
               currentUrl={data.branding.logoUrl}
               onFileSelect={handleLogoUpload}
+              isUploading={isUploadingLogo}
             />
 
             <FileUploader
               title="Background Image (Optional)"
               description="Background for login page"
               accept="image/png,image/jpeg,image/webp"
-              maxSize="1MB"
+              maxSize="2MB"
               recommendedSize="1920x1080px"
               currentFile={data.branding.backgroundImageFile}
               currentUrl={data.branding.backgroundImageUrl}
               onFileSelect={handleBackgroundImageUpload}
+              isUploading={isUploadingBackground}
             />
           </div>
 

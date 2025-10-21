@@ -40,6 +40,7 @@
     "@speechly/react-client": "^2.2.4",
     "@tanstack/react-table": "^8.21.3",
     "@types/axios": "^0.9.36",
+    "@vercel/blob": "^2.0.0",
     "axios": "^1.11.0",
     "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
