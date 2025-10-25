@@ -93,12 +93,30 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
       newErrors.phone = "Phone number is required";
     } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(basicInfo.phone)) {
       newErrors.phone = "Please enter a valid phone number";
-    } else if (!otpVerified) {
-      newErrors.phone = "Please verify your phone number";
+    }
+    // Note: OTP verification temporarily disabled for development
+    // } else if (!otpVerified) {
+    //   newErrors.phone = "Please verify your phone number";
+    // }
+
+    if (!basicInfo.email.trim()) {
+      newErrors.email = "Email address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(basicInfo.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
-    if (basicInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(basicInfo.email)) {
-      newErrors.email = "Please enter a valid email address";
+    if (!basicInfo.password || basicInfo.password.trim().length === 0) {
+      newErrors.password = "Password is required";
+    } else if (basicInfo.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(basicInfo.password)) {
+      newErrors.password = "Password must include uppercase, lowercase, and numbers";
+    }
+
+    if (!basicInfo.confirmPassword || basicInfo.confirmPassword.trim().length === 0) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (basicInfo.password !== basicInfo.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (!basicInfo.emergencyContact.name.trim()) {
@@ -365,7 +383,7 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email Address (Optional)
+                Email Address *
               </Label>
               <Input
                 id="email"
@@ -374,10 +392,52 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="your.email@example.com"
                 className={cn(errors.email && "border-red-500")}
+                required
               />
               {errors.email && (
                 <p className="text-red-500 text-sm">{errors.email}</p>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password *
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={data.basicInfo.password || ""}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  placeholder="Create a strong password"
+                  className={cn(errors.password && "border-red-500")}
+                  required
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-sm">{errors.password}</p>
+                )}
+                <p className="text-xs text-gray-500">
+                  Minimum 8 characters, include uppercase, lowercase, and numbers
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm Password *
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={data.basicInfo.confirmPassword || ""}
+                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                  placeholder="Re-enter your password"
+                  className={cn(errors.confirmPassword && "border-red-500")}
+                  required
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

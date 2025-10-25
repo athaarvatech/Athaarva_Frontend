@@ -1,106 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, ChevronRight, Search, Filter, Clock, Calendar, Heart, Activity, AlertCircle } from 'lucide-react';
+import { Users, ChevronRight, Search, Filter, Clock, Calendar, AlertCircle, Loader2 } from 'lucide-react';
+import { API_CONFIG } from '@/lib/api-config';
+
+interface Patient {
+  id: number;
+  name: string;
+  status: string;
+  summary: string;
+  priority: string;
+  age: number;
+  gender: string;
+  lastVisit: string | null;
+  nextAppointment: string | null;
+  appointmentId?: number;
+}
 
 const PatientOverviewWidget = () => {
-  const [patients, setPatients] = useState([
-    { 
-      id: 1, 
-      name: 'Sarah Thompson', 
-      status: 'Active Treatment', 
-      summary: 'Ongoing diabetes management',
-      priority: 'high',
-      age: 42,
-      gender: 'Female',
-      lastVisit: '2025-03-20',
-      nextAppointment: '2025-03-28',
-      vitalSigns: {
-        bloodPressure: '130/85',
-        heartRate: 78,
-        temperature: '98.6°F'
-      },
-      conditions: ['Type 2 Diabetes', 'Hypertension'],
-      medications: ['Metformin', 'Lisinopril'],
-      alerts: ['Blood sugar trending high']
-    },
-    { 
-      id: 2, 
-      name: 'Michael Rodriguez', 
-      status: 'New Patient', 
-      summary: 'Initial consultation scheduled',
-      priority: 'medium',
-      age: 35,
-      gender: 'Male',
-      lastVisit: null,
-      nextAppointment: '2025-03-27',
-      vitalSigns: null,
-      conditions: [],
-      medications: [],
-      alerts: []
-    },
-    { 
-      id: 3, 
-      name: 'Emma Wilson', 
-      status: 'Follow-up', 
-      summary: 'Post-surgery recovery check',
-      priority: 'high',
-      age: 58,
-      gender: 'Female',
-      lastVisit: '2025-03-15',
-      nextAppointment: '2025-03-29',
-      vitalSigns: {
-        bloodPressure: '125/80',
-        heartRate: 72,
-        temperature: '98.2°F'
-      },
-      conditions: ['Osteoarthritis', 'Recent knee replacement'],
-      medications: ['Tramadol', 'Celebrex'],
-      alerts: ['Physical therapy recommended']
-    },
-    { 
-      id: 4, 
-      name: 'David Chen', 
-      status: 'Medication Review', 
-      summary: 'Hypertension treatment adjustment',
-      priority: 'medium',
-      age: 62,
-      gender: 'Male',
-      lastVisit: '2025-03-10',
-      nextAppointment: '2025-03-31',
-      vitalSigns: {
-        bloodPressure: '145/90',
-        heartRate: 80,
-        temperature: '98.4°F'
-      },
-      conditions: ['Hypertension', 'High Cholesterol'],
-      medications: ['Amlodipine', 'Atorvastatin'],
-      alerts: ['Blood pressure above target']
-    },
-    { 
-      id: 5, 
-      name: 'Olivia Martinez', 
-      status: 'Lab Results', 
-      summary: 'Review recent blood work',
-      priority: 'high',
-      age: 45,
-      gender: 'Female',
-      lastVisit: '2025-03-18',
-      nextAppointment: '2025-03-26',
-      vitalSigns: {
-        bloodPressure: '118/75',
-        heartRate: 68,
-        temperature: '98.5°F'
-      },
-      conditions: ['Hypothyroidism', 'Anemia'],
-      medications: ['Levothyroxine', 'Iron supplements'],
-      alerts: ['Thyroid levels require adjustment']
-    }
-  ]);
-
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [doctorId, setDoctorId] = useState<number | null>(null);
+
+  // Get doctor ID from localStorage
+  useEffect(() => {
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      setDoctorId(parseInt(userId));
+    }
+  }, []);
+
+  // Fetch patients from appointments
+  useEffect(() => {
+    if (doctorId) {
+      fetchPatients();
+    }
+  }, [doctorId]);
+
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/appointments/doctor/${doctorId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        const appointments = result.data || [];
+        
+        // Extract unique patients from appointments
+        const uniquePatients = new Map();
+        appointments.forEach((apt: any) => {
+          if (!uniquePatients.has(apt.patient_id)) {
+            const patientDetails = apt.patient_details || {};
+            uniquePatients.set(apt.patient_id, {
+              id: apt.patient_id,
+              name: apt.patient_name || 'Unknown Patient',
+              status: apt.status === 'confirmed' ? 'Active Treatment' : 'Follow-up',
+              summary: apt.reason_for_visit || apt.appointment_type || 'Consultation',
+              priority: apt.status === 'pending' ? 'high' : 'medium',
+              age: patientDetails.age || 0,
+              gender: patientDetails.gender || 'Unknown',
+              lastVisit: null, // Would need separate query for this
+              nextAppointment: apt.appointment_date,
+              appointmentId: apt.appointment_id
+            });
+          }
+        });
+        
+        setPatients(Array.from(uniquePatients.values()));
+      }
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter patients based on search and priority
   const filteredPatients = patients.filter(patient => {
@@ -113,7 +96,7 @@ const PatientOverviewWidget = () => {
     return matchesSearch && matchesPriority;
   });
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
         return 'bg-[#2D6A4F] text-white';
@@ -127,14 +110,14 @@ const PatientOverviewWidget = () => {
   };
 
   // Format date to readable format
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   // Handle patient selection for detailed view
-  const handlePatientSelect = (patient) => {
+  const handlePatientSelect = (patient: Patient) => {
     setSelectedPatient(selectedPatient?.id === patient.id ? null : patient);
   };
 
@@ -208,109 +191,70 @@ const PatientOverviewWidget = () => {
       </div>
       
       <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
-        {filteredPatients.map(patient => (
-          <div key={patient.id}>
-            <div 
-              onClick={() => handlePatientSelect(patient)}
-              className={`flex items-center p-2 hover:bg-[#F0F9FA] rounded-md transition-colors cursor-pointer
-                ${selectedPatient?.id === patient.id ? 'bg-[#F0F9FA] border border-[#006D77]/20' : ''}
-              `}
-            >
-              <div className="w-10 h-10 rounded-full bg-[#E8F3F4] flex items-center justify-center mr-3 text-[#006D77] font-medium">
-                {patient.name.charAt(0)}
-              </div>
-              <div className="flex-grow">
-                <p className="font-medium text-gray-800">{patient.name}</p>
-                <div className="flex items-center">
-                  <p className="text-sm text-gray-500">{patient.summary}</p>
-                  {patient.alerts.length > 0 && (
-                    <span className="ml-2 text-amber-500">
-                      <AlertCircle size={14} />
-                    </span>
-                  )}
-                </div>
-              </div>
-              <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(patient.priority)}`}>
-                {patient.status}
-              </span>
-            </div>
-            
-            {/* Expanded patient details */}
-            {selectedPatient?.id === patient.id && (
-              <div className="mt-2 ml-12 p-3 bg-gray-50 rounded-md text-sm">
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <div>
-                    <span className="text-gray-500">Age:</span> {patient.age}, {patient.gender}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock size={14} className="text-gray-400 mr-1" />
-                    <span className="text-gray-500">Last Visit:</span> {formatDate(patient.lastVisit)}
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar size={14} className="text-gray-400 mr-1" />
-                    <span className="text-gray-500">Next Appointment:</span> {formatDate(patient.nextAppointment)}
-                  </div>
-                  {patient.vitalSigns && (
-                    <div className="flex items-center">
-                      <Heart size={14} className="text-red-500 mr-1" />
-                      <span className="text-gray-500">BP:</span> {patient.vitalSigns.bloodPressure}
-                    </div>
-                  )}
-                </div>
-                
-                {patient.conditions.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-gray-500 font-medium">Conditions:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {patient.conditions.map((condition, idx) => (
-                        <span key={idx} className="text-xs bg-gray-200 px-2 py-0.5 rounded-full">
-                          {condition}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {patient.medications.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-gray-500 font-medium">Medications:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {patient.medications.map((medication, idx) => (
-                        <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                          {medication}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {patient.alerts.length > 0 && (
-                  <div>
-                    <span className="text-gray-500 font-medium">Alerts:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {patient.alerts.map((alert, idx) => (
-                        <span key={idx} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full flex items-center">
-                          <AlertCircle size={10} className="mr-1" /> {alert}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mt-3 flex justify-end">
-                  <Link href={`/Doctor/Patients/${patient.id}`} className="text-xs text-[#006D77] hover:underline flex items-center">
-                    View Full Profile <ChevronRight size={12} />
-                  </Link>
-                </div>
-              </div>
-            )}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-[#006D77] mr-2" />
+            <span className="text-gray-600">Loading patients...</span>
           </div>
-        ))}
-        
-        {filteredPatients.length === 0 && (
+        ) : filteredPatients.length > 0 ? (
+          filteredPatients.map(patient => (
+            <div key={patient.id}>
+              <div 
+                onClick={() => handlePatientSelect(patient)}
+                className={`flex items-center p-2 hover:bg-[#F0F9FA] rounded-md transition-colors cursor-pointer
+                  ${selectedPatient?.id === patient.id ? 'bg-[#F0F9FA] border border-[#006D77]/20' : ''}
+                `}
+              >
+                <div className="w-10 h-10 rounded-full bg-[#E8F3F4] flex items-center justify-center mr-3 text-[#006D77] font-medium">
+                  {patient.name.charAt(0)}
+                </div>
+                <div className="flex-grow">
+                  <p className="font-medium text-gray-800">{patient.name}</p>
+                  <p className="text-sm text-gray-500">{patient.summary}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(patient.priority)}`}>
+                  {patient.status}
+                </span>
+              </div>
+              
+              {/* Expanded patient details */}
+              {selectedPatient?.id === patient.id && (
+                <div className="mt-2 ml-12 p-3 bg-gray-50 rounded-md text-sm">
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                      <span className="text-gray-500">Age:</span> {patient.age || 'N/A'}, {patient.gender}
+                    </div>
+                    <div className="flex items-center">
+                      <Clock size={14} className="text-gray-400 mr-1" />
+                      <span className="text-gray-500">Last Visit:</span> {formatDate(patient.lastVisit)}
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar size={14} className="text-gray-400 mr-1" />
+                      <span className="text-gray-500">Next Appointment:</span> {formatDate(patient.nextAppointment)}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 flex justify-end">
+                    <Link href={`/Doctor/Patients/${patient.id}`} className="text-xs text-[#006D77] hover:underline flex items-center">
+                      View Full Profile <ChevronRight size={12} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
           <div className="text-center py-6 text-gray-500">
             <p>No patients found</p>
-            <button className="mt-2 text-sm text-[#006D77] hover:underline">Clear filters</button>
+            <button 
+              onClick={() => {
+                setSearchTerm('');
+                setFilterPriority('all');
+              }}
+              className="mt-2 text-sm text-[#006D77] hover:underline"
+            >
+              Clear filters
+            </button>
           </div>
         )}
       </div>

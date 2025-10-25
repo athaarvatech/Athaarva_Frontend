@@ -48,7 +48,9 @@ export const API_CONFIG = {
 };
 
 // Request timeout in milliseconds
-export const REQUEST_TIMEOUT = 10000;
+export const REQUEST_TIMEOUT = 30000; // 30 seconds for general requests
+export const LONG_REQUEST_TIMEOUT = 60000; // 60 seconds for heavy operations
+export const SHORT_REQUEST_TIMEOUT = 15000; // 15 seconds for quick operations
 
 // Default headers for API requests
 export const DEFAULT_HEADERS = {

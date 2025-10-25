@@ -58,16 +58,53 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   if (pathname?.startsWith("/Admin")) {
     return <>{children}</>;
   }
-    if (pathname?.startsWith("/super-admin")) {
+  if (pathname?.startsWith("/super-admin")) {
     return <>{children}</>;
   }
 
-  // Auth routes - redirect if already authenticated
-  if (pathname?.startsWith("/onboarding/patient")) {
-    return <PublicRouteGuard>{children}</PublicRouteGuard>;
+  // All Patient routes - no auth guard, accessible to all with sidebar
+  if (pathname?.startsWith("/patient")) {
+    return (
+      <AppProvider>
+        <NotificationProvider>
+          <SearchProvider>
+            <NavigationProvider>
+              <div className="flex h-screen bg-gray-50">
+                {/* Sidebar */}
+                <EnhancedSidebar
+                  isOpen={isMobileMenuOpen}
+                  onClose={() => setIsMobileMenuOpen(false)}
+                  onCollapseChange={handleSidebarCollapseChange}
+                />
+
+                {/* Main Content */}
+                <main
+                  className={`flex-1 flex flex-col min-h-screen relative transition-all duration-300 ${
+                    isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+                  }`}
+                >
+                  {/* Top Navigation Bar */}
+                  <GlobalTopBar toggleMobileMenu={toggleMobileMenu} />
+
+                  {/* Page Content */}
+                  <div className="flex-grow p-4 md:p-6 overflow-auto">
+                    {children}
+                  </div>
+                </main>
+              </div>
+            </NavigationProvider>
+          </SearchProvider>
+        </NotificationProvider>
+      </AppProvider>
+    );
   }
 
-  // Onboarding routes - only allow if not completed
+  // Patient onboarding - no auth required, completely open access for new registrations
+  if (pathname?.startsWith("/onboarding/patient")) {
+    return <>{children}</>;
+  }
+
+  // Other onboarding routes - only allow if not completed
   if (pathname?.startsWith("/onboarding")) {
     return <OnboardingRouteGuard>{children}</OnboardingRouteGuard>;
   }
@@ -76,48 +113,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   if (pathname?.startsWith("/doctor")) {
     return (
       <DashboardRouteGuard userType="doctor">
-        <AppProvider>
-          <NotificationProvider>
-            <SearchProvider>
-              <NavigationProvider>
-                <div className="flex h-screen bg-gray-50">
-                  {/* Sidebar */}
-                  <EnhancedSidebar
-                    isOpen={isMobileMenuOpen}
-                    onClose={() => setIsMobileMenuOpen(false)}
-                    onCollapseChange={handleSidebarCollapseChange}
-                  />
-
-                  {/* Main Content */}
-                  <main
-                    className={`flex-1 flex flex-col min-h-screen relative transition-all duration-300 ${
-                      isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
-                    }`}
-                  >
-                    {/* Top Navigation Bar */}
-                    <GlobalTopBar toggleMobileMenu={toggleMobileMenu} />
-
-                    {/* Breadcrumbs */}
-                    {/* <Breadcrumbs /> */}
-
-                    {/* Page Content */}
-                    <div className="flex-grow p-4 md:p-6 overflow-auto">
-                      {children}
-                    </div>
-                  </main>
-                </div>
-              </NavigationProvider>
-            </SearchProvider>
-          </NotificationProvider>
-        </AppProvider>
-      </DashboardRouteGuard>
-    );
-  }
-
-  // Patient routes - only allow patients with completed onboarding
-  if (pathname?.startsWith("/patient")) {
-    return (
-      <DashboardRouteGuard userType="patient">
         <AppProvider>
           <NotificationProvider>
             <SearchProvider>

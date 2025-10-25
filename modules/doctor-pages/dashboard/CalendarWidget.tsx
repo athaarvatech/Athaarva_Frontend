@@ -1,89 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, ChevronRight, ChevronLeft, Plus, Video, Phone, User } from 'lucide-react';
-import { format, addDays, isSameDay, parseISO, isAfter, isBefore } from 'date-fns';
+import { Calendar, Clock, ChevronRight, ChevronLeft, Video, Phone, User, Loader2 } from 'lucide-react';
+import { format, addDays, isSameDay } from 'date-fns';
+import { API_CONFIG } from '@/lib/api-config';
+
+interface Appointment {
+  id: number;
+  patientName: string;
+  time: string;
+  endTime: string;
+  date: string;
+  purpose: string;
+  type: string;
+  status: string;
+  method: string;
+  notes: string;
+  patientId: number;
+}
 
 const CalendarWidget = () => {
-  const today = new Date('2025-03-25');
+  const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today);
   const [calendarOffset, setCalendarOffset] = useState(0);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [filteredAppointments, setFilteredAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [filter, setFilter] = useState('all');
-  
-  // Mock appointments data - expanded with more details
-  const [appointments, setAppointments] = useState([
-    { 
-      id: 1, 
-      patientName: 'Diana Cooper', 
-      time: '09:30 AM',
-      endTime: '10:00 AM',
-      date: '2025-03-25',
-      purpose: 'Follow-up',
-      type: 'consultation',
-      status: 'confirmed',
-      method: 'in-person',
-      notes: 'Review medication effectiveness, check blood pressure',
-      patientId: 'P-1001'
-    },
-    { 
-      id: 2, 
-      patientName: 'Michael Chen', 
-      time: '11:00 AM',
-      endTime: '11:30 AM',
-      date: '2025-03-25',
-      purpose: 'Blood Pressure Check',
-      type: 'check-up',
-      status: 'confirmed',
-      method: 'video',
-      notes: 'Patient prefers video consultation due to mobility issues',
-      patientId: 'P-1002'
-    },
-    { 
-      id: 3, 
-      patientName: 'Sarah Johnson', 
-      time: '02:15 PM',
-      endTime: '03:00 PM',
-      date: '2025-03-25',
-      purpose: 'Medication Review',
-      type: 'follow-up',
-      status: 'pending',
-      method: 'in-person',
-      notes: 'Discuss lab results and adjust medication if needed',
-      patientId: 'P-1003'
-    },
-    { 
-      id: 4, 
-      patientName: 'Robert Williams', 
-      time: '10:00 AM',
-      endTime: '10:30 AM',
-      date: '2025-03-26',
-      purpose: 'Annual Physical',
-      type: 'check-up',
-      status: 'confirmed',
-      method: 'in-person',
-      notes: 'Complete physical examination, update vaccination records',
-      patientId: 'P-1004'
-    },
-    { 
-      id: 5, 
-      patientName: 'Emily Davis', 
-      time: '01:30 PM',
-      endTime: '02:00 PM',
-      date: '2025-03-26',
-      purpose: 'Chronic Pain Management',
-      type: 'follow-up',
-      status: 'confirmed',
-      method: 'phone',
-      notes: 'Discuss pain management strategies and medication effectiveness',
-      patientId: 'P-1005'
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [doctorId, setDoctorId] = useState<number | null>(null);
+
+  // Get doctor ID from localStorage
+  useEffect(() => {
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      setDoctorId(parseInt(userId));
     }
-  ]);
+  }, []);
+
+  // Fetch appointments from API
+  useEffect(() => {
+    if (doctorId) {
+      fetchAppointments();
+    }
+  }, [doctorId]);
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/appointments/doctor/${doctorId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        const formattedAppointments = (result.data || []).map((apt: any) => ({
+          id: apt.appointment_id,
+          patientName: apt.patient_name || 'Unknown Patient',
+          time: apt.start_time?.substring(0, 5) || '00:00',
+          endTime: apt.end_time?.substring(0, 5) || '00:00',
+          date: apt.appointment_date,
+          purpose: apt.reason_for_visit || apt.appointment_type || 'Consultation',
+          type: apt.appointment_type || 'consultation',
+          status: apt.status || 'confirmed',
+          method: apt.visit_type || 'in-person',
+          notes: apt.notes || '',
+          patientId: apt.patient_id
+        }));
+        setAppointments(formattedAppointments);
+      }
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter appointments based on selected date
   useEffect(() => {
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const filtered = appointments.filter(appointment => 
-      isSameDay(parseISO(appointment.date), selectedDate)
+      appointment.date === selectedDateStr
     );
     
     // Apply additional filters
@@ -99,12 +99,13 @@ const CalendarWidget = () => {
     const days = [];
     for (let i = -3 + calendarOffset; i <= 3 + calendarOffset; i++) {
       const date = addDays(today, i);
+      const dateStr = format(date, 'yyyy-MM-dd');
       days.push({
         date,
         dayName: format(date, 'EEE'),
         dayNumber: format(date, 'd'),
         isToday: isSameDay(date, today),
-        hasAppointments: appointments.some(app => isSameDay(parseISO(app.date), date))
+        hasAppointments: appointments.some(app => app.date === dateStr)
       });
     }
     return days;
@@ -113,7 +114,7 @@ const CalendarWidget = () => {
   const calendarDays = generateCalendarDays();
 
   // Get appointment type color
-  const getAppointmentTypeColor = (type) => {
+  const getAppointmentTypeColor = (type: string) => {
     switch (type) {
       case 'consultation':
         return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -127,7 +128,7 @@ const CalendarWidget = () => {
   };
 
   // Get appointment status indicator
-  const getStatusIndicator = (status) => {
+  const getStatusIndicator = (status: string) => {
     switch (status) {
       case 'confirmed':
         return 'bg-green-500';
@@ -141,7 +142,7 @@ const CalendarWidget = () => {
   };
 
   // Get appointment method icon
-  const getMethodIcon = (method) => {
+  const getMethodIcon = (method: string) => {
     switch (method) {
       case 'video':
         return <Video size={14} className="text-blue-600" />;
@@ -154,18 +155,19 @@ const CalendarWidget = () => {
     }
   };
 
-  // Add new appointment
-  const addAppointment = (newAppointment) => {
-    setAppointments([...appointments, {
-      id: appointments.length + 1,
-      ...newAppointment
-    }]);
-    setShowAddModal(false);
+  // Navigate calendar
+  const navigateCalendar = (direction: number) => {
+    setCalendarOffset(calendarOffset + direction);
   };
 
-  // Navigate calendar
-  const navigateCalendar = (direction) => {
-    setCalendarOffset(calendarOffset + direction);
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTime = (time: string) => {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
   };
 
   return (
@@ -175,18 +177,9 @@ const CalendarWidget = () => {
           <Calendar className="mr-2" size={20} />
           Today's Schedule
         </h2>
-        <div className="flex items-center space-x-2">
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="p-1.5 rounded-full bg-[#F0F9FA] text-[#006D77] hover:bg-[#E8F3F4] transition-colors"
-            aria-label="Add appointment"
-          >
-            <Plus size={16} />
-          </button>
-          <Link href="/Doctor/Calendar" className="text-[#006D77] hover:underline flex items-center">
-            View Full Schedule <ChevronRight size={16} />
-          </Link>
-        </div>
+        <Link href="/Doctor/Calendar" className="text-[#006D77] hover:underline flex items-center">
+          View Full Schedule <ChevronRight size={16} />
+        </Link>
       </div>
       
       {/* Mini Calendar Navigation */}
@@ -258,15 +251,17 @@ const CalendarWidget = () => {
       
       {/* Appointments List */}
       <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-        {filteredAppointments.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-[#006D77] mr-2" />
+            <span className="text-gray-600">Loading appointments...</span>
+          </div>
+        ) : filteredAppointments.length > 0 ? (
           filteredAppointments
             .sort((a, b) => {
-              // Convert time strings to comparable values
-              const timeA = a.time.includes('PM') && !a.time.includes('12:') ? 
-                parseInt(a.time.split(':')[0]) + 12 : parseInt(a.time.split(':')[0]);
-              const timeB = b.time.includes('PM') && !b.time.includes('12:') ? 
-                parseInt(b.time.split(':')[0]) + 12 : parseInt(b.time.split(':')[0]);
-              return timeA - timeB;
+              const [hoursA, minutesA] = a.time.split(':').map(Number);
+              const [hoursB, minutesB] = b.time.split(':').map(Number);
+              return hoursA * 60 + minutesA - (hoursB * 60 + minutesB);
             })
             .map(appointment => (
               <div 
@@ -290,7 +285,7 @@ const CalendarWidget = () => {
                     </div>
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
-                    <span>{appointment.time} - {appointment.endTime}</span>
+                    <span>{formatTime(appointment.time)} - {formatTime(appointment.endTime)}</span>
                     <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${getAppointmentTypeColor(appointment.type)}`}>
                       {appointment.purpose}
                     </span>
@@ -304,57 +299,9 @@ const CalendarWidget = () => {
         ) : (
           <div className="text-center py-8 text-gray-500">
             <p>No appointments scheduled for this day</p>
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="mt-2 text-sm text-[#006D77] hover:underline flex items-center mx-auto"
-            >
-              <Plus size={14} className="mr-1" />
-              Add Appointment
-            </button>
           </div>
         )}
       </div>
-
-      {/* Add Appointment Modal - In a real app, this would be a proper modal component */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 w-full max-w-md">
-            <h3 className="text-lg font-medium mb-4">Add New Appointment</h3>
-            {/* This would be a form in a real implementation */}
-            <div className="space-y-4">
-              {/* Form fields would go here */}
-              <div className="flex justify-end space-x-2">
-                <button 
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    // Mock adding a new appointment
-                    addAppointment({
-                      patientName: 'New Patient',
-                      time: '04:00 PM',
-                      endTime: '04:30 PM',
-                      date: format(selectedDate, 'yyyy-MM-dd'),
-                      purpose: 'Initial Consultation',
-                      type: 'consultation',
-                      status: 'confirmed',
-                      method: 'in-person',
-                      notes: '',
-                      patientId: 'P-1006'
-                    });
-                  }}
-                  className="px-4 py-2 bg-[#006D77] text-white rounded-md hover:bg-[#005A66]"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

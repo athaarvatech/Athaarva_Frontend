@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,170 +39,147 @@ import {
   Stethoscope,
   Users,
   Eye,
-  MoreHorizontal,
   Shield,
   ShieldOff,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-
-interface Doctor {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  specialization: string;
-  department: string;
-  loginId: string;
-  licenseNumber: string;
-  experience: number;
-  status: "active" | "inactive" | "pending";
-  lastLogin: string;
-  joinDate: string;
-}
+import { useAdminDoctors } from "@/hooks/useAdminDashboard";
+import type { Doctor } from "@/lib/admin-api";
 
 const ManageDoctorsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [verificationFilter, setVerificationFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 50;
 
-  // Mock data
-  const [doctors, setDoctors] = useState<Doctor[]>([
-    {
-      id: "1",
-      fullName: "Dr. Sarah Johnson",
-      email: "sarah.johnson@hospital.com",
-      phone: "(555) 123-4567",
-      specialization: "Cardiology",
-      department: "Cardiology Department",
-      loginId: "sarah.johnson",
-      licenseNumber: "MD123456",
-      experience: 8,
-      status: "active",
-      lastLogin: "2024-01-15",
-      joinDate: "2023-06-01",
-    },
-    {
-      id: "2",
-      fullName: "Dr. Michael Chen",
-      email: "michael.chen@hospital.com",
-      phone: "(555) 234-5678",
-      specialization: "Emergency Medicine",
-      department: "Emergency Department",
-      loginId: "michael.chen",
-      licenseNumber: "MD234567",
-      experience: 12,
-      status: "active",
-      lastLogin: "2024-01-14",
-      joinDate: "2022-03-15",
-    },
-    {
-      id: "3",
-      fullName: "Dr. Emily Rodriguez",
-      email: "emily.rodriguez@hospital.com",
-      phone: "(555) 345-6789",
-      specialization: "Pediatrics",
-      department: "Pediatric Ward",
-      loginId: "emily.rodriguez",
-      licenseNumber: "MD345678",
-      experience: 6,
-      status: "inactive",
-      lastLogin: "2024-01-10",
-      joinDate: "2023-09-01",
-    },
-    {
-      id: "4",
-      fullName: "Dr. Robert Wilson",
-      email: "robert.wilson@hospital.com",
-      phone: "(555) 456-7890",
-      specialization: "Surgery",
-      department: "Operating Theater",
-      loginId: "robert.wilson",
-      licenseNumber: "MD456789",
-      experience: 15,
-      status: "pending",
-      lastLogin: "Never",
-      joinDate: "2024-01-12",
-    },
-  ]);
+  // Fetch doctors from API
+  const {
+    doctors,
+    total,
+    totalPages,
+    isLoading,
+    error,
+    refetch,
+    updateDoctorStatus,
+    deleteDoctor,
+  } = useAdminDoctors(currentPage, perPage);
 
-  const departments = [
-    "all",
-    "Cardiology Department",
-    "Emergency Department",
-    "Pediatric Ward",
-    "Operating Theater",
-  ];
-  const statuses = ["all", "active", "inactive", "pending"];
+  // Get unique specializations for filter
+  const specializations = useMemo(() => {
+    const specs = new Set<string>();
+    doctors.forEach((doc) => {
+      if (doc.specialization) {
+        specs.add(doc.specialization);
+      }
+    });
+    return ["all", ...Array.from(specs)];
+  }, [doctors]);
+
+  const statuses = ["all", "active", "inactive"];
+  const verificationStatuses = ["all", "verified", "unverified"];
 
   // Filter doctors
-  const filteredDoctors = doctors.filter((doctor) => {
-    const matchesSearch =
-      doctor.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDoctors = useMemo(() => {
+    return doctors.filter((doctor) => {
+      const matchesSearch =
+        doctor.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
-    const matchesStatus =
-      statusFilter === "all" || doctor.status === statusFilter;
-    const matchesDepartment =
-      departmentFilter === "all" || doctor.department === departmentFilter;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && doctor.is_active) ||
+        (statusFilter === "inactive" && !doctor.is_active);
 
-    return matchesSearch && matchesStatus && matchesDepartment;
-  });
+      const matchesVerification =
+        verificationFilter === "all" ||
+        (verificationFilter === "verified" && doctor.is_verified) ||
+        (verificationFilter === "unverified" && !doctor.is_verified);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            Active
-          </Badge>
-        );
-      case "inactive":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-            Inactive
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            Pending
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+      return matchesSearch && matchesStatus && matchesVerification;
+    });
+  }, [doctors, searchTerm, statusFilter, verificationFilter]);
+
+  // Calculate stats from real data
+  const stats = useMemo(() => {
+    return {
+      total: total,
+      active: doctors.filter((d) => d.is_active).length,
+      inactive: doctors.filter((d) => !d.is_active).length,
+      unverified: doctors.filter((d) => !d.is_verified).length,
+      onboardingComplete: doctors.filter((d) => d.onboarding_completed).length,
+    };
+  }, [doctors, total]);
+
+  const getStatusBadge = (doctor: Doctor) => {
+    if (!doctor.is_verified) {
+      return (
+        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+          Unverified
+        </Badge>
+      );
+    }
+    if (doctor.is_active) {
+      return (
+        <Badge className="bg-green-100 text-green-800 border-green-200">
+          Active
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+        Inactive
+      </Badge>
+    );
+  };
+
+  const handleStatusToggle = async (doctor: Doctor) => {
+    const newStatus = !doctor.is_active;
+    const result = await updateDoctorStatus(doctor.doctor_id, {
+      is_active: newStatus,
+    });
+
+    if (result.success) {
+      toast.success(
+        `Doctor ${newStatus ? "activated" : "deactivated"} successfully`
+      );
+    } else {
+      toast.error(result.error || "Failed to update doctor status");
     }
   };
 
-  const handleStatusToggle = (doctor: Doctor) => {
-    const newStatus = doctor.status === "active" ? "inactive" : "active";
-    setDoctors((prev) =>
-      prev.map((d) => (d.id === doctor.id ? { ...d, status: newStatus } : d))
-    );
-    toast.success(
-      `Doctor ${
-        newStatus === "active" ? "activated" : "deactivated"
-      } successfully`
-    );
-  };
+  const handleVerificationToggle = async (doctor: Doctor) => {
+    const newStatus = !doctor.is_verified;
+    const result = await updateDoctorStatus(doctor.doctor_id, {
+      is_verified: newStatus,
+    });
 
-  const handleDeleteDoctor = () => {
-    if (selectedDoctor) {
-      setDoctors((prev) => prev.filter((d) => d.id !== selectedDoctor.id));
-      toast.success("Doctor removed successfully");
-      setDeleteDialogOpen(false);
-      setSelectedDoctor(null);
+    if (result.success) {
+      toast.success(
+        `Doctor ${newStatus ? "verified" : "unverified"} successfully`
+      );
+    } else {
+      toast.error(result.error || "Failed to update verification status");
     }
   };
 
-  const handleResetPassword = () => {
+  const handleDeleteDoctor = async () => {
     if (selectedDoctor) {
-      toast.success(`Password reset email sent to ${selectedDoctor.email}`);
-      setResetPasswordDialogOpen(false);
-      setSelectedDoctor(null);
+      const result = await deleteDoctor(selectedDoctor.doctor_id);
+
+      if (result.success) {
+        toast.success("Doctor removed successfully");
+        setDeleteDialogOpen(false);
+        setSelectedDoctor(null);
+      } else {
+        toast.error(result.error || "Failed to delete doctor");
+      }
     }
   };
 
@@ -211,10 +188,39 @@ const ManageDoctorsPage = () => {
     setDeleteDialogOpen(true);
   };
 
-  const openResetPasswordDialog = (doctor: Doctor) => {
-    setSelectedDoctor(doctor);
-    setResetPasswordDialogOpen(true);
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
   };
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Failed to Load Doctors
+          </h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button
+            onClick={() => refetch()}
+            className="bg-[#007C7C] hover:bg-[#006666]"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -231,6 +237,16 @@ const ManageDoctorsPage = () => {
         </div>
 
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
           <Button asChild className="bg-[#007C7C] hover:bg-[#006666]">
             <Link href="/Admin/add-doctor">
               <UserPlus className="mr-2 h-4 w-4" />
@@ -241,7 +257,7 @@ const ManageDoctorsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card className="border-[#007C7C]/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -249,7 +265,7 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Total Doctors</p>
                 <p className="text-xl font-bold text-[#007C7C]">
-                  {doctors.length}
+                  {isLoading ? "..." : stats.total}
                 </p>
               </div>
             </div>
@@ -263,7 +279,7 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Active</p>
                 <p className="text-xl font-bold text-green-600">
-                  {doctors.filter((d) => d.status === "active").length}
+                  {isLoading ? "..." : stats.active}
                 </p>
               </div>
             </div>
@@ -277,7 +293,7 @@ const ManageDoctorsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Inactive</p>
                 <p className="text-xl font-bold text-gray-600">
-                  {doctors.filter((d) => d.status === "inactive").length}
+                  {isLoading ? "..." : stats.inactive}
                 </p>
               </div>
             </div>
@@ -287,11 +303,25 @@ const ManageDoctorsPage = () => {
         <Card className="border-yellow-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <MoreHorizontal className="h-5 w-5 text-yellow-600" />
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
               <div>
-                <p className="text-sm text-gray-600">Pending</p>
+                <p className="text-sm text-gray-600">Unverified</p>
                 <p className="text-xl font-bold text-yellow-600">
-                  {doctors.filter((d) => d.status === "pending").length}
+                  {isLoading ? "..." : stats.unverified}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-600">Onboarded</p>
+                <p className="text-xl font-bold text-blue-600">
+                  {isLoading ? "..." : stats.onboardingComplete}
                 </p>
               </div>
             </div>
@@ -337,16 +367,18 @@ const ManageDoctorsPage = () => {
             </Select>
 
             <Select
-              value={departmentFilter}
-              onValueChange={setDepartmentFilter}
+              value={verificationFilter}
+              onValueChange={setVerificationFilter}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Filter by department" />
+                <SelectValue placeholder="Filter by verification" />
               </SelectTrigger>
               <SelectContent>
-                {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept === "all" ? "All Departments" : dept}
+                {verificationStatuses.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status === "all"
+                      ? "All Verifications"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -357,7 +389,7 @@ const ManageDoctorsPage = () => {
               onClick={() => {
                 setSearchTerm("");
                 setStatusFilter("all");
-                setDepartmentFilter("all");
+                setVerificationFilter("all");
               }}
             >
               <RotateCcw className="mr-2 h-4 w-4" />
@@ -370,101 +402,163 @@ const ManageDoctorsPage = () => {
       {/* Doctors Table */}
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle>Doctors List ({filteredDoctors.length})</CardTitle>
+          <CardTitle>
+            Doctors List ({isLoading ? "..." : filteredDoctors.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Doctor</TableHead>
-                  <TableHead>Specialization</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Experience</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDoctors.map((doctor) => (
-                  <TableRow key={doctor.id} className="hover:bg-gray-50">
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{doctor.fullName}</p>
-                        <p className="text-sm text-gray-500">{doctor.email}</p>
-                        <p className="text-sm text-gray-500">{doctor.phone}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{doctor.specialization}</TableCell>
-                    <TableCell>{doctor.department}</TableCell>
-                    <TableCell>{doctor.experience} years</TableCell>
-                    <TableCell>{getStatusBadge(doctor.status)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={
-                          doctor.lastLogin === "Never" ? "text-red-500" : ""
-                        }
-                      >
-                        {doctor.lastLogin}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toast.info("Edit functionality coming soon")
-                          }
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openResetPasswordDialog(doctor)}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleStatusToggle(doctor)}
-                          className={
-                            doctor.status === "active"
-                              ? "text-red-600 hover:text-red-700"
-                              : "text-green-600 hover:text-green-700"
-                          }
-                        >
-                          {doctor.status === "active" ? (
-                            <ShieldOff className="h-4 w-4" />
-                          ) : (
-                            <Shield className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDeleteDialog(doctor)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#007C7C]" />
+              <span className="ml-3 text-gray-600">Loading doctors...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Doctor</TableHead>
+                    <TableHead>Specialization</TableHead>
+                    <TableHead>License</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Onboarding</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredDoctors.map((doctor) => (
+                    <TableRow key={doctor.doctor_id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{doctor.full_name}</p>
+                          <p className="text-sm text-gray-500">{doctor.email}</p>
+                          {doctor.phone && (
+                            <p className="text-sm text-gray-500">{doctor.phone}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {doctor.specialization || (
+                          <span className="text-gray-400 italic">Not set</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {doctor.license_number || (
+                          <span className="text-gray-400 italic">Not set</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(doctor)}</TableCell>
+                      <TableCell>
+                        {doctor.onboarding_completed ? (
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                            Complete
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-600">
+                            Pending
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(doctor.created_at)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleVerificationToggle(doctor)}
+                            title={
+                              doctor.is_verified ? "Unverify" : "Verify"
+                            }
+                            className={
+                              doctor.is_verified
+                                ? "text-yellow-600 hover:text-yellow-700"
+                                : "text-green-600 hover:text-green-700"
+                            }
+                          >
+                            {doctor.is_verified ? (
+                              <ShieldOff className="h-4 w-4" />
+                            ) : (
+                              <Shield className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStatusToggle(doctor)}
+                            title={
+                              doctor.is_active ? "Deactivate" : "Activate"
+                            }
+                            className={
+                              doctor.is_active
+                                ? "text-gray-600 hover:text-gray-700"
+                                : "text-green-600 hover:text-green-700"
+                            }
+                          >
+                            {doctor.is_active ? (
+                              <ShieldOff className="h-4 w-4" />
+                            ) : (
+                              <Shield className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDeleteDialog(doctor)}
+                            className="text-red-600 hover:text-red-700"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-            {filteredDoctors.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <Eye className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p>No doctors found matching your criteria</p>
+              {filteredDoctors.length === 0 && !isLoading && (
+                <div className="text-center py-8 text-gray-500">
+                  <Eye className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-lg font-medium">No doctors found</p>
+                  <p className="text-sm">
+                    {searchTerm || statusFilter !== "all" || verificationFilter !== "all"
+                      ? "Try adjusting your filters"
+                      : "Add your first doctor to get started"}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages} ({total} total)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1 || isLoading}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages || isLoading}
+                >
+                  Next
+                </Button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -474,8 +568,9 @@ const ManageDoctorsPage = () => {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {selectedDoctor?.fullName}? This
-              action cannot be undone.
+              Are you sure you want to remove {selectedDoctor?.full_name}? This
+              action cannot be undone and will permanently delete all associated
+              data.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -487,36 +582,6 @@ const ManageDoctorsPage = () => {
             </Button>
             <Button variant="destructive" onClick={handleDeleteDoctor}>
               Delete Doctor
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reset Password Dialog */}
-      <Dialog
-        open={resetPasswordDialogOpen}
-        onOpenChange={setResetPasswordDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>
-              Send a password reset email to {selectedDoctor?.fullName} at{" "}
-              {selectedDoctor?.email}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setResetPasswordDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleResetPassword}
-              className="bg-[#007C7C] hover:bg-[#006666]"
-            >
-              Send Reset Email
             </Button>
           </DialogFooter>
         </DialogContent>

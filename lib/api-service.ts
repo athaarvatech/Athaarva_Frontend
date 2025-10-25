@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_CONFIG, DEFAULT_HEADERS, REQUEST_TIMEOUT } from './api-config';
+import { API_CONFIG, DEFAULT_HEADERS, REQUEST_TIMEOUT, LONG_REQUEST_TIMEOUT } from './api-config';
 
 // API types
 export interface ApiResponse<T = unknown> {
@@ -167,25 +167,80 @@ class ApiService {
     }
   }
 
-  // HTTP methods
+  // HTTP methods with enhanced error handling
   async get<T>(url: string, config?: RequestConfig): Promise<T> {
-    const response = await this.api.get(url, config);
-    return response.data as T;
+    try {
+      const response = await this.api.get(url, config);
+      return response.data as T;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.code === 'ECONNABORTED') {
+        console.error(`Request timeout for GET ${url}`);
+        throw new Error('Request timed out. The server is taking too long to respond.');
+      }
+      throw error;
+    }
   }
 
   async post<T>(url: string, data?: RequestData, config?: RequestConfig): Promise<T> {
-    const response = await this.api.post(url, data, config);
-    return response.data as T;
+    try {
+      const response = await this.api.post(url, data, config);
+      return response.data as T;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.code === 'ECONNABORTED') {
+        console.error(`Request timeout for POST ${url}`);
+        throw new Error('Request timed out. The server is taking too long to respond.');
+      }
+      throw error;
+    }
   }
 
   async put<T>(url: string, data?: RequestData, config?: RequestConfig): Promise<T> {
-    const response = await this.api.put(url, data, config);
-    return response.data as T;
+    try {
+      const response = await this.api.put(url, data, config);
+      return response.data as T;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.code === 'ECONNABORTED') {
+        console.error(`Request timeout for PUT ${url}`);
+        throw new Error('Request timed out. The server is taking too long to respond.');
+      }
+      throw error;
+    }
   }
 
   async delete<T>(url: string, config?: RequestConfig): Promise<T> {
-    const response = await this.api.delete(url, config);
-    return response.data as T;
+    try {
+      const response = await this.api.delete(url, config);
+      return response.data as T;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.code === 'ECONNABORTED') {
+        console.error(`Request timeout for DELETE ${url}`);
+        throw new Error('Request timed out. The server is taking too long to respond.');
+      }
+      throw error;
+    }
+  }
+
+  // Special method for long-running requests
+  async getLongRunning<T>(url: string, config?: RequestConfig): Promise<T> {
+    const extendedConfig = {
+      ...config,
+      timeout: LONG_REQUEST_TIMEOUT,
+    };
+    try {
+      const response = await this.api.get(url, extendedConfig);
+      return response.data as T;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.code === 'ECONNABORTED') {
+        console.error(`Long request timeout for GET ${url}`);
+        throw new Error('Request timed out even with extended timeout. Please check the server.');
+      }
+      throw error;
+    }
   }
 
   // Authentication endpoints

@@ -102,8 +102,8 @@ NEXT_PUBLIC_STOREFRONT_TOKEN=your-storefront-access-token
 
 1. **Set up environment variables:**
    ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your Shopify credentials
+   cp .env.example .
+   # Edit . with your Shopify credentials
    ```
 
 2. **Test the configuration:**

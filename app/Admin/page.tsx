@@ -21,129 +21,26 @@ import {
   Download,
   Bell,
   Filter,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useAdminDashboard, useAdminRefresh } from "@/hooks/useAdminDashboard";
 
 const AdminDashboard = () => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const {
+    stats,
+    recentActivity,
+    pendingActions,
+    isLoading,
+    error,
+    refetch,
+  } = useAdminDashboard();
+  
+  const { isRefreshing, refreshAll } = useAdminRefresh();
 
-  // Mock data for dashboard
-  const stats = {
-    totalDoctors: 24,
-    totalStaff: 38,
-    activeDoctors: 22,
-    activeStaff: 35,
-    pendingApprovals: 3,
-    systemAlerts: 2,
-    monthlyGrowth: {
-      doctors: 8.3,
-      staff: 12.5,
-      activeUsers: 5.7,
-      efficiency: 15.2,
-    },
+  const handleRefresh = async () => {
+    await refreshAll([refetch]);
   };
-
-  const recentActivity = [
-    {
-      id: 1,
-      type: "doctor_added",
-      user: {
-        name: "Dr. Sarah Johnson",
-        avatar: null,
-        department: "Cardiology",
-      },
-      message: "Added to Cardiology department",
-      time: "2 hours ago",
-      status: "success",
-    },
-    {
-      id: 2,
-      type: "staff_added",
-      user: {
-        name: "Mary Williams",
-        avatar: null,
-        department: "ICU",
-      },
-      message: "Nurse added to ICU ward",
-      time: "4 hours ago",
-      status: "success",
-    },
-    {
-      id: 3,
-      type: "pending_approval",
-      user: {
-        name: "Dr. Robert Chen",
-        avatar: null,
-        department: "Neurology",
-      },
-      message: "Verification pending for Neurology",
-      time: "6 hours ago",
-      status: "pending",
-    },
-    {
-      id: 4,
-      type: "password_reset",
-      user: {
-        name: "John Doe",
-        avatar: null,
-        department: "Administration",
-      },
-      message: "Password reset completed",
-      time: "1 day ago",
-      status: "info",
-    },
-    {
-      id: 5,
-      type: "system_update",
-      user: {
-        name: "System Admin",
-        avatar: null,
-        department: "IT",
-      },
-      message: "Security patch installed successfully",
-      time: "2 days ago",
-      status: "success",
-    },
-  ];
-
-  const pendingActions = [
-    {
-      id: 1,
-      title: "Doctor Verification",
-      description: "3 doctors pending verification",
-      action: "Review",
-      priority: "high",
-      count: 3,
-      dueDate: "Today",
-    },
-    {
-      id: 2,
-      title: "Staff Onboarding",
-      description: "5 new staff members to onboard",
-      action: "Process",
-      priority: "medium",
-      count: 5,
-      dueDate: "This week",
-    },
-    {
-      id: 3,
-      title: "System Update",
-      description: "Security update available",
-      action: "Install",
-      priority: "medium",
-      count: 1,
-      dueDate: "Next week",
-    },
-    {
-      id: 4,
-      title: "Backup Report",
-      description: "Weekly backup completed",
-      action: "View",
-      priority: "low",
-      count: 1,
-      dueDate: "Completed",
-    },
-  ];
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -187,13 +84,37 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1500);
-  };
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-[#007C7C]" />
+          <p className="text-[#6B7280]">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
+          <p className="text-red-600">{error}</p>
+          <Button onClick={refetch} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If no stats loaded yet
+  if (!stats) {
+    return null;
+  }
 
   return (
     <div className="space-y-8">

@@ -42,7 +42,7 @@ const FamilyHealthOverview = () => {
   ]);
 
   // Permission level badge color
-  const getPermissionBadge = (level) => {
+  const getPermissionBadge = (level: string) => {
     switch(level) {
       case 'full':
         return <Badge className="bg-green-100 text-green-800 border-green-200">Full Access</Badge>;
@@ -56,7 +56,7 @@ const FamilyHealthOverview = () => {
   };
 
   // Status indicator
-  const getStatusIndicator = (status) => {
+  const getStatusIndicator = (status: string) => {
     switch(status) {
       case 'healthy':
         return <span className="w-2 h-2 bg-green-500 rounded-full"></span>;
@@ -106,14 +106,14 @@ const FamilyHealthOverview = () => {
               <div className="flex-grow">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium flex items-center">
+                    <div className="font-medium flex items-center">
                       {member.name}
                       {member.alerts > 0 && (
                         <Badge variant="outline" className="ml-2 h-5 px-1.5 bg-amber-50 text-amber-800 border-amber-200">
                           {member.alerts}
                         </Badge>
                       )}
-                    </p>
+                    </div>
                     <p className="text-xs text-gray-600">{member.age} yrs • {member.relationship}</p>
                   </div>
                   {getPermissionBadge(member.permissionLevel)}

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,10 @@ import {
   Shield,
   FileText,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { API_CONFIG } from "@/lib/api-config";
 
 // Import step components
 import BasicInformationStep from "./components/BasicInformationStep";
@@ -82,6 +84,8 @@ export interface PatientOnboardingData {
     abhaId: string;
     phone: string;
     email: string;
+    password: string;
+    confirmPassword: string;
     emergencyContact: {
       name: string;
       relation: string;
@@ -124,10 +128,38 @@ export interface PatientOnboardingData {
 
 function PatientOnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { updateOnboardingStatus } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hospitalContext, setHospitalContext] = useState<{
+    hospital_id: string;
+    hospital_code: string;
+    hospital_name: string;
+  } | null>(null);
+
+  // Get hospital context from session storage or URL
+  useEffect(() => {
+    const hospitalParam = searchParams.get('hospital');
+    const storedHospitalId = sessionStorage.getItem('onboarding_hospital_id');
+    const storedHospitalCode = sessionStorage.getItem('onboarding_hospital_code');
+    const storedHospitalName = sessionStorage.getItem('onboarding_hospital_name');
+
+    if (storedHospitalId && storedHospitalCode && storedHospitalName) {
+      setHospitalContext({
+        hospital_id: storedHospitalId,
+        hospital_code: storedHospitalCode,
+        hospital_name: storedHospitalName,
+      });
+    } else if (hospitalParam) {
+      // If coming from URL but no session storage, redirect back to auth
+      router.push(`/auth/hospital/${hospitalParam}`);
+    } else {
+      // No hospital context - redirect to hospital selection
+      router.push('/auth');
+    }
+  }, [searchParams, router]);
 
   // Initialize onboarding data
   const [onboardingData, setOnboardingData] = useState<PatientOnboardingData>({
@@ -139,6 +171,8 @@ function PatientOnboardingPage() {
       abhaId: "",
       phone: "",
       email: "",
+      password: "",
+      confirmPassword: "",
       emergencyContact: {
         name: "",
         relation: "",
@@ -213,20 +247,27 @@ function PatientOnboardingPage() {
   };
 
   const handleSubmitOnboarding = async () => {
+    if (!hospitalContext) {
+      console.error('No hospital context available');
+      alert('Hospital information is missing. Please start over from the hospital login page.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Get the access token from localStorage
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      console.log("Starting onboarding submission...");
+      console.log("Hospital context:", hospitalContext);
 
       // Transform frontend data to backend format
       const onboardingPayload = {
+        hospital_code: hospitalContext.hospital_code, // Include hospital code
         basic_info: {
           first_name: onboardingData.basicInfo.firstName,
           last_name: onboardingData.basicInfo.lastName,
+          email: onboardingData.basicInfo.email,
+          phone: onboardingData.basicInfo.phone,
+          password: onboardingData.basicInfo.password, // User's chosen password
           date_of_birth: onboardingData.basicInfo.dateOfBirth,
           gender: onboardingData.basicInfo.gender.toLowerCase(),
           abha_id: onboardingData.basicInfo.abhaId || null,
@@ -268,29 +309,66 @@ function PatientOnboardingPage() {
         },
       };
 
-      // Submit to backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/v1/patients/onboarding`, {
+      console.log("Submitting payload:", JSON.stringify(onboardingPayload, null, 2));
+
+      // Submit to backend (NO AUTHENTICATION REQUIRED - this is signup)
+      const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PATIENTS.ONBOARDING}`;
+      console.log("API URL:", apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(onboardingPayload),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to complete onboarding');
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        
+        let errorMessage = 'Failed to complete onboarding';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      // Show success message and redirect
+      const data = await response.json();
+      console.log("Success response:", data);
+
+      // Clear onboarding session data
+      sessionStorage.removeItem('onboarding_hospital_id');
+      sessionStorage.removeItem('onboarding_hospital_code');
+      sessionStorage.removeItem('onboarding_hospital_name');
+
+      // Show success message and redirect to sign-in page
       await updateOnboardingStatus(true);
+      
+      console.log("Registration successful! Redirecting to sign-in page...");
       setTimeout(() => {
-        router.push("/patient/dashboard");
+        // Redirect to hospital sign-in page where they can log in with their new credentials
+        router.push(`/auth/hospital/${hospitalContext.hospital_code}`);
       }, 1500);
+      
     } catch (error) {
       console.error("Onboarding submission failed:", error);
-      // You might want to show an error notification here
+      
+      let errorMessage = 'Failed to complete onboarding. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -299,9 +377,40 @@ function PatientOnboardingPage() {
   const currentStepConfig = steps.find((step) => step.id === currentStep);
   const CurrentStepComponent = currentStepConfig?.component;
 
+  // Show loading while hospital context is being loaded
+  if (!hospitalContext) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-blue-50">
       <div className="h-screen flex flex-col">
+        {/* Hospital Context Banner */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 sm:px-6 flex-shrink-0">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div>
+              <p className="text-xs opacity-90">Registering at</p>
+              <p className="text-base font-semibold">{hospitalContext.hospital_name}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/auth/hospital/${hospitalContext.hospital_code}`)}
+              className="text-white hover:bg-white/20"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
+        </div>
+
         {/* Compact Header */}
         <div className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex-shrink-0">
           <div className="max-w-7xl mx-auto flex items-center justify-between">

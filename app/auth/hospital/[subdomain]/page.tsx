@@ -65,6 +65,7 @@ export default function HospitalAuthPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<"patient" | "doctor" | "admin">("admin");
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -170,6 +171,8 @@ export default function HospitalAuthPage() {
   authLogin(data.access_token, data.user_type, resolvedUserId);
   localStorage.setItem("hospital_id", data.hospital_id?.toString() || "");
   localStorage.setItem("hospital_code", data.hospital_code || "");
+  localStorage.setItem("hospital_name", hospital?.hospital_name || "");
+  localStorage.setItem("user_name", data.full_name || data.email || "Patient");
 
       // Redirect based on user type
       switch (data.user_type) {
@@ -190,6 +193,51 @@ export default function HospitalAuthPage() {
       setError((err as Error).message || "Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePatientSignup = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    if (!hospital) {
+      setError("Hospital information not available");
+      return;
+    }
+    
+    try {
+      console.log("Starting patient registration flow...", {
+        hospital_id: hospital.id,
+        hospital_code: subdomain,
+        hospital_name: hospital.hospital_name
+      });
+      
+      // IMPORTANT: Clear any existing auth data to prevent auto-redirects
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_type");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("hospital_id");
+      localStorage.removeItem("hospital_code");
+      
+      // Store hospital context in sessionStorage for onboarding
+      sessionStorage.setItem("onboarding_hospital_id", hospital.id.toString());
+      sessionStorage.setItem("onboarding_hospital_code", subdomain);
+      sessionStorage.setItem("onboarding_hospital_name", hospital.hospital_name);
+      
+      console.log("Cleared auth data, stored onboarding context");
+      
+      // Redirect to patient onboarding
+      const targetUrl = `/onboarding/patient?hospital=${subdomain}`;
+      console.log("Redirecting to:", targetUrl);
+      
+      // Use window.location for hard navigation to ensure clean state
+      window.location.href = targetUrl;
+      
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setError("Failed to navigate to registration. Please try again.");
     }
   };
 
@@ -328,87 +376,175 @@ export default function HospitalAuthPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <form onSubmit={handleLogin} className="space-y-4 mt-6">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={credentials.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      required
-                      placeholder={
-                        activeRole === "patient" ? "patient@example.com" :
-                        activeRole === "doctor" ? `doctor@${subdomain}.com` :
-                        `admin@${subdomain}.com`
-                      }
-                    />
+                {/* Sign In/Sign Up Toggle for Patients */}
+                {activeRole === "patient" && (
+                  <div className="mt-4 flex justify-center">
+                    <div className="inline-flex rounded-lg border border-gray-200 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("signin")}
+                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                          authMode === "signin"
+                            ? "bg-blue-600 text-white"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("signup")}
+                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                          authMode === "signup"
+                            ? "bg-blue-600 text-white"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        Sign Up
+                      </button>
+                    </div>
                   </div>
+                )}
 
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
+                {/* Sign In Form (for all roles) */}
+                {authMode === "signin" && (
+                  <form onSubmit={handleLogin} className="space-y-4 mt-6">
+                    <div>
+                      <Label htmlFor="email">Email</Label>
                       <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={credentials.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        id="email"
+                        type="email"
+                        value={credentials.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
                         required
-                        placeholder="Enter your password"
+                        placeholder={
+                          activeRole === "patient" ? "patient@example.com" :
+                          activeRole === "doctor" ? `doctor@${subdomain}.com` :
+                          `admin@${subdomain}.com`
+                        }
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          value={credentials.password}
+                          onChange={(e) => handleInputChange("password", e.target.value)}
+                          required
+                          placeholder="Enter your password"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isSubmitting}
+                      style={{ 
+                        backgroundColor: hospital?.branding?.primary_color || '#0369a1',
+                        borderColor: hospital?.branding?.primary_color || '#0369a1'
+                      }}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Signing In...
+                        </>
+                      ) : (
+                        `Sign In as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`
+                      )}
+                    </Button>
+                  </form>
+                )}
+
+                {/* Sign Up Message for Patients */}
+                {authMode === "signup" && activeRole === "patient" && (
+                  <div className="mt-6 space-y-4">
+                    <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        New Patient Registration
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Complete a quick onboarding process to register as a patient at {hospital?.hospital_name}. 
+                        You'll be able to book appointments, access medical records, and more.
+                      </p>
+                      <ul className="text-sm text-gray-600 space-y-2 mb-4">
+                        <li className="flex items-center">
+                          <span className="mr-2">✓</span>
+                          Personal information & emergency contacts
+                        </li>
+                        <li className="flex items-center">
+                          <span className="mr-2">✓</span>
+                          Medical history & current medications
+                        </li>
+                        <li className="flex items-center">
+                          <span className="mr-2">✓</span>
+                          Insurance information (optional)
+                        </li>
+                      </ul>
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePatientSignup(e);
+                        }}
+                        className="w-full"
+                        style={{ 
+                          backgroundColor: hospital?.branding?.primary_color || '#0369a1',
+                          borderColor: hospital?.branding?.primary_color || '#0369a1'
+                        }}
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        Continue to Registration
                       </Button>
                     </div>
                   </div>
+                )}
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isSubmitting}
-                    style={{ 
-                      backgroundColor: hospital?.branding?.primary_color || '#0369a1',
-                      borderColor: hospital?.branding?.primary_color || '#0369a1'
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Signing In...
-                      </>
-                    ) : (
-                      `Sign In as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`
-                    )}
-                  </Button>
-                </form>
-
-                  {/* Role-specific information */}
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">
-                      {activeRole === "patient" && "Patient Access"}
-                      {activeRole === "doctor" && "Doctor Portal"}
-                      {activeRole === "admin" && "Hospital Administration"}
-                    </h4>
-                    <p className="text-xs text-gray-600">
-                      {activeRole === "patient" && "Access your medical records, appointments, and healthcare services."}
-                      {activeRole === "doctor" && "Manage patient consultations, schedules, and medical records."}
-                      {activeRole === "admin" && "Hospital management, staff coordination, and administrative functions."}
+                {/* Sign Up Not Available for Doctor/Admin */}
+                {authMode === "signup" && activeRole !== "patient" && (
+                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      {activeRole === "doctor" && "Doctor accounts are created by hospital administrators. Please contact your hospital admin to get access."}
+                      {activeRole === "admin" && "Admin accounts are created during hospital onboarding. Please contact support for assistance."}
                     </p>
                   </div>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
+                )}
+
+                  {/* Role-specific information (only for sign in) */}
+                  {authMode === "signin" && (
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">
+                        {activeRole === "patient" && "Patient Access"}
+                        {activeRole === "doctor" && "Doctor Portal"}
+                        {activeRole === "admin" && "Hospital Administration"}
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        {activeRole === "patient" && "Access your medical records, appointments, and healthcare services."}
+                        {activeRole === "doctor" && "Manage patient consultations, schedules, and medical records."}
+                        {activeRole === "admin" && "Hospital management, staff coordination, and administrative functions."}
+                      </p>
+                    </div>
+                  )}
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
         </div>
       </div>
     );
