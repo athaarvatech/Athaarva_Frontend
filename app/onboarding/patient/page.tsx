@@ -27,7 +27,7 @@ import FinalReviewStep from "./components/FinalReviewStep";
 import InsuranceSetupStep from "./components/InsuranceSetupStep";
 
 interface StepConfig {
-  id: number;
+  id: number; // Step number (not entity ID)
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -134,30 +134,37 @@ function PatientOnboardingPage() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hospitalContext, setHospitalContext] = useState<{
-    hospital_id: string;
-    hospital_code: string;
-    hospital_name: string;
+    tenant_id: string; // UUID - renamed from hospital_id
+    subdomain: string; // renamed from hospital_code
+    tenant_name: string; // renamed from hospital_name
   } | null>(null);
 
-  // Get hospital context from session storage or URL
+  // Get hospital/tenant context from session storage or URL
   useEffect(() => {
-    const hospitalParam = searchParams.get('hospital');
-    const storedHospitalId = sessionStorage.getItem('onboarding_hospital_id');
-    const storedHospitalCode = sessionStorage.getItem('onboarding_hospital_code');
-    const storedHospitalName = sessionStorage.getItem('onboarding_hospital_name');
+    const hospitalParam = searchParams.get("hospital");
+    // Support both old and new field names during migration
+    const storedTenantId =
+      sessionStorage.getItem("onboarding_tenant_id") ||
+      sessionStorage.getItem("onboarding_hospital_id");
+    const storedSubdomain =
+      sessionStorage.getItem("onboarding_subdomain") ||
+      sessionStorage.getItem("onboarding_hospital_code");
+    const storedTenantName =
+      sessionStorage.getItem("onboarding_tenant_name") ||
+      sessionStorage.getItem("onboarding_hospital_name");
 
-    if (storedHospitalId && storedHospitalCode && storedHospitalName) {
+    if (storedTenantId && storedSubdomain && storedTenantName) {
       setHospitalContext({
-        hospital_id: storedHospitalId,
-        hospital_code: storedHospitalCode,
-        hospital_name: storedHospitalName,
+        tenant_id: storedTenantId, // UUID
+        subdomain: storedSubdomain,
+        tenant_name: storedTenantName,
       });
     } else if (hospitalParam) {
       // If coming from URL but no session storage, redirect back to auth
       router.push(`/auth/hospital/${hospitalParam}`);
     } else {
       // No hospital context - redirect to hospital selection
-      router.push('/auth');
+      router.push("/auth");
     }
   }, [searchParams, router]);
 
@@ -248,8 +255,10 @@ function PatientOnboardingPage() {
 
   const handleSubmitOnboarding = async () => {
     if (!hospitalContext) {
-      console.error('No hospital context available');
-      alert('Hospital information is missing. Please start over from the hospital login page.');
+      console.error("No hospital context available");
+      alert(
+        "Hospital information is missing. Please start over from the hospital login page."
+      );
       return;
     }
 
@@ -261,7 +270,8 @@ function PatientOnboardingPage() {
 
       // Transform frontend data to backend format
       const onboardingPayload = {
-        hospital_code: hospitalContext.hospital_code, // Include hospital code
+        subdomain: hospitalContext.subdomain, // Tenant subdomain (renamed from hospital_code)
+        tenant_id: hospitalContext.tenant_id, // UUID (optional - backend can resolve from subdomain)
         basic_info: {
           first_name: onboardingData.basicInfo.firstName,
           last_name: onboardingData.basicInfo.lastName,
@@ -272,32 +282,52 @@ function PatientOnboardingPage() {
           gender: onboardingData.basicInfo.gender.toLowerCase(),
           abha_id: onboardingData.basicInfo.abhaId || null,
           address: onboardingData.basicInfo.address || null,
-          emergency_contact_name: onboardingData.basicInfo.emergencyContact.name || null,
-          emergency_contact_relation: onboardingData.basicInfo.emergencyContact.relation || null,
-          emergency_contact_phone: onboardingData.basicInfo.emergencyContact.phone || null,
+          emergency_contact_name:
+            onboardingData.basicInfo.emergencyContact.name || null,
+          emergency_contact_relation:
+            onboardingData.basicInfo.emergencyContact.relation || null,
+          emergency_contact_phone:
+            onboardingData.basicInfo.emergencyContact.phone || null,
         },
         medical_history: {
           allergies: onboardingData.medicalHistory.allergies || [],
-          chronic_illnesses: onboardingData.medicalHistory.chronicIllnesses || [],
+          chronic_illnesses:
+            onboardingData.medicalHistory.chronicIllnesses || [],
           past_surgeries: onboardingData.medicalHistory.pastSurgeries || null,
-          current_medications: onboardingData.medicalHistory.currentMedications || [],
-          no_medical_history: onboardingData.medicalHistory.noMedicalHistory || false,
+          current_medications:
+            onboardingData.medicalHistory.currentMedications || [],
+          no_medical_history:
+            onboardingData.medicalHistory.noMedicalHistory || false,
         },
-        vaccinations: onboardingData.medicalHistory.vaccinations?.map(v => ({
-          vaccine_name: v.vaccine,
-          vaccination_date: v.date,
-        })) || [],
+        vaccinations:
+          onboardingData.medicalHistory.vaccinations?.map((v) => ({
+            vaccine_name: v.vaccine,
+            vaccination_date: v.date,
+          })) || [],
         insurance: {
-          provider: onboardingData.insurance.hasInsurance ? onboardingData.insurance.provider : null,
-          policy_number: onboardingData.insurance.hasInsurance ? onboardingData.insurance.policyNumber : null,
-          valid_till: onboardingData.insurance.hasInsurance ? onboardingData.insurance.validTill : null,
-          nominee_name: onboardingData.insurance.hasInsurance ? onboardingData.insurance.nomineeName : null,
-          nominee_relation: onboardingData.insurance.hasInsurance ? onboardingData.insurance.nomineeRelation : null,
+          provider: onboardingData.insurance.hasInsurance
+            ? onboardingData.insurance.provider
+            : null,
+          policy_number: onboardingData.insurance.hasInsurance
+            ? onboardingData.insurance.policyNumber
+            : null,
+          valid_till: onboardingData.insurance.hasInsurance
+            ? onboardingData.insurance.validTill
+            : null,
+          nominee_name: onboardingData.insurance.hasInsurance
+            ? onboardingData.insurance.nomineeName
+            : null,
+          nominee_relation: onboardingData.insurance.hasInsurance
+            ? onboardingData.insurance.nomineeRelation
+            : null,
         },
         health_risk_survey: {
-          smoking_status: onboardingData.consent.healthRiskSurvey.smoking || "never",
-          alcohol_consumption: onboardingData.consent.healthRiskSurvey.alcohol || "never",
-          exercise_frequency: onboardingData.consent.healthRiskSurvey.exercise || "never",
+          smoking_status:
+            onboardingData.consent.healthRiskSurvey.smoking || "never",
+          alcohol_consumption:
+            onboardingData.consent.healthRiskSurvey.alcohol || "never",
+          exercise_frequency:
+            onboardingData.consent.healthRiskSurvey.exercise || "never",
         },
         consent: {
           terms_accepted: onboardingData.consent.termsAccepted,
@@ -309,16 +339,19 @@ function PatientOnboardingPage() {
         },
       };
 
-      console.log("Submitting payload:", JSON.stringify(onboardingPayload, null, 2));
+      console.log(
+        "Submitting payload:",
+        JSON.stringify(onboardingPayload, null, 2)
+      );
 
       // Submit to backend (NO AUTHENTICATION REQUIRED - this is signup)
       const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PATIENTS.ONBOARDING}`;
       console.log("API URL:", apiUrl);
 
       const response = await fetch(apiUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(onboardingPayload),
       });
@@ -328,15 +361,15 @@ function PatientOnboardingPage() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error response:", errorText);
-        
-        let errorMessage = 'Failed to complete onboarding';
+
+        let errorMessage = "Failed to complete onboarding";
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.detail || errorData.message || errorMessage;
         } catch (e) {
           errorMessage = errorText || errorMessage;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -344,30 +377,35 @@ function PatientOnboardingPage() {
       console.log("Success response:", data);
 
       // Clear onboarding session data
-      sessionStorage.removeItem('onboarding_hospital_id');
-      sessionStorage.removeItem('onboarding_hospital_code');
-      sessionStorage.removeItem('onboarding_hospital_name');
+      sessionStorage.removeItem("onboarding_hospital_id");
+      // Clean up old session storage keys (migration cleanup)
+      sessionStorage.removeItem("onboarding_hospital_id");
+      sessionStorage.removeItem("onboarding_hospital_code");
+      sessionStorage.removeItem("onboarding_hospital_name");
+      // Clean up new keys too
+      sessionStorage.removeItem("onboarding_tenant_id");
+      sessionStorage.removeItem("onboarding_subdomain");
+      sessionStorage.removeItem("onboarding_tenant_name");
 
       // Show success message and redirect to sign-in page
       await updateOnboardingStatus(true);
-      
+
       console.log("Registration successful! Redirecting to sign-in page...");
       setTimeout(() => {
-        // Redirect to hospital sign-in page where they can log in with their new credentials
-        router.push(`/auth/hospital/${hospitalContext.hospital_code}`);
+        // Redirect to tenant sign-in page where they can log in with their new credentials
+        router.push(`/auth/hospital/${hospitalContext.subdomain}`);
       }, 1500);
-      
     } catch (error) {
       console.error("Onboarding submission failed:", error);
-      
-      let errorMessage = 'Failed to complete onboarding. Please try again.';
-      
+
+      let errorMessage = "Failed to complete onboarding. Please try again.";
+
       if (error instanceof Error) {
         errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null) {
+      } else if (typeof error === "object" && error !== null) {
         errorMessage = JSON.stringify(error);
       }
-      
+
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -392,17 +430,21 @@ function PatientOnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-blue-50">
       <div className="h-screen flex flex-col">
-        {/* Hospital Context Banner */}
+        {/* Hospital/Tenant Context Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 sm:px-6 flex-shrink-0">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div>
               <p className="text-xs opacity-90">Registering at</p>
-              <p className="text-base font-semibold">{hospitalContext.hospital_name}</p>
+              <p className="text-base font-semibold">
+                {hospitalContext.tenant_name}
+              </p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/auth/hospital/${hospitalContext.hospital_code}`)}
+              onClick={() =>
+                router.push(`/auth/hospital/${hospitalContext.subdomain}`)
+              }
               className="text-white hover:bg-white/20"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -635,7 +677,9 @@ function PatientOnboardingPage() {
 
                     <Button
                       onClick={goToNextStep}
-                      disabled={isSubmitting || !completedSteps.includes(currentStep)}
+                      disabled={
+                        isSubmitting || !completedSteps.includes(currentStep)
+                      }
                       className="flex items-center gap-2 bg-gradient-to-r from-healthcare-primary to-blue-500 hover:from-blue-500 hover:to-healthcare-primary"
                       size="default"
                     >

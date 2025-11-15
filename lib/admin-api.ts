@@ -1,4 +1,5 @@
-import apiService from './api-service';
+import apiService from "./api-service";
+import { UserStatus, VerificationStatus } from "./utils";
 
 // Admin Dashboard Types
 export interface DashboardStats {
@@ -17,7 +18,7 @@ export interface DashboardStats {
 }
 
 export interface RecentActivity {
-  id: number;
+  id: string; // UUID (changed from number)
   type: string;
   user: {
     name: string;
@@ -30,37 +31,47 @@ export interface RecentActivity {
 }
 
 export interface PendingAction {
-  id: number;
+  id: string; // UUID (changed from number)
   title: string;
   description: string;
   action: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   count: number;
   dueDate: string;
 }
 
 export interface Doctor {
-  doctor_id: number;
+  doctor_id: string; // UUID (changed from number)
   full_name: string;
   email: string;
   phone?: string;
-  is_verified: boolean;
-  is_active: boolean;
+  verification_status: VerificationStatus; // 'pending' | 'approved' | 'rejected' (changed from is_verified)
+  status: UserStatus; // 'active' | 'suspended' | 'deactivated' (changed from is_active)
+  tenant_id: string; // UUID - hospital/tenant ID
   created_at: string;
   onboarding_completed: boolean;
   specialization?: string;
   license_number?: string;
+
+  // Backward compatibility
+  is_verified?: boolean;
+  is_active?: boolean;
 }
 
 export interface Staff {
-  user_id: number;
+  user_id: string; // UUID (changed from number)
   full_name: string;
   email: string;
   phone?: string;
   user_type: string;
-  is_verified: boolean;
-  is_active: boolean;
+  verification_status: VerificationStatus; // 'pending' | 'approved' | 'rejected' (changed from is_verified)
+  status: UserStatus; // 'active' | 'suspended' | 'deactivated' (changed from is_active)
+  tenant_id: string; // UUID - hospital/tenant ID
   created_at: string;
+
+  // Backward compatibility
+  is_verified?: boolean;
+  is_active?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -81,10 +92,12 @@ class AdminApiService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const response = await apiService.get<DashboardStats>('/api/v1/admin/dashboard/stats');
+      const response = await apiService.get<DashboardStats>(
+        "/api/v1/admin/dashboard/stats"
+      );
       return response;
     } catch (error) {
-      console.error('Failed to fetch dashboard stats:', error);
+      console.error("Failed to fetch dashboard stats:", error);
       throw error;
     }
   }
@@ -99,7 +112,7 @@ class AdminApiService {
       );
       return response;
     } catch (error) {
-      console.error('Failed to fetch recent activity:', error);
+      console.error("Failed to fetch recent activity:", error);
       throw error;
     }
   }
@@ -109,10 +122,12 @@ class AdminApiService {
    */
   async getPendingActions(): Promise<PendingAction[]> {
     try {
-      const response = await apiService.get<PendingAction[]>('/api/v1/admin/dashboard/pending-actions');
+      const response = await apiService.get<PendingAction[]>(
+        "/api/v1/admin/dashboard/pending-actions"
+      );
       return response;
     } catch (error) {
-      console.error('Failed to fetch pending actions:', error);
+      console.error("Failed to fetch pending actions:", error);
       throw error;
     }
   }
@@ -120,7 +135,10 @@ class AdminApiService {
   /**
    * Get all doctors with pagination
    */
-  async getAllDoctors(page: number = 1, perPage: number = 50): Promise<{
+  async getAllDoctors(
+    page: number = 1,
+    perPage: number = 50
+  ): Promise<{
     doctors: Doctor[];
     total: number;
     page: number;
@@ -137,7 +155,7 @@ class AdminApiService {
       }>(`/api/v1/admin/doctors?page=${page}&per_page=${perPage}`);
       return response;
     } catch (error) {
-      console.error('Failed to fetch doctors:', error);
+      console.error("Failed to fetch doctors:", error);
       throw error;
     }
   }
@@ -145,7 +163,10 @@ class AdminApiService {
   /**
    * Get all staff with pagination
    */
-  async getAllStaff(page: number = 1, perPage: number = 50): Promise<{
+  async getAllStaff(
+    page: number = 1,
+    perPage: number = 50
+  ): Promise<{
     staff: Staff[];
     total: number;
     page: number;
@@ -162,7 +183,7 @@ class AdminApiService {
       }>(`/api/v1/admin/staff?page=${page}&per_page=${perPage}`);
       return response;
     } catch (error) {
-      console.error('Failed to fetch staff:', error);
+      console.error("Failed to fetch staff:", error);
       throw error;
     }
   }
@@ -171,8 +192,11 @@ class AdminApiService {
    * Update doctor status (verify/activate)
    */
   async updateDoctorStatus(
-    doctorId: number,
-    updates: { is_verified?: boolean; is_active?: boolean }
+    doctorId: string, // UUID
+    updates: {
+      verification_status?: "pending" | "approved" | "rejected";
+      status?: "active" | "suspended" | "deactivated";
+    }
   ): Promise<{ message: string }> {
     try {
       const response = await apiService.put<{ message: string }>(
@@ -181,7 +205,7 @@ class AdminApiService {
       );
       return response;
     } catch (error) {
-      console.error('Failed to update doctor status:', error);
+      console.error("Failed to update doctor status:", error);
       throw error;
     }
   }
@@ -190,8 +214,11 @@ class AdminApiService {
    * Update staff status (verify/activate)
    */
   async updateStaffStatus(
-    staffId: number,
-    updates: { is_verified?: boolean; is_active?: boolean }
+    staffId: string, // UUID
+    updates: {
+      verification_status?: "pending" | "approved" | "rejected";
+      status?: "active" | "suspended" | "deactivated";
+    }
   ): Promise<{ message: string }> {
     try {
       const response = await apiService.put<{ message: string }>(
@@ -200,7 +227,7 @@ class AdminApiService {
       );
       return response;
     } catch (error) {
-      console.error('Failed to update staff status:', error);
+      console.error("Failed to update staff status:", error);
       throw error;
     }
   }
@@ -208,14 +235,15 @@ class AdminApiService {
   /**
    * Delete doctor
    */
-  async deleteDoctor(doctorId: number): Promise<{ message: string }> {
+  async deleteDoctor(doctorId: string): Promise<{ message: string }> {
+    // UUID
     try {
       const response = await apiService.delete<{ message: string }>(
         `/api/v1/admin/doctors/${doctorId}`
       );
       return response;
     } catch (error) {
-      console.error('Failed to delete doctor:', error);
+      console.error("Failed to delete doctor:", error);
       throw error;
     }
   }
@@ -223,14 +251,15 @@ class AdminApiService {
   /**
    * Delete staff
    */
-  async deleteStaff(staffId: number): Promise<{ message: string }> {
+  async deleteStaff(staffId: string): Promise<{ message: string }> {
+    // UUID
     try {
       const response = await apiService.delete<{ message: string }>(
         `/api/v1/admin/staff/${staffId}`
       );
       return response;
     } catch (error) {
-      console.error('Failed to delete staff:', error);
+      console.error("Failed to delete staff:", error);
       throw error;
     }
   }
@@ -257,7 +286,7 @@ class AdminApiService {
         pendingActions,
       };
     } catch (error) {
-      console.error('Failed to fetch dashboard overview:', error);
+      console.error("Failed to fetch dashboard overview:", error);
       throw error;
     }
   }
