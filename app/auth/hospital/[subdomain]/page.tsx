@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { 
-  Building2, 
-  ArrowLeft, 
-  Loader2, 
-  User, 
-  UserCheck, 
+import {
+  Building2,
+  ArrowLeft,
+  Loader2,
+  User,
+  UserCheck,
   Shield,
   Eye,
   EyeOff,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ interface HospitalBranding {
 }
 
 interface Hospital {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   hospital_name: string;
   subdomain: string;
   status: string;
@@ -64,25 +64,27 @@ export default function HospitalAuthPage() {
   const [hospital, setHospital] = useState<Hospital | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeRole, setActiveRole] = useState<"patient" | "doctor" | "admin">("admin");
+  const [activeRole, setActiveRole] = useState<"patient" | "doctor" | "admin">(
+    "admin"
+  );
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: "",
     password: "",
     hospital_code: "",
-    role: "admin"
+    role: "admin",
   });
 
   const subdomain = params?.subdomain as string;
 
   useEffect(() => {
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
       hospital_code: subdomain,
-      role: activeRole
+      role: activeRole,
     }));
   }, [subdomain, activeRole]);
 
@@ -101,8 +103,10 @@ export default function HospitalAuthPage() {
     const fetchHospitalData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_CONFIG.BASE_URL}/hospitals/by-subdomain/${subdomain}`);
-        
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/hospitals/by-subdomain/${subdomain}`
+        );
+
         if (response.ok) {
           const data = await response.json();
           setHospital(data);
@@ -112,12 +116,13 @@ export default function HospitalAuthPage() {
           setError("Failed to load hospital information");
         }
       } catch (err) {
-        console.error('Error fetching hospital:', err);
+        console.error("Error fetching hospital:", err);
         // Use mock data when server is not available
         if (subdomain === "t" || subdomain === "demo") {
           setHospital({
-            id: subdomain === "t" ? 1 : 2,
-            hospital_name: subdomain === "t" ? "Test Hospital" : "Demo Medical Center",
+            id: subdomain === "t" ? "1" : "2",
+            hospital_name:
+              subdomain === "t" ? "Test Hospital" : "Demo Medical Center",
             subdomain: subdomain,
             status: "ACTIVE",
             branding: {
@@ -125,12 +130,17 @@ export default function HospitalAuthPage() {
               primary_color: subdomain === "t" ? "#7c3aed" : "#0369a1",
               secondary_color: subdomain === "t" ? "#6d28d9" : "#0284c7",
               copy: {
-                welcome_title: `Welcome to ${subdomain === "t" ? "Test Hospital" : "Demo Medical Center"}`,
-                welcome_subtitle: subdomain === "t" ? "Development & Testing Environment" : "Quality Healthcare Services",
+                welcome_title: `Welcome to ${
+                  subdomain === "t" ? "Test Hospital" : "Demo Medical Center"
+                }`,
+                welcome_subtitle:
+                  subdomain === "t"
+                    ? "Development & Testing Environment"
+                    : "Quality Healthcare Services",
                 login_title: "Sign in to your account",
-                signup_title: "Create your account"
-              }
-            }
+                signup_title: "Create your account",
+              },
+            },
           });
         } else {
           setError("Hospital not found");
@@ -151,44 +161,51 @@ export default function HospitalAuthPage() {
     setIsSubmitting(true);
 
     try {
-  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.HOSPITAL_LOGIN}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      });
+      // Use unified login endpoint - auto-detects user type
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/api/v1/auth/unified-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Login failed");
       }
 
-  const data = await response.json();
+      const result = await response.json();
+      const data = result.data;
 
-  // Sync auth state and persist hospital metadata
-  const resolvedUserId = data.user_id ?? data.hospital_id ?? 0;
-  authLogin(data.access_token, data.user_type, resolvedUserId);
-  localStorage.setItem("hospital_id", data.hospital_id?.toString() || "");
-  localStorage.setItem("hospital_code", data.hospital_code || "");
-  localStorage.setItem("hospital_name", hospital?.hospital_name || "");
-  localStorage.setItem("user_name", data.full_name || data.email || "Patient");
-
-      // Redirect based on user type
-      switch (data.user_type) {
-        case "patient":
-          router.push("/patient/dashboard");
-          break;
-        case "doctor":
-          router.push("/doctor/dashboard");
-          break;
-        case "hospital_admin":
-          router.push("/Admin");
-          break;
-        default:
-          router.push("/dashboard");
+      // Verify user belongs to this hospital
+      if (
+        data.user.hospital_code !== subdomain &&
+        data.user.user_type !== "super_admin"
+      ) {
+        throw new Error("You don't have access to this hospital");
       }
-      
+
+      // Store auth token and user info
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("hospital_code", data.user.hospital_code || "");
+      localStorage.setItem("hospital_name", data.user.hospital_name || "");
+      localStorage.setItem("user_name", data.user.full_name || data.user.email);
+
+      // Sync with auth context if it exists
+      if (authLogin) {
+        authLogin(data.access_token, data.user.user_type, data.user.id);
+      }
+
+      // Redirect to appropriate dashboard
+      router.push(data.redirect_to);
     } catch (err) {
       setError((err as Error).message || "Login failed. Please try again.");
     } finally {
@@ -201,40 +218,42 @@ export default function HospitalAuthPage() {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (!hospital) {
       setError("Hospital information not available");
       return;
     }
-    
+
     try {
       console.log("Starting patient registration flow...", {
         hospital_id: hospital.id,
         hospital_code: subdomain,
-        hospital_name: hospital.hospital_name
+        hospital_name: hospital.hospital_name,
       });
-      
+
       // IMPORTANT: Clear any existing auth data to prevent auto-redirects
       localStorage.removeItem("access_token");
       localStorage.removeItem("user_type");
       localStorage.removeItem("user_id");
       localStorage.removeItem("hospital_id");
       localStorage.removeItem("hospital_code");
-      
+
       // Store hospital context in sessionStorage for onboarding
       sessionStorage.setItem("onboarding_hospital_id", hospital.id.toString());
       sessionStorage.setItem("onboarding_hospital_code", subdomain);
-      sessionStorage.setItem("onboarding_hospital_name", hospital.hospital_name);
-      
+      sessionStorage.setItem(
+        "onboarding_hospital_name",
+        hospital.hospital_name
+      );
+
       console.log("Cleared auth data, stored onboarding context");
-      
+
       // Redirect to patient onboarding
       const targetUrl = `/onboarding/patient?hospital=${subdomain}`;
       console.log("Redirecting to:", targetUrl);
-      
+
       // Use window.location for hard navigation to ensure clean state
       window.location.href = targetUrl;
-      
     } catch (error) {
       console.error("Navigation error:", error);
       setError("Failed to navigate to registration. Please try again.");
@@ -247,17 +266,17 @@ export default function HospitalAuthPage() {
 
   const getBrandedStyles = () => {
     if (!hospital?.branding) return {};
-    
+
     return {
-      '--primary-color': hospital.branding.primary_color || '#0369a1',
-      '--secondary-color': hospital.branding.secondary_color || '#0284c7',
+      "--primary-color": hospital.branding.primary_color || "#0369a1",
+      "--secondary-color": hospital.branding.secondary_color || "#0284c7",
     } as React.CSSProperties;
   };
 
   const handleInputChange = (field: keyof LoginCredentials, value: string) => {
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -278,7 +297,9 @@ export default function HospitalAuthPage() {
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Hospital Not Found</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Hospital Not Found
+            </h2>
             <p className="text-gray-600 mb-4">{error}</p>
             <Button onClick={handleBackToSelector} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -291,18 +312,22 @@ export default function HospitalAuthPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-gradient-to-br from-blue-50 to-white"
       style={getBrandedStyles()}
     >
       {/* Background Image */}
       {hospital?.branding?.background_image && (
-        <div 
+        <div
           className="absolute inset-0 opacity-10 bg-cover bg-center"
-          style={{ backgroundImage: `url(${resolveAssetUrl(hospital.branding.background_image)})` }}
+          style={{
+            backgroundImage: `url(${resolveAssetUrl(
+              hospital.branding.background_image
+            )})`,
+          }}
         />
       )}
-      
+
       <div className="relative container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -316,25 +341,30 @@ export default function HospitalAuthPage() {
                 className="rounded-lg"
               />
             ) : (
-              <div 
+              <div
                 className="w-20 h-20 rounded-lg flex items-center justify-center text-white"
-                style={{ backgroundColor: hospital?.branding?.primary_color || '#0369a1' }}
+                style={{
+                  backgroundColor:
+                    hospital?.branding?.primary_color || "#0369a1",
+                }}
               >
                 <Building2 className="h-10 w-10" />
               </div>
             )}
           </div>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {hospital?.branding?.copy?.welcome_title || `Welcome to ${hospital?.hospital_name}`}
+            {hospital?.branding?.copy?.welcome_title ||
+              `Welcome to ${hospital?.hospital_name}`}
           </h1>
           <p className="text-lg text-gray-600">
-            {hospital?.branding?.copy?.welcome_subtitle || "Access your healthcare portal"}
+            {hospital?.branding?.copy?.welcome_subtitle ||
+              "Access your healthcare portal"}
           </p>
-          
-          <Button 
-            onClick={handleBackToSelector} 
-            variant="ghost" 
+
+          <Button
+            onClick={handleBackToSelector}
+            variant="ghost"
             size="sm"
             className="mt-4"
           >
@@ -360,7 +390,12 @@ export default function HospitalAuthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeRole} onValueChange={(value) => setActiveRole(value as typeof activeRole)}>
+              <Tabs
+                value={activeRole}
+                onValueChange={(value) =>
+                  setActiveRole(value as typeof activeRole)
+                }
+              >
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="patient" className="text-xs">
                     <User className="h-4 w-4 mr-1" />
@@ -415,12 +450,16 @@ export default function HospitalAuthPage() {
                         id="email"
                         type="email"
                         value={credentials.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         required
                         placeholder={
-                          activeRole === "patient" ? "patient@example.com" :
-                          activeRole === "doctor" ? `doctor@${subdomain}.com` :
-                          `admin@${subdomain}.com`
+                          activeRole === "patient"
+                            ? "patient@example.com"
+                            : activeRole === "doctor"
+                            ? `doctor@${subdomain}.com`
+                            : `admin@${subdomain}.com`
                         }
                       />
                     </div>
@@ -432,7 +471,9 @@ export default function HospitalAuthPage() {
                           id="password"
                           type={showPassword ? "text" : "password"}
                           value={credentials.password}
-                          onChange={(e) => handleInputChange("password", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("password", e.target.value)
+                          }
                           required
                           placeholder="Enter your password"
                         />
@@ -456,9 +497,11 @@ export default function HospitalAuthPage() {
                       type="submit"
                       className="w-full"
                       disabled={isSubmitting}
-                      style={{ 
-                        backgroundColor: hospital?.branding?.primary_color || '#0369a1',
-                        borderColor: hospital?.branding?.primary_color || '#0369a1'
+                      style={{
+                        backgroundColor:
+                          hospital?.branding?.primary_color || "#0369a1",
+                        borderColor:
+                          hospital?.branding?.primary_color || "#0369a1",
                       }}
                     >
                       {isSubmitting ? (
@@ -467,7 +510,10 @@ export default function HospitalAuthPage() {
                           Signing In...
                         </>
                       ) : (
-                        `Sign In as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`
+                        `Sign In as ${
+                          activeRole.charAt(0).toUpperCase() +
+                          activeRole.slice(1)
+                        }`
                       )}
                     </Button>
                   </form>
@@ -481,8 +527,9 @@ export default function HospitalAuthPage() {
                         New Patient Registration
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
-                        Complete a quick onboarding process to register as a patient at {hospital?.hospital_name}. 
-                        You'll be able to book appointments, access medical records, and more.
+                        Complete a quick onboarding process to register as a
+                        patient at {hospital?.hospital_name}. You'll be able to
+                        book appointments, access medical records, and more.
                       </p>
                       <ul className="text-sm text-gray-600 space-y-2 mb-4">
                         <li className="flex items-center">
@@ -505,9 +552,11 @@ export default function HospitalAuthPage() {
                           handlePatientSignup(e);
                         }}
                         className="w-full"
-                        style={{ 
-                          backgroundColor: hospital?.branding?.primary_color || '#0369a1',
-                          borderColor: hospital?.branding?.primary_color || '#0369a1'
+                        style={{
+                          backgroundColor:
+                            hospital?.branding?.primary_color || "#0369a1",
+                          borderColor:
+                            hospital?.branding?.primary_color || "#0369a1",
                         }}
                       >
                         Continue to Registration
@@ -520,32 +569,37 @@ export default function HospitalAuthPage() {
                 {authMode === "signup" && activeRole !== "patient" && (
                   <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                     <p className="text-sm text-amber-800">
-                      {activeRole === "doctor" && "Doctor accounts are created by hospital administrators. Please contact your hospital admin to get access."}
-                      {activeRole === "admin" && "Admin accounts are created during hospital onboarding. Please contact support for assistance."}
+                      {activeRole === "doctor" &&
+                        "Doctor accounts are created by hospital administrators. Please contact your hospital admin to get access."}
+                      {activeRole === "admin" &&
+                        "Admin accounts are created during hospital onboarding. Please contact support for assistance."}
                     </p>
                   </div>
                 )}
 
-                  {/* Role-specific information (only for sign in) */}
-                  {authMode === "signin" && (
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">
-                        {activeRole === "patient" && "Patient Access"}
-                        {activeRole === "doctor" && "Doctor Portal"}
-                        {activeRole === "admin" && "Hospital Administration"}
-                      </h4>
-                      <p className="text-xs text-gray-600">
-                        {activeRole === "patient" && "Access your medical records, appointments, and healthcare services."}
-                        {activeRole === "doctor" && "Manage patient consultations, schedules, and medical records."}
-                        {activeRole === "admin" && "Hospital management, staff coordination, and administrative functions."}
-                      </p>
-                    </div>
-                  )}
+                {/* Role-specific information (only for sign in) */}
+                {authMode === "signin" && (
+                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      {activeRole === "patient" && "Patient Access"}
+                      {activeRole === "doctor" && "Doctor Portal"}
+                      {activeRole === "admin" && "Hospital Administration"}
+                    </h4>
+                    <p className="text-xs text-gray-600">
+                      {activeRole === "patient" &&
+                        "Access your medical records, appointments, and healthcare services."}
+                      {activeRole === "doctor" &&
+                        "Manage patient consultations, schedules, and medical records."}
+                      {activeRole === "admin" &&
+                        "Hospital management, staff coordination, and administrative functions."}
+                    </p>
+                  </div>
+                )}
               </Tabs>
             </CardContent>
           </Card>
         </div>
-        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

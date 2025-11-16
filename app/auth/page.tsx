@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  User, 
-  Phone, 
+import {
+  User,
+  Phone,
   MapPin,
   Eye,
   EyeOff,
@@ -16,13 +16,19 @@ import {
   Building2,
   ArrowRight,
   Loader2,
-  Stethoscope
+  Stethoscope,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { API_CONFIG } from "@/lib/api-config";
@@ -38,7 +44,7 @@ interface HospitalBranding {
 }
 
 interface Hospital {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   hospital_name: string;
   subdomain: string;
   status: string;
@@ -63,16 +69,16 @@ interface PatientFormData {
 const trustFeatures = [
   {
     icon: Shield,
-    text: "HIPAA Compliant"
+    text: "HIPAA Compliant",
   },
   {
     icon: CheckCircle,
-    text: "End-to-End Encryption"
+    text: "End-to-End Encryption",
   },
   {
     icon: Lock,
-    text: "Secure Authentication"
-  }
+    text: "Secure Authentication",
+  },
 ];
 
 // Animation variants
@@ -83,9 +89,9 @@ const containerVariants = {
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0.2,
-      duration: 0.6
-    }
-  }
+      duration: 0.6,
+    },
+  },
 };
 
 const itemVariants = {
@@ -94,9 +100,9 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5
-    }
-  }
+      duration: 0.5,
+    },
+  },
 };
 
 const formVariants = {
@@ -105,16 +111,16 @@ const formVariants = {
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.4
-    }
+      duration: 0.4,
+    },
   },
   exit: {
     opacity: 0,
     x: -20,
     transition: {
-      duration: 0.3
-    }
-  }
+      duration: 0.3,
+    },
+  },
 };
 
 export default function AuthPage() {
@@ -128,24 +134,28 @@ export default function AuthPage() {
 
   // Get subdomain from URL
   const getSubdomain = () => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     const host = window.location.host;
-    const parts = host.split('.');
-    
+    const parts = host.split(".");
+
     // For localhost development: t.localhost:3000
     if (parts.length >= 2) {
-      const lastPart = parts[parts.length - 1].split(':')[0]; // Remove port
+      const lastPart = parts[parts.length - 1].split(":")[0]; // Remove port
       const secondLastPart = parts[parts.length - 2];
-      
-      if (lastPart === 'localhost' && parts.length === 2) {
+
+      if (lastPart === "localhost" && parts.length === 2) {
         return parts[0];
       }
-      
-      if (parts.length === 3 && secondLastPart === 'athaarva' && lastPart === 'com') {
+
+      if (
+        parts.length === 3 &&
+        secondLastPart === "athaarva" &&
+        lastPart === "com"
+      ) {
         return parts[0];
       }
     }
-    
+
     return null;
   };
 
@@ -161,13 +171,13 @@ export default function AuthPage() {
     address: "",
     city: "",
     state: "",
-    zipCode: ""
+    zipCode: "",
   });
 
   useEffect(() => {
     const fetchHospitalData = async () => {
       const subdomain = getSubdomain();
-      
+
       if (!subdomain) {
         // No subdomain - redirect to hospital selector
         router.replace("/auth/selector");
@@ -176,16 +186,18 @@ export default function AuthPage() {
 
       try {
         setLoading(true);
-        const response = await fetch(`${API_CONFIG.BASE_URL}/hospitals/by-subdomain/${subdomain}`);
-        
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/hospitals/by-subdomain/${subdomain}`
+        );
+
         if (response.ok) {
           const data = await response.json();
           setHospital(data.hospital);
         } else {
-          console.error('Hospital not found for subdomain:', subdomain);
+          console.error("Hospital not found for subdomain:", subdomain);
           // Show error but don't redirect - let user see the branded page
           setHospital({
-            id: 0,
+            id: "0",
             hospital_name: "Hospital Not Found",
             subdomain: subdomain,
             status: "inactive",
@@ -193,15 +205,16 @@ export default function AuthPage() {
               primary_color: "#007C7C",
               secondary_color: "#20B2AA",
               hero_text: "Healthcare Management System",
-              welcome_message: "Please contact support if you believe this is an error."
-            }
+              welcome_message:
+                "Please contact support if you believe this is an error.",
+            },
           });
         }
       } catch (error) {
-        console.error('Error fetching hospital data:', error);
+        console.error("Error fetching hospital data:", error);
         // Fallback hospital data for development
         setHospital({
-          id: 0,
+          id: "0",
           hospital_name: "Athaarva Health",
           subdomain: subdomain || "demo",
           status: "active",
@@ -209,8 +222,8 @@ export default function AuthPage() {
             primary_color: "#007C7C",
             secondary_color: "#20B2AA",
             hero_text: "Your Health, Simplified & Secure",
-            welcome_message: "Welcome to our healthcare platform"
-          }
+            welcome_message: "Welcome to our healthcare platform",
+          },
         });
       } finally {
         setLoading(false);
@@ -221,10 +234,10 @@ export default function AuthPage() {
   }, [router]);
 
   const handleInputChange = (field: keyof PatientFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -232,13 +245,18 @@ export default function AuthPage() {
     const newErrors: Record<string, string> = {};
 
     if (authMode === "signup") {
-      if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-      if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-      if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+      if (!formData.firstName.trim())
+        newErrors.firstName = "First name is required";
+      if (!formData.lastName.trim())
+        newErrors.lastName = "Last name is required";
+      if (!formData.dateOfBirth)
+        newErrors.dateOfBirth = "Date of birth is required";
       if (!formData.gender) newErrors.gender = "Gender is required";
       if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-      if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters";
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+      if (formData.password.length < 8)
+        newErrors.password = "Password must be at least 8 characters";
+      if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (!formData.email.trim()) {
@@ -255,16 +273,42 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       if (authMode === "signin") {
-        // Handle sign in
-        console.log("Sign in:", { email: formData.email, password: formData.password });
-        // TODO: Implement actual sign in logic
+        // Handle unified sign in - auto-detects user type
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/api/v1/auth/unified-login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          setErrors({ email: error.detail || "Invalid email or password" });
+          return;
+        }
+
+        const data = await response.json();
+
+        // Store auth token and user info
+        localStorage.setItem("access_token", data.data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+
+        // Redirect to appropriate dashboard based on user type
+        router.push(data.data.redirect_to);
       } else {
         // Handle patient registration
         console.log("Patient registration:", formData);
@@ -273,6 +317,7 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Auth error:", error);
+      setErrors({ email: "An error occurred. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -292,7 +337,8 @@ export default function AuthPage() {
   const primaryColor = hospital?.branding?.primary_color || "#007C7C";
   const secondaryColor = hospital?.branding?.secondary_color || "#20B2AA";
   const hospitalName = hospital?.hospital_name || "Athaarva Health";
-  const heroText = hospital?.branding?.hero_text || "Your Health, Simplified & Secure";
+  const heroText =
+    hospital?.branding?.hero_text || "Your Health, Simplified & Secure";
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -306,63 +352,63 @@ export default function AuthPage() {
             className="object-cover opacity-20"
             priority
           />
-          <div 
+          <div
             className="absolute inset-0 bg-gradient-to-br opacity-80"
             style={{
-              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
             }}
           />
         </div>
       ) : (
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-br opacity-90"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
           }}
         />
       )}
-      
+
       {/* Animated Background Pattern */}
       <div className="absolute inset-0">
-        <motion.div 
+        <motion.div
           className="absolute -top-32 -right-32 w-96 h-96 bg-white/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.1, 1],
-            rotate: [0, 90, 180]
+            rotate: [0, 90, 180],
           }}
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute -bottom-32 -left-32 w-96 h-96 bg-white/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
-            rotate: [180, 270, 360]
+            rotate: [180, 270, 360],
           }}
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.3, 1],
-            opacity: [0.3, 0.5, 0.3]
+            opacity: [0.3, 0.5, 0.3],
           }}
           transition={{
             duration: 15,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
         />
       </div>
 
-      <motion.div 
+      <motion.div
         className="relative w-full max-w-6xl mx-auto px-4 min-h-screen flex items-center z-10 py-8"
         variants={containerVariants}
         initial="hidden"
@@ -378,19 +424,19 @@ export default function AuthPage() {
           >
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
               <div className="space-y-4">
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="flex items-center space-x-3"
                 >
-                  <motion.div 
+                  <motion.div
                     className="w-20 h-20 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center p-2"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ duration: 0.2 }}
                   >
                     {hospital?.branding?.logo_url ? (
-                      <Image 
-                        src={hospital.branding.logo_url} 
-                        alt="Hospital Logo" 
+                      <Image
+                        src={hospital.branding.logo_url}
+                        alt="Hospital Logo"
                         width={64}
                         height={64}
                         className="w-full h-full object-contain"
@@ -403,27 +449,25 @@ export default function AuthPage() {
                     {hospitalName}
                   </h1>
                 </motion.div>
-                
-                <motion.h2 
+
+                <motion.h2
                   variants={itemVariants}
                   className="text-5xl font-bold text-white leading-tight drop-shadow-lg"
                 >
                   {heroText}
                 </motion.h2>
-                
-                <motion.p 
+
+                <motion.p
                   variants={itemVariants}
                   className="text-xl text-white/90 leading-relaxed max-w-md drop-shadow-md"
                 >
-                  {hospital?.branding?.welcome_message || "Join thousands of patients who trust us for comprehensive healthcare management with holistic care approach."}
+                  {hospital?.branding?.welcome_message ||
+                    "Join thousands of patients who trust us for comprehensive healthcare management with holistic care approach."}
                 </motion.p>
               </div>
 
               {/* Trust Features */}
-              <motion.div 
-                variants={itemVariants}
-                className="space-y-4 mt-8"
-              >
+              <motion.div variants={itemVariants} className="space-y-4 mt-8">
                 {trustFeatures.map((feature, index) => (
                   <motion.div
                     key={index}
@@ -433,7 +477,7 @@ export default function AuthPage() {
                     className="flex items-center space-x-3 group cursor-pointer"
                     whileHover={{ x: 5 }}
                   >
-                    <motion.div 
+                    <motion.div
                       className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.2 }}
@@ -448,17 +492,17 @@ export default function AuthPage() {
               </motion.div>
 
               {/* Stats */}
-              <motion.div 
+              <motion.div
                 variants={itemVariants}
                 className="grid grid-cols-3 gap-6 pt-8 border-t border-white/20 mt-8"
               >
                 {[
                   { value: "10K+", label: "Doctors" },
                   { value: "50K+", label: "Patients" },
-                  { value: "99.9%", label: "Uptime" }
+                  { value: "99.9%", label: "Uptime" },
                 ].map((stat, index) => (
-                  <motion.div 
-                    key={index} 
+                  <motion.div
+                    key={index}
                     className="text-center"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.2 }}
@@ -466,7 +510,9 @@ export default function AuthPage() {
                     <motion.div className="text-4xl font-bold text-white drop-shadow-lg">
                       {stat.value}
                     </motion.div>
-                    <div className="text-base text-white/80 font-medium">{stat.label}</div>
+                    <div className="text-base text-white/80 font-medium">
+                      {stat.label}
+                    </div>
                   </motion.div>
                 ))}
               </motion.div>
@@ -480,10 +526,7 @@ export default function AuthPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="w-full max-w-md mx-auto lg:mx-0 lg:ml-auto"
           >
-            <motion.div
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.3 }}
-            >
+            <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.3 }}>
               <Card className="shadow-2xl bg-white/95 backdrop-blur-xl overflow-hidden border border-white/20">
                 <CardHeader className="text-center pb-6 bg-gradient-to-b from-white/50 to-white/30 backdrop-blur-sm">
                   <motion.div
@@ -493,15 +536,15 @@ export default function AuthPage() {
                   >
                     {/* Mobile Logo */}
                     <div className="lg:hidden mb-4 flex justify-center">
-                      <motion.div 
+                      <motion.div
                         className="w-16 h-16 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center p-2"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.2 }}
                       >
                         {hospital?.branding?.logo_url ? (
-                          <Image 
-                            src={hospital.branding.logo_url} 
-                            alt="Hospital Logo" 
+                          <Image
+                            src={hospital.branding.logo_url}
+                            alt="Hospital Logo"
                             width={48}
                             height={48}
                             className="w-full h-full object-contain"
@@ -522,12 +565,24 @@ export default function AuthPage() {
 
                 <CardContent className="space-y-4">
                   <form onSubmit={handleSubmit}>
-                    <Tabs value={authMode} onValueChange={(value) => setAuthMode(value as "signin" | "signup")} className="w-full">
+                    <Tabs
+                      value={authMode}
+                      onValueChange={(value) =>
+                        setAuthMode(value as "signin" | "signup")
+                      }
+                      className="w-full"
+                    >
                       <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="signin" className="text-sm font-medium">
+                        <TabsTrigger
+                          value="signin"
+                          className="text-sm font-medium"
+                        >
                           Sign In
                         </TabsTrigger>
-                        <TabsTrigger value="signup" className="text-sm font-medium">
+                        <TabsTrigger
+                          value="signup"
+                          className="text-sm font-medium"
+                        >
                           Register
                         </TabsTrigger>
                       </TabsList>
@@ -544,24 +599,37 @@ export default function AuthPage() {
                             className="space-y-4"
                           >
                             <div>
-                              <Label htmlFor="signin-email" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="signin-email"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Email Address
                               </Label>
                               <Input
                                 id="signin-email"
                                 type="email"
                                 placeholder="Enter your email"
-                                className={cn("mt-1", errors.email && "border-red-300")}
+                                className={cn(
+                                  "mt-1",
+                                  errors.email && "border-red-300"
+                                )}
                                 value={formData.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                onChange={(e) =>
+                                  handleInputChange("email", e.target.value)
+                                }
                               />
                               {errors.email && (
-                                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.email}
+                                </p>
                               )}
                             </div>
 
                             <div>
-                              <Label htmlFor="signin-password" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="signin-password"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Password
                               </Label>
                               <div className="relative mt-1">
@@ -569,9 +637,17 @@ export default function AuthPage() {
                                   id="signin-password"
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your password"
-                                  className={cn("pr-10", errors.password && "border-red-300")}
+                                  className={cn(
+                                    "pr-10",
+                                    errors.password && "border-red-300"
+                                  )}
                                   value={formData.password}
-                                  onChange={(e) => handleInputChange('password', e.target.value)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "password",
+                                      e.target.value
+                                    )
+                                  }
                                 />
                                 <button
                                   type="button"
@@ -586,18 +662,23 @@ export default function AuthPage() {
                                 </button>
                               </div>
                               {errors.password && (
-                                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.password}
+                                </p>
                               )}
                             </div>
 
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <Checkbox id="remember" />
-                                <Label htmlFor="remember" className="text-sm text-gray-600">
+                                <Label
+                                  htmlFor="remember"
+                                  className="text-sm text-gray-600"
+                                >
                                   Remember me
                                 </Label>
                               </div>
-                              <button 
+                              <button
                                 type="button"
                                 className="text-sm font-medium hover:underline"
                                 style={{ color: primaryColor }}
@@ -641,110 +722,191 @@ export default function AuthPage() {
                           >
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                                <Label
+                                  htmlFor="firstName"
+                                  className="text-sm font-medium text-gray-700"
+                                >
                                   First Name
                                 </Label>
                                 <Input
                                   id="firstName"
                                   placeholder="John"
-                                  className={cn("mt-1", errors.firstName && "border-red-300")}
+                                  className={cn(
+                                    "mt-1",
+                                    errors.firstName && "border-red-300"
+                                  )}
                                   value={formData.firstName}
-                                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "firstName",
+                                      e.target.value
+                                    )
+                                  }
                                 />
                                 {errors.firstName && (
-                                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {errors.firstName}
+                                  </p>
                                 )}
                               </div>
                               <div>
-                                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                                <Label
+                                  htmlFor="lastName"
+                                  className="text-sm font-medium text-gray-700"
+                                >
                                   Last Name
                                 </Label>
                                 <Input
                                   id="lastName"
                                   placeholder="Doe"
-                                  className={cn("mt-1", errors.lastName && "border-red-300")}
+                                  className={cn(
+                                    "mt-1",
+                                    errors.lastName && "border-red-300"
+                                  )}
                                   value={formData.lastName}
-                                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "lastName",
+                                      e.target.value
+                                    )
+                                  }
                                 />
                                 {errors.lastName && (
-                                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {errors.lastName}
+                                  </p>
                                 )}
                               </div>
                             </div>
 
                             <div>
-                              <Label htmlFor="signup-email" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="signup-email"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Email Address
                               </Label>
                               <Input
                                 id="signup-email"
                                 type="email"
                                 placeholder="john.doe@example.com"
-                                className={cn("mt-1", errors.email && "border-red-300")}
+                                className={cn(
+                                  "mt-1",
+                                  errors.email && "border-red-300"
+                                )}
                                 value={formData.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                onChange={(e) =>
+                                  handleInputChange("email", e.target.value)
+                                }
                               />
                               {errors.email && (
-                                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.email}
+                                </p>
                               )}
                             </div>
 
                             <div>
-                              <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="phone"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Phone Number
                               </Label>
                               <Input
                                 id="phone"
                                 type="tel"
                                 placeholder="+1 (555) 123-4567"
-                                className={cn("mt-1", errors.phone && "border-red-300")}
+                                className={cn(
+                                  "mt-1",
+                                  errors.phone && "border-red-300"
+                                )}
                                 value={formData.phone}
-                                onChange={(e) => handleInputChange('phone', e.target.value)}
+                                onChange={(e) =>
+                                  handleInputChange("phone", e.target.value)
+                                }
                               />
                               {errors.phone && (
-                                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.phone}
+                                </p>
                               )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">
+                                <Label
+                                  htmlFor="dateOfBirth"
+                                  className="text-sm font-medium text-gray-700"
+                                >
                                   Date of Birth
                                 </Label>
                                 <Input
                                   id="dateOfBirth"
                                   type="date"
-                                  className={cn("mt-1", errors.dateOfBirth && "border-red-300")}
+                                  className={cn(
+                                    "mt-1",
+                                    errors.dateOfBirth && "border-red-300"
+                                  )}
                                   value={formData.dateOfBirth}
-                                  onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "dateOfBirth",
+                                      e.target.value
+                                    )
+                                  }
                                 />
                                 {errors.dateOfBirth && (
-                                  <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {errors.dateOfBirth}
+                                  </p>
                                 )}
                               </div>
                               <div>
-                                <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
+                                <Label
+                                  htmlFor="gender"
+                                  className="text-sm font-medium text-gray-700"
+                                >
                                   Gender
                                 </Label>
-                                <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
-                                  <SelectTrigger className={cn("mt-1", errors.gender && "border-red-300")}>
+                                <Select
+                                  value={formData.gender}
+                                  onValueChange={(value) =>
+                                    handleInputChange("gender", value)
+                                  }
+                                >
+                                  <SelectTrigger
+                                    className={cn(
+                                      "mt-1",
+                                      errors.gender && "border-red-300"
+                                    )}
+                                  >
                                     <SelectValue placeholder="Select" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="male">Male</SelectItem>
-                                    <SelectItem value="female">Female</SelectItem>
+                                    <SelectItem value="female">
+                                      Female
+                                    </SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
-                                    <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                                    <SelectItem value="prefer-not-to-say">
+                                      Prefer not to say
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                                 {errors.gender && (
-                                  <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {errors.gender}
+                                  </p>
                                 )}
                               </div>
                             </div>
 
                             <div>
-                              <Label htmlFor="signup-password" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="signup-password"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Password
                               </Label>
                               <div className="relative mt-1">
@@ -752,9 +914,17 @@ export default function AuthPage() {
                                   id="signup-password"
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Create a strong password"
-                                  className={cn("pr-10", errors.password && "border-red-300")}
+                                  className={cn(
+                                    "pr-10",
+                                    errors.password && "border-red-300"
+                                  )}
                                   value={formData.password}
-                                  onChange={(e) => handleInputChange('password', e.target.value)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "password",
+                                      e.target.value
+                                    )
+                                  }
                                 />
                                 <button
                                   type="button"
@@ -769,24 +939,39 @@ export default function AuthPage() {
                                 </button>
                               </div>
                               {errors.password && (
-                                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.password}
+                                </p>
                               )}
                             </div>
 
                             <div>
-                              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                              <Label
+                                htmlFor="confirmPassword"
+                                className="text-sm font-medium text-gray-700"
+                              >
                                 Confirm Password
                               </Label>
                               <Input
                                 id="confirmPassword"
                                 type="password"
                                 placeholder="Confirm your password"
-                                className={cn("mt-1", errors.confirmPassword && "border-red-300")}
+                                className={cn(
+                                  "mt-1",
+                                  errors.confirmPassword && "border-red-300"
+                                )}
                                 value={formData.confirmPassword}
-                                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "confirmPassword",
+                                    e.target.value
+                                  )
+                                }
                               />
                               {errors.confirmPassword && (
-                                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  {errors.confirmPassword}
+                                </p>
                               )}
                             </div>
 
@@ -805,12 +990,15 @@ export default function AuthPage() {
                                 ) : (
                                   <ArrowRight className="w-4 h-4 mr-2" />
                                 )}
-                                {isSubmitting ? "Creating Account..." : "Create Patient Account"}
+                                {isSubmitting
+                                  ? "Creating Account..."
+                                  : "Create Patient Account"}
                               </Button>
                             </motion.div>
 
                             <p className="text-xs text-gray-500 text-center mt-4">
-                              By creating an account, you agree to our Terms of Service and Privacy Policy
+                              By creating an account, you agree to our Terms of
+                              Service and Privacy Policy
                             </p>
                           </motion.div>
                         </AnimatePresence>
@@ -822,15 +1010,15 @@ export default function AuthPage() {
             </motion.div>
 
             {/* Mobile Trust Features */}
-            <motion.div 
+            <motion.div
               className="lg:hidden mt-8 flex justify-center gap-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
               {trustFeatures.map((feature, index) => (
-                <motion.div 
-                  key={index} 
+                <motion.div
+                  key={index}
                   className="flex flex-col items-center space-y-2"
                   whileHover={{ scale: 1.1, y: -2 }}
                   transition={{ duration: 0.2 }}
@@ -838,7 +1026,9 @@ export default function AuthPage() {
                   <div className="w-10 h-10 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg flex items-center justify-center">
                     <feature.icon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs text-white font-medium text-center drop-shadow-md">{feature.text.split(' ')[0]}</span>
+                  <span className="text-xs text-white font-medium text-center drop-shadow-md">
+                    {feature.text.split(" ")[0]}
+                  </span>
                 </motion.div>
               ))}
             </motion.div>
