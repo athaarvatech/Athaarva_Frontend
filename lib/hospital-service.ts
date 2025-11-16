@@ -6,7 +6,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export interface HospitalProfile {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   hospital_name: string;
   license_number: string;
   bed_capacity: number;

@@ -76,9 +76,12 @@ import { useAppointments } from "@/contexts/AppointmentContext";
 import { useMedicalRecords } from "@/contexts/MedicalRecordsContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
 
-// Types
+// Types - Aligned with UUID backend architecture
 interface AppointmentType {
-  id: number;
+  id: string; // UUID
+  patient_id?: string; // UUID
+  doctor_id?: string; // UUID
+  tenant_id?: string; // UUID
   title?: string;
   doctor: string;
   doctorPhoto?: string;
@@ -86,10 +89,18 @@ interface AppointmentType {
   date: Date;
   time: string;
   type: "in-person" | "video" | "phone";
-  status: "confirmed" | "pending" | "cancelled" | "completed";
+  status:
+    | "confirmed"
+    | "pending"
+    | "cancelled"
+    | "completed"
+    | "scheduled"
+    | "no_show";
   location?: string;
   notes?: string;
+  reason?: string;
   duration?: string;
+  duration_minutes?: number;
   preparation?: string[];
   urgent?: boolean;
   reminderSent?: boolean;

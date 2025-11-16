@@ -5,20 +5,14 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Building2, 
-  Search, 
-  ArrowRight, 
-  Loader2,
-  Globe
-} from "lucide-react";
+import { Building2, Search, ArrowRight, Loader2, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { API_CONFIG } from "@/lib/api-config";
 import { SubdomainService } from "@/lib/subdomain-service";
 
 interface Hospital {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   hospital_name: string;
   subdomain: string;
   status: string;
@@ -26,6 +20,12 @@ interface Hospital {
     logo_url?: string;
     primary_color?: string;
     secondary_color?: string;
+    copy?: {
+      welcome_title?: string;
+      welcome_subtitle?: string;
+      login_title?: string;
+      signup_title?: string;
+    };
   };
 }
 
@@ -40,7 +40,9 @@ export default function HospitalSelectorPage() {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
+  const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(
+    null
+  );
 
   // Fetch hospitals on component mount
   useEffect(() => {
@@ -50,54 +52,56 @@ export default function HospitalSelectorPage() {
   const fetchHospitals = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_CONFIG.BASE_URL}/hospitals?status=ACTIVE&per_page=100`);
-      
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/hospitals?status=ACTIVE&per_page=100`
+      );
+
       if (response.ok) {
         const data: HospitalListResponse = await response.json();
         setHospitals(data.hospitals);
       } else {
-        console.error('Failed to fetch hospitals');
+        console.error("Failed to fetch hospitals");
         // Use mock data for development
         setHospitals([
           {
-            id: 1,
+            id: "1",
             hospital_name: "Test Hospital",
             subdomain: "t",
             status: "ACTIVE",
             branding: {
               logo_url: "",
               primary_color: "#007C7C",
-              secondary_color: "#20B2AA"
-            }
-          }
+              secondary_color: "#20B2AA",
+            },
+          },
         ]);
       }
     } catch (error) {
-      console.error('Error fetching hospitals:', error);
+      console.error("Error fetching hospitals:", error);
       // Use mock data when server is not available
       setHospitals([
         {
-          id: 1,
+          id: "1",
           hospital_name: "Test Hospital",
           subdomain: "t",
           status: "ACTIVE",
           branding: {
             logo_url: "",
             primary_color: "#007C7C",
-            secondary_color: "#20B2AA"
-          }
+            secondary_color: "#20B2AA",
+          },
         },
         {
-          id: 2,
+          id: "2",
           hospital_name: "Demo Medical Center",
           subdomain: "demo",
           status: "ACTIVE",
           branding: {
             logo_url: "",
             primary_color: "#0369a1",
-            secondary_color: "#0284c7"
-          }
-        }
+            secondary_color: "#0284c7",
+          },
+        },
       ]);
     } finally {
       setLoading(false);
@@ -105,15 +109,19 @@ export default function HospitalSelectorPage() {
   };
 
   // Filter hospitals based on search term
-  const filteredHospitals = hospitals.filter(hospital =>
-    hospital.hospital_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    hospital.subdomain.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredHospitals = hospitals.filter(
+    (hospital) =>
+      hospital.hospital_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hospital.subdomain.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleHospitalSelect = (hospital: Hospital) => {
     setSelectedHospital(hospital);
     // Redirect to hospital's subdomain auth page (supports localhost & custom domains)
-    window.location.href = SubdomainService.getSubdomainUrl(hospital.subdomain, "/auth");
+    window.location.href = SubdomainService.getSubdomainUrl(
+      hospital.subdomain,
+      "/auth"
+    );
   };
 
   return (
@@ -132,7 +140,7 @@ export default function HospitalSelectorPage() {
             >
               <Building2 className="h-8 w-8 text-healthcare-primary" />
             </motion.div>
-            
+
             <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
               Select Your Hospital
             </CardTitle>
@@ -162,16 +170,22 @@ export default function HospitalSelectorPage() {
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-healthcare-primary" />
-                  <span className="ml-2 text-gray-600">Loading hospitals...</span>
+                  <span className="ml-2 text-gray-600">
+                    Loading hospitals...
+                  </span>
                 </div>
               ) : filteredHospitals.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  {searchTerm ? 'No hospitals found matching your search.' : 'No hospitals available.'}
+                  {searchTerm
+                    ? "No hospitals found matching your search."
+                    : "No hospitals available."}
                 </div>
               ) : (
                 <AnimatePresence>
                   {filteredHospitals.map((hospital, index) => {
-                    const url = SubdomainService.getSubdomainUrl(hospital.subdomain);
+                    const url = SubdomainService.getSubdomainUrl(
+                      hospital.subdomain
+                    );
                     const displayDomain = url.replace(/^https?:\/\//, "");
 
                     return (
