@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to access the app. The Super Admin slice lives under `/super-admin`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Super Admin sandbox credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Use these demo credentials to log into the Super Admin workspace (the login form is pre-filled and also lists them):
 
-## Learn More
+| Email | Password |
+| --- | --- |
+| `super.admin@athaarva.com` | `supersecure` |
 
-To learn more about Next.js, take a look at the following resources:
+## SMTP email testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Invites now trigger a real SMTP send through a Next.js API route at `POST /api/smtp/send`. Add the following variables to `.env.local` (values mirror the backend `.env` shared by the team):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=discordsmurf245@gmail.com
+SMTP_PASSWORD=azqbiucrcvfxrknd
+SMTP_FROM_EMAIL=discordsmurf245@gmail.com
+SMTP_FROM_NAME=Athaarva Healthcare
+```
 
-## Deploy on Vercel
+> ⚠️ These credentials are for local testing only. Do not push real secrets to public repos.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Restart `npm run dev` after editing env vars. When you compose an invite in `/super-admin/invites`, the app will:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Save the invite to the local mock ledger (for UI state).
+2. Call `/api/smtp/send` to dispatch an email via Gmail SMTP using the details you entered.
+
+Toast notifications will tell you whether the SMTP call succeeded or failed.

@@ -1,12 +1,29 @@
-import { API_CONFIG } from './api-config';
+import { SuperAdminMockRepo, MockInvitation, MockInviteStatus, SuperAdminDashboardMetrics } from './mock/super-admin-db';
+
+export const SUPER_ADMIN_DEFAULT_CREDENTIALS = {
+  email: 'super.admin@athaarva.com',
+  password: 'supersecure',
+} as const;
+
+export interface InvitationListResponse {
+  invitations: MockInvitation[];
+  total: number;
+  per_page: number;
+  page: number;
+  total_pages: number;
+  summary: {
+    expiringSoon: number;
+    pending: number;
+    used: number;
+    revoked: number;
+  };
+}
 
 // Super Admin API Service
 export class SuperAdminAPIService {
-  private static baseURL = API_CONFIG.BASE_URL;
-
-  // Helper method to get auth headers
+  // Helper method to get auth headers (kept for API parity, though we operate locally)
   private static getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('super_admin_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('super_admin_token') : null;
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -19,22 +36,13 @@ export class SuperAdminAPIService {
     token_type: string;
     expires_in: number;
   }> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.LOGIN}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    const data = await SuperAdminMockRepo.authenticate(email, password);
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('super_admin_token', data.access_token);
+      localStorage.setItem('super_admin_profile', JSON.stringify(data.profile));
     }
 
-    const data = await response.json();
-    
-    // Store token
-    localStorage.setItem('super_admin_token', data.access_token);
-    
     return data;
   }
 
@@ -52,115 +60,38 @@ export class SuperAdminAPIService {
     created_at: string;
     last_login: string | null;
   }> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.ME}`, {
-      headers: this.getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.logout();
-      }
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to get profile');
-    }
-
-    return response.json();
+    return SuperAdminMockRepo.getProfile();
   }
 
   // Create invitation
   static async createInvitation(data: {
     email: string;
-    hospital_draft?: any;
-    expires_in_days?: number;
-  }): Promise<{
-    success: boolean;
-    message: string;
-    data: { invitation_id: number };
-  }> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.INVITATIONS}`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.logout();
-      }
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to create invitation');
-    }
-
-    return response.json();
+    contactName: string;
+    hospitalName: string;
+    planTier: MockInvitation['planTier'];
+    templateSlug: MockInvitation['templateSlug'];
+    internalOwner: string;
+    region: string;
+    expiresInDays: number;
+    notes?: string;
+  }) {
+    return SuperAdminMockRepo.createInvitation(data);
   }
 
   // Get invitations list
   static async getInvitations(params: {
     page?: number;
     per_page?: number;
-    status?: 'PENDING' | 'USED' | 'REVOKED' | 'EXPIRED';
-  } = {}): Promise<{
-    invitations: Array<{
-      id: number;
-      email: string;
-      status: string;
-      hospital_draft: any;
-      expires_at: string;
-      invited_by: number;
-      used_at: string | null;
-      created_at: string;
-      updated_at: string;
-    }>;
-    total: number;
-    page: number;
-    per_page: number;
-    total_pages: number;
-  }> {
-    const searchParams = new URLSearchParams();
-    if (params.page) searchParams.set('page', params.page.toString());
-    if (params.per_page) searchParams.set('per_page', params.per_page.toString());
-    if (params.status) searchParams.set('status', params.status);
-
-    const response = await fetch(
-      `${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.INVITATIONS}?${searchParams}`,
-      {
-        headers: this.getAuthHeaders(),
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.logout();
-      }
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to get invitations');
-    }
-
-    return response.json();
+    status?: MockInviteStatus;
+    search?: string;
+    plan?: MockInvitation['planTier'];
+  } = {}): Promise<InvitationListResponse> {
+    return SuperAdminMockRepo.listInvitations(params);
   }
 
   // Revoke invitation
-  static async revokeInvitation(invitationId: number): Promise<{
-    success: boolean;
-    message: string;
-  }> {
-    const response = await fetch(
-      `${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.INVITATIONS}/${invitationId}`,
-      {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.logout();
-      }
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to revoke invitation');
-    }
-
-    return response.json();
+  static async revokeInvitation(invitationId: number) {
+    return SuperAdminMockRepo.revokeInvitation(invitationId);
   }
 
   // Validate invitation token (public endpoint)
@@ -169,42 +100,35 @@ export class SuperAdminAPIService {
     invitation_id?: number;
     email?: string;
     expires_at?: string;
-    hospital_draft?: any;
+    hospital_draft?: Record<string, unknown> | null;
     message: string;
   }> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.VALIDATE_TOKEN}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to validate token');
+    // Stubbed validation for now.
+    const dbResponse = await SuperAdminMockRepo.listInvitations();
+    const invite = dbResponse.invitations.find((item) => item.inviteToken === token);
+    if (!invite) {
+      return { valid: false, message: 'Token not found' };
     }
-
-    return response.json();
+    const expired = new Date(invite.expiresAt).getTime() < Date.now();
+    return expired
+      ? { valid: false, message: 'Token expired', invitation_id: invite.id }
+      : {
+          valid: true,
+          invitation_id: invite.id,
+          email: invite.email,
+          expires_at: invite.expiresAt,
+          hospital_draft: invite.hospitalDraft,
+          message: 'Token valid',
+        };
   }
 
   // Cleanup expired invitations
-  static async cleanupExpiredInvitations(): Promise<{
-    success: boolean;
-    message: string;
-  }> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.CLEANUP_EXPIRED}`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-    });
+  static async cleanupExpiredInvitations() {
+    return SuperAdminMockRepo.cleanupExpiredInvitations();
+  }
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.logout();
-      }
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to cleanup expired invitations');
-    }
-
-    return response.json();
+  static async getDashboardSnapshot(): Promise<SuperAdminDashboardMetrics> {
+    return SuperAdminMockRepo.getDashboardSnapshot();
   }
 
   // Check if user is authenticated
@@ -213,49 +137,3 @@ export class SuperAdminAPIService {
   }
 }
 
-// Hospital Onboarding API Service
-export class HospitalOnboardingAPIService {
-  private static baseURL = API_CONFIG.BASE_URL;
-
-  // Complete hospital onboarding with token
-  static async completeOnboarding(
-    onboardingData: any,
-    token: string
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: {
-      hospital_id: number;
-      subdomain: string;
-      profile: any;
-    };
-  }> {
-    const response = await fetch(
-      `${this.baseURL}${API_CONFIG.ENDPOINTS.HOSPITALS.ONBOARDING}?token=${encodeURIComponent(token)}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(onboardingData),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to complete onboarding');
-    }
-
-    return response.json();
-  }
-
-  // Get hospital profile by subdomain
-  static async getHospitalProfile(subdomain: string): Promise<any> {
-    const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.HOSPITALS.PROFILE}/${subdomain}`);
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Hospital not found');
-    }
-
-    return response.json();
-  }
-}

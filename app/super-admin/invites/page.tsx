@@ -1,523 +1,609 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
+  TableBody,
   TableRow,
+  TableHead,
+  TableCell,
 } from '@/components/ui/table';
 import {
   Mail,
-  Plus,
-  Trash2,
-  Eye,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Shield,
-  UserPlus,
-  Calendar,
+  Send,
   Filter,
-  RotateCcw
+  Search,
+  RefreshCcw,
+  Globe2,
+  NotebookPen,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  Copy,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ShieldCheck,
 } from 'lucide-react';
-import { SuperAdminAPIService } from '@/lib/super-admin-api';
+import { SuperAdminAPIService, InvitationListResponse } from '@/lib/super-admin-api';
+import { MockInvitation, MockInviteStatus } from '@/lib/mock/super-admin-db';
+import { cn } from '@/lib/utils';
 
-interface Invitation {
-  id: number;
+type ComposerState = {
   email: string;
-  status: 'PENDING' | 'USED' | 'REVOKED' | 'EXPIRED';
-  hospital_draft: unknown;
-  expires_at: string;
-  invited_by: number;
-  used_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+  contactName: string;
+  hospitalName: string;
+  planTier: MockInvitation['planTier'];
+  templateSlug: MockInvitation['templateSlug'];
+  internalOwner: string;
+  region: string;
+  expiresInDays: number;
+  notes: string;
+};
 
-interface SuperAdminProfile {
-  id: number;
-  email: string;
-  full_name: string;
-  is_active: boolean;
-  created_at: string;
-  last_login: string | null;
-}
+const initialComposer: ComposerState = {
+  email: '',
+  contactName: '',
+  hospitalName: '',
+  planTier: 'Growth',
+  templateSlug: 'modern-clinical',
+  internalOwner: 'Platform Ops',
+  region: 'IN-West',
+  expiresInDays: 7,
+  notes: 'Includes telehealth readiness checklist + AI usage policy preview.',
+};
+
+const statusPills: Array<{ label: string; value: MockInviteStatus | ''; tone: string }> = [
+  { label: 'All', value: '', tone: 'bg-white/10 text-white' },
+  { label: 'Pending', value: 'PENDING', tone: 'bg-yellow-500/20 text-yellow-100' },
+  { label: 'Used', value: 'USED', tone: 'bg-emerald-500/20 text-emerald-100' },
+  { label: 'Revoked', value: 'REVOKED', tone: 'bg-red-500/20 text-red-100' },
+  { label: 'Expired', value: 'EXPIRED', tone: 'bg-slate-500/20 text-slate-100' },
+];
+
+const planOptions: MockInvitation['planTier'][] = ['Launch', 'Growth', 'Enterprise'];
+
+const formatTemplateName = (slug: ComposerState['templateSlug']) =>
+  slug.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+
+const buildEmailContent = (data: ComposerState) => {
+  const friendlyTemplate = formatTemplateName(data.templateSlug);
+  const subject = `Your Athaarva onboarding link – ${data.hospitalName}`;
+  const text = `Hi ${data.contactName || 'team'},\n\n` +
+    `Here is your secure onboarding link for the ${data.planTier} plan using the ${friendlyTemplate} template. ` +
+    `This link expires in ${data.expiresInDays} days. Reach out to ${data.internalOwner} if you need anything.\n\n` +
+    'Thanks,\nAthaarva Platform Team';
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a;">
+      <p>Hi ${data.contactName || 'team'},</p>
+      <p>
+        Here is your secure onboarding link for the <strong>${data.planTier}</strong> plan using the
+        <strong>${friendlyTemplate}</strong> template.
+      </p>
+      <p>
+        This invitation expires in <strong>${data.expiresInDays} days</strong>. If you need more time, reply to this email and
+        ${data.internalOwner} will extend the window.
+      </p>
+      <ul>
+        <li>Region: ${data.region}</li>
+        <li>Owner: ${data.internalOwner}</li>
+        <li>Template: ${friendlyTemplate}</li>
+      </ul>
+      <p>Thanks,<br />Athaarva Platform Team</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+};
 
 export default function SuperAdminInvitesPage() {
-  const router = useRouter();
-  const [profile, setProfile] = useState<SuperAdminProfile | null>(null);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  
-  // Filters
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  
-  // New invitation modal
-  const [showNewInviteModal, setShowNewInviteModal] = useState(false);
-  const [newInviteData, setNewInviteData] = useState({
-    email: '',
-    expires_in_days: 7,
-    hospital_draft: '',
-  });
-  const [isSending, setIsSending] = useState(false);
+  const [composer, setComposer] = useState<ComposerState>(initialComposer);
+  const [inviteData, setInviteData] = useState<InvitationListResponse | null>(null);
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<MockInviteStatus | ''>('');
+  const [planFilter, setPlanFilter] = useState<MockInvitation['planTier'] | ''>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  // Check authentication on mount
-  const loadProfile = useCallback(async () => {
+  const loadInvites = useCallback(async () => {
+    setLoading(true);
     try {
-      const profileData = await SuperAdminAPIService.getProfile();
-      setProfile(profileData);
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-      SuperAdminAPIService.logout();
-      router.replace('/super-admin/login');
-    }
-  }, [router]);
-
-  const loadInvitations = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await SuperAdminAPIService.getInvitations({
-        page: currentPage,
-        per_page: 20,
-        ...(statusFilter && { status: statusFilter as any }),
+      const next = await SuperAdminAPIService.getInvitations({
+        page,
+        per_page: 10,
+        status: statusFilter || undefined,
+        plan: planFilter || undefined,
+        search: searchTerm || undefined,
       });
-      
-      setInvitations(data.invitations);
-      setTotalPages(data.total_pages);
-      setTotal(data.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load invitations');
+      setInviteData(next);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [currentPage, statusFilter]);
+  }, [page, planFilter, searchTerm, statusFilter]);
 
   useEffect(() => {
-    if (!SuperAdminAPIService.isAuthenticated()) {
-      router.replace('/super-admin/login');
+    loadInvites();
+  }, [loadInvites]);
+
+  const handleComposeChange = (field: keyof ComposerState, value: string | number) => {
+    setComposer((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSendInvite = async () => {
+    if (!composer.email || !composer.contactName || !composer.hospitalName) {
+      toast.error('Please fill in required fields.');
       return;
     }
-
-    if (!profile) {
-      loadProfile();
-    }
-
-    loadInvitations();
-  }, [router, profile, loadProfile, loadInvitations]);
-
-  const handleCreateInvitation = async () => {
-    setIsSending(true);
-    setError('');
-    setSuccess('');
-
+    setSending(true);
     try {
-      let hospitalDraft = null;
-      if (newInviteData.hospital_draft.trim()) {
-        try {
-          hospitalDraft = JSON.parse(newInviteData.hospital_draft);
-        } catch {
-          throw new Error('Invalid JSON in hospital draft');
+      await SuperAdminAPIService.createInvitation(composer);
+      toast.success('Invitation saved to ledger');
+
+      try {
+        const emailContent = buildEmailContent(composer);
+        const response = await fetch('/api/smtp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: composer.email,
+            subject: emailContent.subject,
+            html: emailContent.html,
+            text: emailContent.text,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({}));
+          throw new Error(errorBody.message || 'SMTP send failed');
         }
+
+        toast.success(`Email sent to ${composer.email}`);
+      } catch (emailError) {
+        const message = emailError instanceof Error ? emailError.message : 'SMTP send failed';
+        toast.error(`Invite saved but email failed: ${message}`);
       }
 
-      await SuperAdminAPIService.createInvitation({
-        email: newInviteData.email,
-        expires_in_days: newInviteData.expires_in_days,
-        hospital_draft: hospitalDraft,
-      });
-
-      setSuccess('Invitation sent successfully!');
-      setShowNewInviteModal(false);
-      setNewInviteData({ email: '', expires_in_days: 7, hospital_draft: '' });
-      loadInvitations();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create invitation');
+      setComposer(initialComposer);
+      loadInvites();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send invitation';
+      toast.error(message);
     } finally {
-      setIsSending(false);
+      setSending(false);
     }
   };
 
-  const handleRevokeInvitation = async (invitationId: number) => {
-    if (!confirm('Are you sure you want to revoke this invitation?')) return;
+  const handleRevoke = async (id: number) => {
+    await SuperAdminAPIService.revokeInvitation(id);
+    toast.warning('Invitation revoked per compliance request');
+    loadInvites();
+  };
 
-    try {
-      await SuperAdminAPIService.revokeInvitation(invitationId);
-      setSuccess('Invitation revoked successfully');
-      loadInvitations();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revoke invitation');
+  const handleCleanup = async () => {
+    const result = await SuperAdminAPIService.cleanupExpiredInvitations();
+    toast.info(result.message);
+    loadInvites();
+  };
+
+  const timeline = useMemo(() => {
+    if (!inviteData) return [];
+    return inviteData.invitations.slice(0, 4).map((invite) => ({
+      id: invite.id,
+      hospital: invite.hospitalName,
+      stage: invite.status,
+      timestamp: invite.lastActivityAt,
+      owner: invite.internalOwner,
+    }));
+  }, [inviteData]);
+
+  const statusBadge = (status: MockInviteStatus) => {
+    const base = 'px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 capitalize';
+    switch (status) {
+      case 'PENDING':
+        return <span className={cn(base, 'bg-yellow-500/20 text-yellow-100')}><Clock className="h-3 w-3" /> pending</span>;
+      case 'USED':
+        return <span className={cn(base, 'bg-emerald-500/20 text-emerald-100')}><CheckCircle2 className="h-3 w-3" /> used</span>;
+      case 'REVOKED':
+        return <span className={cn(base, 'bg-red-500/20 text-red-100')}><XCircle className="h-3 w-3" /> revoked</span>;
+      case 'EXPIRED':
+        return <span className={cn(base, 'bg-slate-500/20 text-slate-100')}><AlertTriangle className="h-3 w-3" /> expired</span>;
     }
+    return null;
   };
-
-  const handleCleanupExpired = async () => {
-    try {
-      const result = await SuperAdminAPIService.cleanupExpiredInvitations();
-      setSuccess(result.message);
-      loadInvitations();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cleanup expired invitations');
-    }
-  };
-
-  const handleLogout = () => {
-    SuperAdminAPIService.logout();
-    router.push('/super-admin/login');
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      USED: 'bg-green-100 text-green-800 border-green-200',
-      REVOKED: 'bg-red-100 text-red-800 border-red-200',
-      EXPIRED: 'bg-gray-100 text-gray-800 border-gray-200',
-    };
-
-    const icons = {
-      PENDING: <Clock className="h-3 w-3" />,
-      USED: <CheckCircle className="h-3 w-3" />,
-      REVOKED: <XCircle className="h-3 w-3" />,
-      EXPIRED: <Calendar className="h-3 w-3" />,
-    };
-
-    return (
-      <Badge className={`${variants[status as keyof typeof variants]} flex items-center gap-1`}>
-        {icons[status as keyof typeof icons]}
-        {status}
-      </Badge>
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  if (isLoading && !invitations.length) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-lg font-medium text-slate-700">Loading...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="h-8 w-8 text-red-600" />
-                <h1 className="text-2xl font-bold text-slate-900">Super Admin Portal</h1>
-              </div>
-              {profile && (
-                <div className="text-sm text-slate-600">
-                  Welcome, {profile.full_name}
-                </div>
-              )}
-            </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-slate-200 hover:bg-slate-50"
-            >
-              Logout
-            </Button>
-          </div>
+    <div className="space-y-8 text-white">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Tenant lifecycle</p>
+          <h2 className="text-3xl font-semibold">Invitations & onboarding runway</h2>
+          <p className="text-white/70 max-w-2xl">
+            Map every hospital invite to plans, templates, and compliance checkpoints. All data is mocked locally so you can refine UX before wiring actual SMTP + APIs.
+          </p>
         </div>
+        <div className="flex gap-3">
+          <Button variant="outline" className="border-white/20 text-white/80" onClick={handleCleanup}>
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Cleanup expired
+          </Button>
+          <Button onClick={handleSendInvite} disabled={sending} className="bg-red-500 hover:bg-red-400">
+            {sending ? 'Sending…' : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Send invitation
+              </>
+            )}
+          </Button>
+        </div>
+      </header>
+
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="py-6">
+            <p className="text-sm text-white/60">Pending invites</p>
+            <p className="text-3xl font-semibold">{inviteData?.summary.pending ?? '—'}</p>
+            <p className="text-xs text-white/50">Target follow-up in &lt; 48h</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="py-6">
+            <p className="text-sm text-white/60">Expiring soon</p>
+            <p className="text-3xl font-semibold text-yellow-200">{inviteData?.summary.expiringSoon ?? '—'}</p>
+            <p className="text-xs text-white/50">Auto reminders queued</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="py-6">
+            <p className="text-sm text-white/60">Converted</p>
+            <p className="text-3xl font-semibold text-emerald-200">{inviteData?.summary.used ?? '—'}</p>
+            <p className="text-xs text-white/50">Last 30 days</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="py-6">
+            <p className="text-sm text-white/60">Revoked</p>
+            <p className="text-3xl font-semibold text-red-200">{inviteData?.summary.revoked ?? '—'}</p>
+            <p className="text-xs text-white/50">Compliance or stale</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Alerts */}
-        {error && (
-          <Alert className="mb-6 bg-red-50 border-red-200 text-red-800">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {success && (
-          <Alert className="mb-6 bg-green-50 border-green-200 text-green-800">
-            <AlertDescription>{success}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900">Hospital Invitations</h2>
-            <p className="text-slate-600 mt-1">
-              Manage and send invitations for hospital onboarding
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Button
-              onClick={handleCleanupExpired}
-              variant="outline"
-              className="border-slate-200 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Cleanup Expired
-            </Button>
-            
-            <Dialog open={showNewInviteModal} onOpenChange={setShowNewInviteModal}>
-              <DialogTrigger asChild>
-                <Button className="bg-red-600 hover:bg-red-700 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Invitation
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Send Hospital Invitation</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="hospital@example.com"
-                      value={newInviteData.email}
-                      onChange={(e) => setNewInviteData(prev => ({ ...prev, email: e.target.value }))}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="expires">Expires in (days)</Label>
-                    <Input
-                      id="expires"
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={newInviteData.expires_in_days}
-                      onChange={(e) => setNewInviteData(prev => ({ ...prev, expires_in_days: parseInt(e.target.value) || 7 }))}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="draft">Hospital Draft (Optional JSON)</Label>
-                    <Textarea
-                      id="draft"
-                      placeholder='{"hospital_name": "Example Hospital"}'
-                      value={newInviteData.hospital_draft}
-                      onChange={(e) => setNewInviteData(prev => ({ ...prev, hospital_draft: e.target.value }))}
-                      rows={3}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowNewInviteModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleCreateInvitation}
-                      disabled={!newInviteData.email || isSending}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      {isSending ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Invitation
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-slate-500" />
-                <Label className="text-sm font-medium">Filter by status:</Label>
-              </div>
+      <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
+        {/* Composer */}
+        <Card className="bg-white/5 border-white/10">
+          <CardHeader>
+            <CardTitle>Compose invitation</CardTitle>
+            <p className="text-sm text-white/70">Plan, template, and guardrail choices map to onboarding wizard defaults.</p>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Hospital contact email</Label>
+              <Input
+                type="email"
+                placeholder="ops@hospital.com"
+                value={composer.email}
+                onChange={(e) => handleComposeChange('email', e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Point of contact</Label>
+              <Input
+                placeholder="Priya Sengar"
+                value={composer.contactName}
+                onChange={(e) => handleComposeChange('contactName', e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Hospital name</Label>
+              <Input
+                placeholder="Aurora Valley Medical"
+                value={composer.hospitalName}
+                onChange={(e) => handleComposeChange('hospitalName', e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Plan tier</Label>
               <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="border border-slate-200 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                value={composer.planTier}
+                onChange={(e) => handleComposeChange('planTier', e.target.value)}
+                className="bg-white/10 border-white/20 text-white rounded-md px-3 py-2"
               >
-                <option value="">All Statuses</option>
-                <option value="PENDING">Pending</option>
-                <option value="USED">Used</option>
-                <option value="REVOKED">Revoked</option>
-                <option value="EXPIRED">Expired</option>
+                {planOptions.map((plan) => (
+                  <option key={plan} value={plan} className="text-slate-900">{plan}</option>
+                ))}
               </select>
-              <div className="text-sm text-slate-500">
-                Total: {total} invitations
-              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Template</Label>
+              <select
+                value={composer.templateSlug}
+                onChange={(e) => handleComposeChange('templateSlug', e.target.value)}
+                className="bg-white/10 border-white/20 text-white rounded-md px-3 py-2"
+              >
+                <option value="modern-clinical" className="text-slate-900">Modern Clinical v3</option>
+                <option value="telehealth-first" className="text-slate-900">Telehealth First v2</option>
+                <option value="heritage" className="text-slate-900">Heritage Classic</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Internal owner</Label>
+              <Input
+                placeholder="Platform Ops"
+                value={composer.internalOwner}
+                onChange={(e) => handleComposeChange('internalOwner', e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Region</Label>
+              <Input
+                placeholder="IN-West"
+                value={composer.region}
+                onChange={(e) => handleComposeChange('region', e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Expiry (days)</Label>
+              <Input
+                type="number"
+                min={3}
+                max={30}
+                value={composer.expiresInDays}
+                onChange={(e) => handleComposeChange('expiresInDays', Number(e.target.value) || 7)}
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+            <div className="md:col-span-2 space-y-2">
+              <Label>Notes / guardrails context</Label>
+              <Textarea
+                rows={3}
+                value={composer.notes}
+                onChange={(e) => handleComposeChange('notes', e.target.value)}
+                className="bg-white/10 border-white/20 text-white"
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Invitations Table */}
-        <Card>
+        {/* Preview + timeline */}
+        <Card className="bg-gradient-to-b from-slate-900/60 to-slate-900 border-white/10">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <UserPlus className="h-5 w-5 mr-2" />
-              Invitations
-            </CardTitle>
+            <CardTitle>Email + onboarding preview</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead>Used</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invitations.map((invitation) => (
-                    <TableRow key={invitation.id}>
-                      <TableCell className="font-medium">
-                        {invitation.email}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(invitation.status)}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-600">
-                        {formatDate(invitation.created_at)}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-600">
-                        {formatDate(invitation.expires_at)}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-600">
-                        {invitation.used_at ? formatDate(invitation.used_at) : '-'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          {invitation.hospital_draft && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 w-8 p-0"
-                              title="View Hospital Draft"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {invitation.status === 'PENDING' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleRevokeInvitation(invitation.id)}
-                              title="Revoke Invitation"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          <CardContent className="space-y-6">
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3 text-sm text-white/80">
+              <div className="flex items-center gap-2 text-white">
+                <Mail className="h-4 w-4" /> SMTP draft
+              </div>
+              <p>Hi {composer.contactName || 'team'},</p>
+              <p>
+                Here&apos;s your secure onboarding link for the {composer.planTier} plan using the {formatTemplateName(composer.templateSlug)} site template.
+                This includes policy acknowledgements for AI guardrails and telehealth readiness.
+              </p>
+              <div className="flex items-center gap-3 text-xs">
+                <Badge className="bg-emerald-500/20 text-emerald-100 border-0">Token auto-generates</Badge>
+                <Badge className="bg-white/10 border-white/10 text-white/70">Expires in {composer.expiresInDays} days</Badge>
+              </div>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-slate-600">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {invitations.length === 0 && !isLoading && (
-              <div className="text-center py-12">
-                <UserPlus className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">No invitations found</h3>
-                <p className="text-slate-600 mb-4">
-                  {statusFilter ? 'No invitations match the current filter.' : 'Get started by creating your first hospital invitation.'}
-                </p>
-                {!statusFilter && (
-                  <Button
-                    onClick={() => setShowNewInviteModal(true)}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Invitation
-                  </Button>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-4">
+              <p className="text-xs uppercase tracking-wider text-white/50">Recent activity</p>
+              <div className="space-y-3">
+                {timeline.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-semibold">{item.hospital}</p>
+                      <p className="text-white/60">Owner: {item.owner}</p>
+                    </div>
+                    {statusBadge(item.stage as MockInviteStatus)}
+                  </div>
+                ))}
+                {timeline.length === 0 && (
+                  <p className="text-white/60 text-sm">No recent changes. Compose a new invite to populate the stream.</p>
                 )}
               </div>
-            )}
+            </div>
+
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-white/80">
+                <ShieldCheck className="h-4 w-4" /> Checklist preview
+              </div>
+              <ul className="list-disc list-inside text-white/60 space-y-1">
+                <li>Identity verification + policy acknowledgements</li>
+                <li>Brand + template content builder</li>
+                <li>Telehealth + AI guardrail configuration</li>
+                <li>Initial staff invites & MFA requirements</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Filters + table */}
+      <Card className="bg-white/5 border-white/10">
+        <CardHeader>
+          <CardTitle>Invitation ledger</CardTitle>
+          <p className="text-sm text-white/70">Filters align with auditing requirements (status, plan, owner, region).</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2">
+              {statusPills.map((pill) => (
+                <button
+                  key={pill.label}
+                  onClick={() => {
+                    setPage(1);
+                    setStatusFilter(pill.value);
+                  }}
+                  className={cn(
+                    'px-3 py-1 rounded-full text-xs font-semibold border border-white/10 transition',
+                    statusFilter === pill.value ? pill.tone : 'text-white/60 hover:text-white'
+                  )}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Search hospital, region, contact"
+                  className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                />
+              </div>
+              <div className="flex items-center gap-2 text-white/70 text-sm">
+                <Filter className="h-4 w-4" />
+                <select
+                  value={planFilter || ''}
+                  onChange={(e) => {
+                    setPlanFilter((e.target.value || '') as MockInvitation['planTier'] | '');
+                    setPage(1);
+                  }}
+                  className="bg-white/10 border-white/20 text-white rounded-md px-3 py-1"
+                >
+                  <option value="" className="text-slate-900">All plans</option>
+                  {planOptions.map((plan) => (
+                    <option key={plan} value={plan} className="text-slate-900">{plan}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Hospital</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Plan / Template</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Region</TableHead>
+                  <TableHead>Last activity</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-10 text-white/60">
+                      Loading invitations…
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!loading && inviteData?.invitations.map((invite) => (
+                  <TableRow key={invite.id}>
+                    <TableCell>
+                      <div className="font-semibold">{invite.hospitalName}</div>
+                      <div className="text-sm text-white/60">{invite.email}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div>{invite.contactName}</div>
+                      <div className="text-xs text-white/60">Owner: {invite.internalOwner}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Badge className="bg-white/10 border-white/10 text-white/80">{invite.planTier}</Badge>
+                        <Badge className="bg-white/5 border-white/10 text-white/60 capitalize">{invite.templateSlug}</Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>{statusBadge(invite.status)}</TableCell>
+                    <TableCell className="text-sm text-white/80 flex items-center gap-2">
+                      <Globe2 className="h-4 w-4" /> {invite.region}
+                    </TableCell>
+                    <TableCell className="text-sm text-white/70">
+                      {new Date(invite.lastActivityAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-white/70"
+                          onClick={() => navigator.clipboard.writeText(invite.inviteToken).then(() => toast.success('Mock token copied'))}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {invite.status === 'PENDING' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-200 hover:text-red-100"
+                            onClick={() => handleRevoke(invite.id)}
+                          >
+                            <NotebookPen className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!loading && !inviteData?.invitations.length && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-10 text-white/60">
+                      No invitations match the current filters.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {inviteData && inviteData.total_pages > 1 && (
+            <div className="flex items-center justify-between text-sm text-white/60">
+              <span>
+                Page {inviteData.page} of {inviteData.total_pages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={inviteData.page === 1}
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  className="border-white/20 text-white/80"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={inviteData.page === inviteData.total_pages}
+                  onClick={() => setPage((prev) => prev + 1)}
+                  className="border-white/20 text-white/80"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
