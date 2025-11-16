@@ -9,41 +9,67 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 
-// Define types for our context
+// Define types for our context - aligned with backend UUID architecture
 export interface Appointment {
-  id: number | string;
-  title: string;
-  doctor?: string;
-  doctorPhoto?: string;
-  specialty?: string;
-  date: Date;
-  time: string;
-  type: "in-person" | "video" | "phone";
-  status: "confirmed" | "pending" | "completed" | "cancelled";
+  // Core fields (UUID-based) - match backend
+  id: string; // UUID
+  patient_id: string; // UUID
+  doctor_id: string; // UUID
+  tenant_id: string; // UUID
+
+  // UI-friendly fields
+  title?: string;
+  date: Date; // Converted from appointment_date string
+  time: string; // From appointment_time
+  type?: "in-person" | "video" | "phone";
+  status:
+    | "confirmed"
+    | "pending"
+    | "completed"
+    | "cancelled"
+    | "scheduled"
+    | "no_show";
   location?: string | null;
   notes?: string;
+  reason?: string;
+  prescription?: string;
+
+  // Doctor info (populated) - simplified for UI
+  doctor?: string; // Doctor name
+  doctorPhoto?: string;
+  specialty?: string;
+
+  // Patient info (populated) - simplified for UI
   patientName?: string;
   patientPhoto?: string;
   patientAge?: number;
   patientGender?: string;
+
+  // Scheduling
   startTime?: Date;
   endTime?: Date;
-  duration?: number;
+  duration?: number; // In minutes (duration_minutes from backend)
+
+  // Additional
   purpose?: string;
   preparationStatus?: string;
+
+  // Timestamps
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface AppointmentContextType {
   appointments: Appointment[];
   addAppointment: (appointment: Appointment) => void;
   updateAppointment: (
-    id: string | number,
+    id: string, // UUID only
     updatedData: Partial<Appointment>
   ) => void;
-  cancelAppointment: (id: string | number) => void;
-  deleteAppointment: (id: string | number) => void;
-  getAppointmentById: (id: string | number) => Appointment | undefined;
-  navigateToAppointmentDetails: (id: string | number) => void;
+  cancelAppointment: (id: string) => void; // UUID only
+  deleteAppointment: (id: string) => void; // UUID only
+  getAppointmentById: (id: string) => Appointment | undefined; // UUID only
+  navigateToAppointmentDetails: (id: string) => void; // UUID only
   navigateToBooking: () => void;
   upcomingAppointments: Appointment[];
   pastAppointments: Appointment[];
@@ -159,17 +185,14 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
   const addAppointment = (appointment: Appointment) => {
     const newAppointment = {
       ...appointment,
-      id:
-        typeof appointment.id !== "undefined"
-          ? appointment.id
-          : Date.now().toString(),
+      id: appointment.id || crypto.randomUUID(), // Generate UUID if not provided
     };
     setAppointments((prev) => [...prev, newAppointment]);
   };
 
   // Update an existing appointment
   const updateAppointment = (
-    id: string | number,
+    id: string, // UUID only
     updatedData: Partial<Appointment>
   ) => {
     setAppointments((prev) =>
@@ -178,22 +201,26 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   // Cancel an appointment
-  const cancelAppointment = (id: string | number) => {
+  const cancelAppointment = (id: string) => {
+    // UUID only
     updateAppointment(id, { status: "cancelled" });
   };
 
   // Delete an appointment
-  const deleteAppointment = (id: string | number) => {
+  const deleteAppointment = (id: string) => {
+    // UUID only
     setAppointments((prev) => prev.filter((app) => app.id !== id));
   };
 
   // Get an appointment by ID
-  const getAppointmentById = (id: string | number) => {
+  const getAppointmentById = (id: string) => {
+    // UUID only
     return appointments.find((app) => app.id === id);
   };
 
   // Navigation helpers
-  const navigateToAppointmentDetails = (id: string | number) => {
+  const navigateToAppointmentDetails = (id: string) => {
+    // UUID only
     // Store selected appointment ID in sessionStorage for cross-page persistence
     sessionStorage.setItem("selectedAppointmentId", id.toString());
     router.push(`/patient/appointments/details/${id}`);
