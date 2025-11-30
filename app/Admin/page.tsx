@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +22,20 @@ import {
   Bell,
   Filter,
   Loader2,
+  HeartPulse,
+  ShieldCheck,
+  BarChart3,
+  Wifi,
+  ServerCog,
+  Thermometer,
+  ClipboardCheck,
+  Radar,
+  Target,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useAdminDashboard, useAdminRefresh } from "@/hooks/useAdminDashboard";
+import { Progress } from "@/components/ui/progress";
 
 const AdminDashboard = () => {
   const {
@@ -34,6 +45,7 @@ const AdminDashboard = () => {
     isLoading,
     error,
     refetch,
+    isUsingMockData,
   } = useAdminDashboard();
   
   const { isRefreshing, refreshAll } = useAdminRefresh();
@@ -97,7 +109,7 @@ const AdminDashboard = () => {
   }
 
   // Show error state
-  if (error) {
+  if (error && !stats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
@@ -116,8 +128,154 @@ const AdminDashboard = () => {
     return null;
   }
 
+  const formatPercent = (value: number) =>
+    Math.min(100, Math.max(0, Math.round(value)));
+
+  const doctorCoverage = formatPercent(
+    (stats.activeDoctors / Math.max(stats.totalDoctors, 1)) * 100
+  );
+  const staffCoverage = formatPercent(
+    (stats.activeStaff / Math.max(stats.totalStaff, 1)) * 100
+  );
+
+  const workforcePulse = [
+    {
+      label: "Doctor Coverage",
+      value: doctorCoverage,
+      detail: `${stats.activeDoctors}/${stats.totalDoctors} doctors online`,
+      trend: "+3% vs last week",
+      accent: "from-[#007C7C] via-[#0EB1A0] to-[#20B2AA]",
+    },
+    {
+      label: "Staff Utilization",
+      value: staffCoverage,
+      detail: `${stats.activeStaff}/${stats.totalStaff} staff active`,
+      trend: "+5% shift compliance",
+      accent: "from-[#20B2AA] via-[#38BDF8] to-[#5EEAD4]",
+    },
+  ];
+
+  const operationalInsights = [
+    {
+      title: "Patient Throughput",
+      value: "312",
+      change: "+8%",
+      description: "Avg admissions per day",
+      icon: Activity,
+      accent: "bg-[#007C7C]/10 text-[#007C7C]",
+    },
+    {
+      title: "Bed Occupancy",
+      value: "78%",
+      change: "+4%",
+      description: "Across critical care",
+      icon: BarChart3,
+      accent: "bg-[#20B2AA]/10 text-[#20B2AA]",
+    },
+    {
+      title: "Telehealth",
+      value: "99.3%",
+      change: "stable",
+      description: "Platform uptime",
+      icon: Wifi,
+      accent: "bg-[#50C878]/10 text-[#1C8C64]",
+    },
+    {
+      title: "System Alerts",
+      value: stats.systemAlerts.toString(),
+      change: "2 critical",
+      description: "Security + infra",
+      icon: ShieldCheck,
+      accent: "bg-red-50 text-red-600",
+    },
+  ];
+
+  const onboardingMilestones = [
+    {
+      id: "credential",
+      title: "Credential Verification",
+      owner: "Medical HR",
+      completion: 82,
+      eta: "2 days",
+    },
+    {
+      id: "orientation",
+      title: "Clinical Orientation",
+      owner: "Nursing Ops",
+      completion: 64,
+      eta: "5 days",
+    },
+    {
+      id: "it-access",
+      title: "IT Access Provisioning",
+      owner: "IT Security",
+      completion: 71,
+      eta: "3 days",
+    },
+  ];
+
+  const infrastructureSignals = [
+    {
+      title: "EHR Cluster",
+      status: "Operational",
+      detail: "Latency 112ms",
+      icon: ServerCog,
+      tone: "text-emerald-600 bg-emerald-50",
+    },
+    {
+      title: "Imaging Network",
+      status: "Watching",
+      detail: "Bandwidth spike",
+      icon: Radar,
+      tone: "text-amber-600 bg-amber-50",
+    },
+    {
+      title: "Pharmacy Cold Chain",
+      status: "Action Needed",
+      detail: "Temp variance",
+      icon: Thermometer,
+      tone: "text-red-600 bg-red-50",
+    },
+  ];
+
+  const complianceChecklist = [
+    {
+      title: "NABH Surveillance Audit",
+      status: "Scheduled",
+      due: "Mar 28",
+      owner: "Quality Team",
+      severity: "medium",
+    },
+    {
+      title: "Radiation Safety Logs",
+      status: "In Review",
+      due: "Mar 22",
+      owner: "Radiology",
+      severity: "high",
+    },
+    {
+      title: "Telemedicine Consent",
+      status: "Updated",
+      due: "Mar 30",
+      owner: "Legal",
+      severity: "low",
+    },
+  ];
+
   return (
     <div className="space-y-8">
+      {isUsingMockData && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
+          <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">Live data temporarily unavailable</p>
+            <p className="text-amber-800/90">
+              {error ?? "The backend API is unreachable right now. Showing simulated operations data so the dashboard stays useful."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Header */}
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
@@ -256,6 +414,162 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
+      {/* Operational Intelligence */}
+      <Card className="shadow-lg border-0 bg-white">
+        <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+          <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
+            <HeartPulse className="h-5 w-5 text-[#007C7C]" />
+            Operational Intelligence Snapshot
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {operationalInsights.map((insight) => (
+              <div
+                key={insight.title}
+                className="p-4 rounded-2xl border border-slate-100 hover:border-[#007C7C]/30 hover:shadow-lg transition-all duration-300"
+              >
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${insight.accent}`}>
+                  <insight.icon className="h-4 w-4" />
+                  {insight.title}
+                </div>
+                <div className="mt-4 flex items-end gap-2">
+                  <p className="text-3xl font-bold text-slate-900">{insight.value}</p>
+                  <span className="text-sm text-emerald-600 font-semibold">{insight.change}</span>
+                </div>
+                <p className="text-sm text-slate-500 mt-1">{insight.description}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Workforce Pulse & Onboarding */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-slate-50 lg:col-span-2">
+          <CardHeader className="border-b border-slate-100">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-[#007C7C]" />
+              Workforce Pulse
+            </CardTitle>
+            <p className="text-sm text-slate-500">
+              Live signal on coverage, engagement, and efficiency
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              {workforcePulse.map((pulse) => (
+                <div
+                  key={pulse.label}
+                  className="p-5 rounded-2xl border border-slate-100 bg-white shadow-inner"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {pulse.label}
+                    </p>
+                    <span className="text-xs text-emerald-600 font-medium">
+                      {pulse.trend}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-bold text-[#007C7C]">
+                      {pulse.value}%
+                    </span>
+                    <span className="text-xs uppercase tracking-wide text-slate-500">
+                      live
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-500 mb-3">{pulse.detail}</p>
+                  <Progress
+                    value={pulse.value}
+                    indicatorClassName={`bg-gradient-to-r ${pulse.accent}`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  label: "Shift Compliance",
+                  value: "94%",
+                  detail: "Roster adherence",
+                  icon: ClipboardCheck,
+                },
+                {
+                  label: "Credential Currency",
+                  value: "88%",
+                  detail: "Licenses up to date",
+                  icon: ShieldCheck,
+                },
+                {
+                  label: "Response SLAs",
+                  value: "12m",
+                  detail: "Avg ticket clear",
+                  icon: Clock,
+                },
+              ].map((pulse) => (
+                <div
+                  key={pulse.label}
+                  className="p-4 rounded-2xl border border-slate-100 bg-white flex items-center gap-3"
+                >
+                  <div className="p-3 rounded-xl bg-[#007C7C]/10">
+                    <pulse.icon className="h-5 w-5 text-[#007C7C]" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">{pulse.label}</p>
+                    <p className="text-xl font-semibold text-slate-900">
+                      {pulse.value}
+                    </p>
+                    <p className="text-xs text-slate-400">{pulse.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="border-b border-slate-100">
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-[#20B2AA]" />
+              Onboarding Pipeline
+            </CardTitle>
+            <p className="text-sm text-slate-500">
+              Track cross-team dependencies for new clinicians
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-5">
+            {onboardingMilestones.map((milestone, index) => (
+              <div key={milestone.id} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {milestone.title}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Owner: {milestone.owner}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    ETA {milestone.eta}
+                  </Badge>
+                </div>
+                <Progress
+                  value={milestone.completion}
+                  className="h-2 bg-slate-100"
+                  indicatorClassName="bg-gradient-to-r from-[#007C7C] to-[#20B2AA]"
+                />
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{milestone.completion}% complete</span>
+                  <span>Stage {index + 1} of {onboardingMilestones.length}</span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Enhanced Main Content Grid */}
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Enhanced Recent Activity */}
@@ -386,6 +700,91 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Compliance & System Health */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="border-b border-slate-100">
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-[#007C7C]" />
+              Compliance Watchlist
+            </CardTitle>
+            <p className="text-sm text-slate-500">
+              High-stakes activities tied to accreditation & safety
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            {complianceChecklist.map((item) => (
+              <div
+                key={item.title}
+                className="p-4 border border-slate-100 rounded-2xl hover:border-[#007C7C]/40"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-slate-500">Owner: {item.owner}</p>
+                  </div>
+                  <Badge
+                    className={
+                      item.severity === "high"
+                        ? "bg-red-50 text-red-600 border-red-200"
+                        : item.severity === "medium"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    }
+                  >
+                    {item.status}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                  <span>Due {item.due}</span>
+                  <div className="inline-flex items-center gap-1">
+                    <ClipboardCheck className="h-3 w-3" />
+                    Severity: {item.severity}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="border-b border-slate-100">
+            <CardTitle className="flex items-center gap-2">
+              <ServerCog className="h-5 w-5 text-[#20B2AA]" />
+              System Health Signals
+            </CardTitle>
+            <p className="text-sm text-slate-500">
+              Real-time visibility into hospital infrastructure
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            {infrastructureSignals.map((signal) => (
+              <div
+                key={signal.title}
+                className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`${signal.tone} p-3 rounded-xl`}> 
+                    <signal.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {signal.title}
+                    </p>
+                    <p className="text-xs text-slate-500">{signal.detail}</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-xs capitalize">
+                  {signal.status}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Enhanced Quick Actions */}

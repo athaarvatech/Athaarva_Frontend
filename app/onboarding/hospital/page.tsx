@@ -70,6 +70,9 @@ import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 import { ActivityLog } from "./widgets/ActivityLog";
 import { HelpPopover } from "./widgets/HelpPopover";
 
+// Import the real API client
+import { onboardingAPI, type ValidateTokenResponse } from "@/lib/api";
+
 interface StepConfig {
   id: number;
   title: string;
@@ -221,7 +224,7 @@ function HospitalOnboardingWrapper() {
       const isDevelopment = process.env.NODE_ENV === 'development' || 
                             window.location.hostname === 'localhost';
       
-      if (isDevelopment) {
+      if (isDevelopment && !token) {
         console.log('🚀 Development mode: Token validation bypassed');
         setValidationState({
           loading: false,
@@ -248,28 +251,27 @@ function HospitalOnboardingWrapper() {
       }
 
       try {
-        const response = await fetch(
-          `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPER_ADMIN.VALIDATE_TOKEN}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token }),
-          }
-        );
+        // Use the real API client for validation
+        const response = await onboardingAPI.validateToken(token);
 
-        const data = await response.json();
-
-        if (data.valid) {
+        if (response.valid) {
           setValidationState({
             loading: false,
             valid: true,
-            data,
+            data: {
+              valid: true,
+              invitation_id: undefined, // Will be set after accept
+              email: response.email || undefined,
+              expires_at: response.expires_at || undefined,
+              hospital_name: response.hospital_name || '',
+              message: response.message,
+            },
           });
         } else {
           setValidationState({
             loading: false,
             valid: false,
-            error: data.message || "Invalid invitation token",
+            error: response.message || "Invalid or expired invitation token",
           });
         }
       } catch (error) {
@@ -277,7 +279,7 @@ function HospitalOnboardingWrapper() {
         setValidationState({
           loading: false,
           valid: false,
-          error: "Failed to validate invitation token",
+          error: error instanceof Error ? error.message : "Failed to validate invitation token",
         });
       }
     };
@@ -417,21 +419,14 @@ function HospitalOnboardingContent({
     setSubmitError(null);
 
     try {
+      // Build payload for reference (context has it)
       const payload = buildSubmissionPayload();
 
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HOSPITALS.ONBOARDING}?token=${encodeURIComponent(token)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to create hospital");
-      }
+      // Use the new API client for submission
+      const result = await onboardingAPI.submitForReview();
+      
+      // If we get here without throwing, submission was successful
+      // The session status should now be 'submitted' or 'pending_review'
 
       // Clear localStorage after successful submission
       if (validationData?.invitation_id) {
@@ -439,6 +434,9 @@ function HospitalOnboardingContent({
           `hospital-onboarding-${validationData.invitation_id}`
         );
       }
+      
+      // Clear onboarding session tokens
+      onboardingAPI.clearSession();
 
       // Redirect to success page
       router.push(

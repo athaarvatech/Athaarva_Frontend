@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, Eye, Sparkles, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { TemplateData } from '@/contexts/HospitalOnboardingContextV2';
+import { TEMPLATE_BLUEPRINTS } from './templateBlueprints';
+import { TemplatePreviewRenderer } from './TemplatePreviewRenderer';
 
 interface TemplateGalleryProps {
   templates?: TemplateData[];
@@ -18,53 +20,36 @@ interface TemplateGalleryProps {
 const MOCK_TEMPLATES: TemplateData[] = [
   {
     id: 'modern-healthcare',
-    name: 'Modern Healthcare',
-    version: '1.0.0',
-    preview_snapshot_url: '/templates/modern-preview.jpg',
-    thumbnail_url: '/templates/modern-thumb.jpg',
-    description: 'Clean, contemporary design perfect for multi-specialty hospitals. Features comprehensive appointment booking, patient portal, and telehealth integration.',
-    supported_modules: ['Appointments', 'Patient Portal', 'Telehealth', 'Pharmacy', 'Lab Reports'],
-    recommended_for: ['Multi-specialty Hospitals', 'Urban Healthcare Centers', 'Corporate Hospitals'],
+    name: 'Modern Clinical Flagship',
+    version: '3.2',
+    preview_snapshot_url: '/templates/modern-clinical.jpg',
+    thumbnail_url: '/templates/modern-clinical-thumb.jpg',
+    description:
+      'Glass-and-steel campus aesthetic with immersive hero, data-driven stats, specialty grid, and premium doctor storytelling.',
+    supported_modules: ['Appointments', 'Patient Concierge', 'Tele-ICU', 'Precision Oncology', 'Virtual Tour'],
+    recommended_for: ['Multi-specialty Hospitals', 'International Patient Programs', 'Enterprise Health Systems'],
   },
   {
-    id: 'wellness-focused',
-    name: 'Wellness & Wellness',
-    version: '1.0.0',
-    preview_snapshot_url: '/templates/wellness-preview.jpg',
-    thumbnail_url: '/templates/wellness-thumb.jpg',
-    description: 'Warm, inviting design emphasizing holistic care. Ideal for wellness centers, preventive care clinics, and lifestyle medicine practices.',
-    supported_modules: ['Appointments', 'Health Programs', 'Nutrition Plans', 'Wellness Blog'],
-    recommended_for: ['Wellness Centers', 'Preventive Care Clinics', 'Lifestyle Medicine'],
+    id: 'telehealth-first',
+    name: 'Telehealth First Mesh',
+    version: '2.6',
+    preview_snapshot_url: '/templates/telehealth-first.jpg',
+    thumbnail_url: '/templates/telehealth-first-thumb.jpg',
+    description:
+      'Cloud-native virtual hospital layout inspired by leading hybrid-care networks with strong CTA coverage for remote visits.',
+    supported_modules: ['Virtual Waiting Room', 'Remote Monitoring', 'At-home Infusion', 'Behavioral Health Studio'],
+    recommended_for: ['Digital-first Hospitals', 'Chronic Care Networks', 'Employer Health Programs'],
   },
   {
-    id: 'specialist-clinic',
-    name: 'Specialist Clinic',
-    version: '1.0.0',
-    preview_snapshot_url: '/templates/specialist-preview.jpg',
-    thumbnail_url: '/templates/specialist-thumb.jpg',
-    description: 'Focused, professional design for specialty clinics. Highlights expertise, procedures, and patient outcomes with detailed service pages.',
-    supported_modules: ['Appointments', 'Procedure Showcase', 'Before/After Gallery', 'Patient Testimonials'],
-    recommended_for: ['Specialty Clinics', 'Surgical Centers', 'Diagnostic Labs'],
-  },
-  {
-    id: 'community-care',
-    name: 'Community Care',
-    version: '1.0.0',
-    preview_snapshot_url: '/templates/community-preview.jpg',
-    thumbnail_url: '/templates/community-thumb.jpg',
-    description: 'Accessible, friendly design for community health centers. Features multi-language support, simplified navigation, and community health programs.',
-    supported_modules: ['Appointments', 'Community Programs', 'Health Education', 'Mobile Clinics'],
-    recommended_for: ['Community Health Centers', 'Primary Care Clinics', 'Rural Healthcare'],
-  },
-  {
-    id: 'premium-hospital',
-    name: 'Premium Hospital',
-    version: '1.0.0',
-    preview_snapshot_url: '/templates/premium-preview.jpg',
-    thumbnail_url: '/templates/premium-thumb.jpg',
-    description: 'Luxury, high-end design for premium healthcare facilities. Showcases advanced technology, international accreditations, and VIP services.',
-    supported_modules: ['Appointments', 'Concierge Services', 'International Patients', 'Virtual Tours', 'Premium Suites'],
-    recommended_for: ['Premium Hospitals', 'Medical Tourism', 'Executive Health Programs'],
+    id: 'heritage',
+    name: 'Heritage Academic',
+    version: '1.8',
+    preview_snapshot_url: '/templates/heritage.jpg',
+    thumbnail_url: '/templates/heritage-thumb.jpg',
+    description:
+      'Classic serif typography, heritage imagery, and donor storytelling tuned for legacy hospitals balancing tradition with science.',
+    supported_modules: ['Pastoral Care', 'Academic Programs', 'Transplant Outcomes', 'Heritage Timeline'],
+    recommended_for: ['Teaching Hospitals', 'Mission Hospitals', 'Faith-driven Health Systems'],
   },
 ];
 
@@ -221,6 +206,7 @@ interface TemplatePreviewModalProps {
 
 function TemplatePreviewModal({ template, onClose, onSelect, isSelected }: TemplatePreviewModalProps) {
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const blueprint = useMemo(() => TEMPLATE_BLUEPRINTS[template.id], [template.id]);
 
   return (
     <motion.div
@@ -269,19 +255,22 @@ function TemplatePreviewModal({ template, onClose, onSelect, isSelected }: Templ
         <div className="p-6 bg-gray-100">
           <div
             className={cn(
-              'mx-auto bg-white rounded-lg shadow-lg overflow-hidden',
+              'mx-auto bg-white rounded-[2.25rem] shadow-2xl overflow-hidden border border-gray-200/70',
               device === 'desktop' && 'w-full aspect-[16/10]',
               device === 'tablet' && 'w-2/3 aspect-[3/4]',
               device === 'mobile' && 'w-1/3 aspect-[9/16]'
             )}
           >
-            <div className="h-full flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <Sparkles className="w-16 h-16 mx-auto mb-4" />
-                <p className="text-sm">Template Preview</p>
-                <p className="text-xs text-gray-500 mt-1">{device.charAt(0).toUpperCase() + device.slice(1)} View</p>
+            {blueprint ? (
+              <TemplatePreviewRenderer blueprint={blueprint} device={device} />
+            ) : (
+              <div className="flex h-full items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <Sparkles className="w-16 h-16 mx-auto mb-4" />
+                  <p className="text-sm">Preview not available</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

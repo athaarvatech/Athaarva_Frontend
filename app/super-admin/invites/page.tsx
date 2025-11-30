@@ -38,21 +38,38 @@ import {
   Clock,
   ShieldCheck,
 } from 'lucide-react';
-import { SuperAdminAPIService, InvitationListResponse } from '@/lib/super-admin-api';
-import { MockInvitation, MockInviteStatus } from '@/lib/mock/super-admin-db';
+import { superAdminAPI, type InvitationResponse, type CreateInvitationRequest } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
+// Invitation statuses
+type InviteStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
+
+// Composer state for creating new invitations
 type ComposerState = {
   email: string;
   contactName: string;
   hospitalName: string;
-  planTier: MockInvitation['planTier'];
-  templateSlug: MockInvitation['templateSlug'];
+  planTier: 'Launch' | 'Growth' | 'Enterprise';
+  templateSlug: 'modern-clinical' | 'heritage' | 'telehealth-first';
   internalOwner: string;
   region: string;
   expiresInDays: number;
   notes: string;
 };
+
+// Invitation list response structure
+interface InvitationListData {
+  invitations: InvitationResponse[];
+  total: number;
+  page: number;
+  total_pages: number;
+  summary: {
+    pending: number;
+    expiringSoon: number;
+    used: number;
+    revoked: number;
+  };
+}
 
 const initialComposer: ComposerState = {
   email: '',
@@ -66,15 +83,15 @@ const initialComposer: ComposerState = {
   notes: 'Includes telehealth readiness checklist + AI usage policy preview.',
 };
 
-const statusPills: Array<{ label: string; value: MockInviteStatus | ''; tone: string }> = [
+const statusPills: Array<{ label: string; value: InviteStatus | ''; tone: string }> = [
   { label: 'All', value: '', tone: 'bg-white/10 text-white' },
-  { label: 'Pending', value: 'PENDING', tone: 'bg-yellow-500/20 text-yellow-100' },
-  { label: 'Used', value: 'USED', tone: 'bg-emerald-500/20 text-emerald-100' },
-  { label: 'Revoked', value: 'REVOKED', tone: 'bg-red-500/20 text-red-100' },
-  { label: 'Expired', value: 'EXPIRED', tone: 'bg-slate-500/20 text-slate-100' },
+  { label: 'Pending', value: 'pending', tone: 'bg-yellow-500/20 text-yellow-100' },
+  { label: 'Accepted', value: 'accepted', tone: 'bg-emerald-500/20 text-emerald-100' },
+  { label: 'Revoked', value: 'revoked', tone: 'bg-red-500/20 text-red-100' },
+  { label: 'Expired', value: 'expired', tone: 'bg-slate-500/20 text-slate-100' },
 ];
 
-const planOptions: MockInvitation['planTier'][] = ['Launch', 'Growth', 'Enterprise'];
+const planOptions: ComposerState['planTier'][] = ['Launch', 'Growth', 'Enterprise'];
 
 const formatTemplateName = (slug: ComposerState['templateSlug']) =>
   slug.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
@@ -112,10 +129,10 @@ const buildEmailContent = (data: ComposerState) => {
 
 export default function SuperAdminInvitesPage() {
   const [composer, setComposer] = useState<ComposerState>(initialComposer);
-  const [inviteData, setInviteData] = useState<InvitationListResponse | null>(null);
+  const [inviteData, setInviteData] = useState<InvitationListData | null>(null);
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<MockInviteStatus | ''>('');
-  const [planFilter, setPlanFilter] = useState<MockInvitation['planTier'] | ''>('');
+  const [statusFilter, setStatusFilter] = useState<InviteStatus | ''>('');
+  const [planFilter, setPlanFilter] = useState<ComposerState['planTier'] | ''>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -123,14 +140,60 @@ export default function SuperAdminInvitesPage() {
   const loadInvites = useCallback(async () => {
     setLoading(true);
     try {
-      const next = await SuperAdminAPIService.getInvitations({
-        page,
-        per_page: 10,
+      const invitations = await superAdminAPI.listInvitations({
         status: statusFilter || undefined,
-        plan: planFilter || undefined,
-        search: searchTerm || undefined,
+        limit: 10,
+        offset: (page - 1) * 10,
       });
-      setInviteData(next);
+      
+      // Calculate summary from the invitations
+      const summary = {
+        pending: invitations.filter(i => i.status === 'pending').length,
+        expiringSoon: invitations.filter(i => {
+          if (i.status !== 'pending') return false;
+          const expiresAt = new Date(i.expires_at).getTime();
+          return expiresAt - Date.now() < 48 * 60 * 60 * 1000;
+        }).length,
+        used: invitations.filter(i => i.status === 'accepted').length,
+        revoked: invitations.filter(i => i.status === 'revoked').length,
+      };
+      
+      // Filter by plan tier from metadata if set
+      let filteredInvitations = invitations;
+      if (planFilter) {
+        filteredInvitations = invitations.filter(i => 
+          (i.metadata as { plan_tier?: string })?.plan_tier === planFilter
+        );
+      }
+      
+      // Filter by search term
+      if (searchTerm) {
+        const query = searchTerm.toLowerCase();
+        filteredInvitations = filteredInvitations.filter(i => 
+          i.email.toLowerCase().includes(query) ||
+          ((i.metadata as { hospital_name?: string })?.hospital_name || '').toLowerCase().includes(query) ||
+          ((i.metadata as { contact_name?: string })?.contact_name || '').toLowerCase().includes(query) ||
+          ((i.metadata as { region?: string })?.region || '').toLowerCase().includes(query)
+        );
+      }
+      
+      setInviteData({
+        invitations: filteredInvitations,
+        total: filteredInvitations.length,
+        page,
+        total_pages: Math.max(1, Math.ceil(filteredInvitations.length / 10)),
+        summary,
+      });
+    } catch (error) {
+      console.error('Failed to load invitations:', error);
+      toast.error('Failed to load invitations');
+      setInviteData({
+        invitations: [],
+        total: 0,
+        page: 1,
+        total_pages: 1,
+        summary: { pending: 0, expiringSoon: 0, used: 0, revoked: 0 },
+      });
     } finally {
       setLoading(false);
     }
@@ -151,9 +214,26 @@ export default function SuperAdminInvitesPage() {
     }
     setSending(true);
     try {
-      await SuperAdminAPIService.createInvitation(composer);
-      toast.success('Invitation saved to ledger');
+      // Create invitation via real API
+      const request: CreateInvitationRequest = {
+        email: composer.email,
+        hospital_name: composer.hospitalName,
+        expires_in_hours: composer.expiresInDays * 24,
+        metadata: {
+          contact_name: composer.contactName,
+          hospital_name: composer.hospitalName,
+          plan_tier: composer.planTier,
+          template_slug: composer.templateSlug,
+          internal_owner: composer.internalOwner,
+          region: composer.region,
+          notes: composer.notes,
+        },
+      };
+      
+      const result = await superAdminAPI.createInvitation(request);
+      toast.success('Invitation created successfully');
 
+      // Try to send email
       try {
         const emailContent = buildEmailContent(composer);
         const response = await fetch('/api/smtp/send', {
@@ -164,6 +244,7 @@ export default function SuperAdminInvitesPage() {
             subject: emailContent.subject,
             html: emailContent.html,
             text: emailContent.text,
+            token: result.token, // Include the invitation token
           }),
         });
 
@@ -188,39 +269,67 @@ export default function SuperAdminInvitesPage() {
     }
   };
 
-  const handleRevoke = async (id: number) => {
-    await SuperAdminAPIService.revokeInvitation(id);
-    toast.warning('Invitation revoked per compliance request');
-    loadInvites();
+  const handleRevoke = async (id: string) => {
+    try {
+      await superAdminAPI.revokeInvitation(id);
+      toast.warning('Invitation revoked');
+      loadInvites();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to revoke invitation';
+      toast.error(message);
+    }
   };
 
   const handleCleanup = async () => {
-    const result = await SuperAdminAPIService.cleanupExpiredInvitations();
-    toast.info(result.message);
+    // Note: Cleanup is handled automatically by the backend
+    toast.info('Expired invitations are automatically cleaned up by the system');
     loadInvites();
+  };
+
+  // Helper to extract metadata fields
+  const getMetadata = (inv: InvitationResponse) => {
+    const meta = inv.metadata as {
+      hospital_name?: string;
+      contact_name?: string;
+      plan_tier?: string;
+      template_slug?: string;
+      internal_owner?: string;
+      region?: string;
+    } || {};
+    return {
+      hospitalName: meta.hospital_name || 'Unknown Hospital',
+      contactName: meta.contact_name || inv.email,
+      planTier: meta.plan_tier || 'Standard',
+      templateSlug: meta.template_slug || 'modern-clinical',
+      internalOwner: meta.internal_owner || 'Platform Ops',
+      region: meta.region || 'Global',
+    };
   };
 
   const timeline = useMemo(() => {
     if (!inviteData) return [];
-    return inviteData.invitations.slice(0, 4).map((invite) => ({
-      id: invite.id,
-      hospital: invite.hospitalName,
-      stage: invite.status,
-      timestamp: invite.lastActivityAt,
-      owner: invite.internalOwner,
-    }));
+    return inviteData.invitations.slice(0, 4).map((invite: InvitationResponse) => {
+      const meta = getMetadata(invite);
+      return {
+        id: invite.id,
+        hospital: meta.hospitalName,
+        stage: invite.status,
+        timestamp: invite.updated_at,
+        owner: meta.internalOwner,
+      };
+    });
   }, [inviteData]);
 
-  const statusBadge = (status: MockInviteStatus) => {
+  const statusBadge = (status: InviteStatus) => {
     const base = 'px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 capitalize';
     switch (status) {
-      case 'PENDING':
+      case 'pending':
         return <span className={cn(base, 'bg-yellow-500/20 text-yellow-100')}><Clock className="h-3 w-3" /> pending</span>;
-      case 'USED':
-        return <span className={cn(base, 'bg-emerald-500/20 text-emerald-100')}><CheckCircle2 className="h-3 w-3" /> used</span>;
-      case 'REVOKED':
+      case 'accepted':
+        return <span className={cn(base, 'bg-emerald-500/20 text-emerald-100')}><CheckCircle2 className="h-3 w-3" /> accepted</span>;
+      case 'revoked':
         return <span className={cn(base, 'bg-red-500/20 text-red-100')}><XCircle className="h-3 w-3" /> revoked</span>;
-      case 'EXPIRED':
+      case 'expired':
         return <span className={cn(base, 'bg-slate-500/20 text-slate-100')}><AlertTriangle className="h-3 w-3" /> expired</span>;
     }
     return null;
@@ -415,7 +524,7 @@ export default function SuperAdminInvitesPage() {
                       <p className="font-semibold">{item.hospital}</p>
                       <p className="text-white/60">Owner: {item.owner}</p>
                     </div>
-                    {statusBadge(item.stage as MockInviteStatus)}
+                    {statusBadge(item.stage as InviteStatus)}
                   </div>
                 ))}
                 {timeline.length === 0 && (
@@ -482,7 +591,7 @@ export default function SuperAdminInvitesPage() {
                 <select
                   value={planFilter || ''}
                   onChange={(e) => {
-                    setPlanFilter((e.target.value || '') as MockInvitation['planTier'] | '');
+                    setPlanFilter((e.target.value || '') as ComposerState['planTier'] | '');
                     setPage(1);
                   }}
                   className="bg-white/10 border-white/20 text-white rounded-md px-3 py-1"
@@ -517,28 +626,30 @@ export default function SuperAdminInvitesPage() {
                     </TableCell>
                   </TableRow>
                 )}
-                {!loading && inviteData?.invitations.map((invite) => (
+                {!loading && inviteData?.invitations.map((invite: InvitationResponse) => {
+                  const meta = getMetadata(invite);
+                  return (
                   <TableRow key={invite.id}>
                     <TableCell>
-                      <div className="font-semibold">{invite.hospitalName}</div>
+                      <div className="font-semibold">{meta.hospitalName}</div>
                       <div className="text-sm text-white/60">{invite.email}</div>
                     </TableCell>
                     <TableCell>
-                      <div>{invite.contactName}</div>
-                      <div className="text-xs text-white/60">Owner: {invite.internalOwner}</div>
+                      <div>{meta.contactName}</div>
+                      <div className="text-xs text-white/60">Owner: {meta.internalOwner}</div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm">
-                        <Badge className="bg-white/10 border-white/10 text-white/80">{invite.planTier}</Badge>
-                        <Badge className="bg-white/5 border-white/10 text-white/60 capitalize">{invite.templateSlug}</Badge>
+                        <Badge className="bg-white/10 border-white/10 text-white/80">{meta.planTier}</Badge>
+                        <Badge className="bg-white/5 border-white/10 text-white/60 capitalize">{meta.templateSlug}</Badge>
                       </div>
                     </TableCell>
                     <TableCell>{statusBadge(invite.status)}</TableCell>
                     <TableCell className="text-sm text-white/80 flex items-center gap-2">
-                      <Globe2 className="h-4 w-4" /> {invite.region}
+                      <Globe2 className="h-4 w-4" /> {meta.region}
                     </TableCell>
                     <TableCell className="text-sm text-white/70">
-                      {new Date(invite.lastActivityAt).toLocaleString()}
+                      {new Date(invite.updated_at).toLocaleString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
@@ -546,11 +657,11 @@ export default function SuperAdminInvitesPage() {
                           variant="ghost"
                           size="icon"
                           className="text-white/70"
-                          onClick={() => navigator.clipboard.writeText(invite.inviteToken).then(() => toast.success('Mock token copied'))}
+                          onClick={() => navigator.clipboard.writeText(invite.id).then(() => toast.success('Invitation ID copied'))}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
-                        {invite.status === 'PENDING' && (
+                        {invite.status === 'pending' && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -563,7 +674,8 @@ export default function SuperAdminInvitesPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
                 {!loading && !inviteData?.invitations.length && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-10 text-white/60">

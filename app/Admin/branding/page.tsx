@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,14 @@ import {
   Settings,
   AlertCircle,
   Trash2,
+  Loader2,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
+import { useHospitalBranding, useHospitalProfile } from "@/hooks/useHospitalAdmin";
+import { BrandingUpdate } from "@/lib/api/hospital-admin";
 
-interface BrandingData {
+interface BrandingFormData {
   hospitalName: string;
   tagline: string;
   description: string;
@@ -37,28 +42,69 @@ interface BrandingData {
   address: string;
   phone: string;
   email: string;
+  welcome_title: string;
+  welcome_subtitle: string;
+  login_title: string;
+  login_subtitle: string;
+  footer_text: string;
 }
 
 const HospitalBrandingPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
-    "desktop"
-  );
-  const [formData, setFormData] = useState<BrandingData>({
-    hospitalName: "Atharva Healthcare",
-    tagline: "Your Health, Our Priority",
-    description:
-      "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
+  const { branding, isLoading: brandingLoading, error: brandingError, refetch: refetchBranding, updateBranding, uploadLogo, isSaving } = useHospitalBranding();
+  const { profile, isLoading: profileLoading, error: profileError } = useHospitalProfile();
+  
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [formData, setFormData] = useState<BrandingFormData>({
+    hospitalName: "",
+    tagline: "",
+    description: "",
     primaryColor: "#007C7C",
     secondaryColor: "#20B2AA",
     accentColor: "#50C878",
     logoUrl: "",
     backgroundImageUrl: "",
-    website: "https://atharvahealthcare.com",
-    address: "123 Healthcare Avenue, Medical District, City 12345",
-    phone: "(555) 123-CARE",
-    email: "info@atharvahealthcare.com",
+    website: "",
+    address: "",
+    phone: "",
+    email: "",
+    welcome_title: "Welcome",
+    welcome_subtitle: "Your Health, Our Priority",
+    login_title: "Sign In",
+    login_subtitle: "Access your healthcare portal",
+    footer_text: "",
   });
+
+  // Update form when branding/profile data loads
+  useEffect(() => {
+    if (branding) {
+      setFormData(prev => ({
+        ...prev,
+        primaryColor: branding.primary_color || "#007C7C",
+        secondaryColor: branding.secondary_color || "#20B2AA",
+        accentColor: branding.accent_color || "#50C878",
+        logoUrl: branding.logo_light_url || "",
+        backgroundImageUrl: branding.hero_image_url || "",
+        welcome_title: branding.welcome_title || "Welcome",
+        welcome_subtitle: branding.welcome_subtitle || "Your Health, Our Priority",
+        login_title: branding.login_title || "Sign In",
+        login_subtitle: branding.login_subtitle || "Access your healthcare portal",
+        footer_text: branding.footer_text || "",
+      }));
+    }
+  }, [branding]);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        hospitalName: profile.display_name || "",
+        website: profile.contact?.website || "",
+        phone: profile.contact?.phone || "",
+        email: profile.contact?.email || "",
+        address: profile.address ? `${profile.address.street}, ${profile.address.city}, ${profile.address.state} ${profile.address.postal_code}` : "",
+      }));
+    }
+  }, [profile]);
 
   const predefinedColors = [
     {
@@ -93,7 +139,7 @@ const HospitalBrandingPage = () => {
     },
   ];
 
-  const handleInputChange = (field: keyof BrandingData, value: string) => {
+  const handleInputChange = (field: keyof BrandingFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -156,35 +202,46 @@ const HospitalBrandingPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("Hospital branding updated successfully!");
+      const brandingData: BrandingUpdate = {
+        primary_color: formData.primaryColor,
+        secondary_color: formData.secondaryColor,
+        accent_color: formData.accentColor,
+        welcome_title: formData.welcome_title,
+        welcome_subtitle: formData.welcome_subtitle,
+        login_title: formData.login_title,
+        login_subtitle: formData.login_subtitle,
+        footer_text: formData.footer_text,
+      };
+
+      const result = await updateBranding(brandingData);
+      if (result.success) {
+        toast.success("Hospital branding updated successfully!");
+      } else {
+        toast.error(result.error || "Failed to update branding. Please try again.");
+      }
     } catch {
       toast.error("Failed to update branding. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      hospitalName: "Atharva Healthcare",
-      tagline: "Your Health, Our Priority",
-      description:
-        "Leading healthcare provider committed to excellence in patient care, innovation, and community health.",
-      primaryColor: "#007C7C",
-      secondaryColor: "#20B2AA",
-      accentColor: "#50C878",
-      logoUrl: "",
-      backgroundImageUrl: "",
-      website: "https://atharvahealthcare.com",
-      address: "123 Healthcare Avenue, Medical District, City 12345",
-      phone: "(555) 123-CARE",
-      email: "info@atharvahealthcare.com",
-    });
+    if (branding) {
+      setFormData(prev => ({
+        ...prev,
+        primaryColor: branding.primary_color || "#007C7C",
+        secondaryColor: branding.secondary_color || "#20B2AA",
+        accentColor: branding.accent_color || "#50C878",
+        logoUrl: branding.logo_light_url || "",
+        backgroundImageUrl: branding.hero_image_url || "",
+        welcome_title: branding.welcome_title || "Welcome",
+        welcome_subtitle: branding.welcome_subtitle || "Your Health, Our Priority",
+        login_title: branding.login_title || "Sign In",
+        login_subtitle: branding.login_subtitle || "Access your healthcare portal",
+        footer_text: branding.footer_text || "",
+      }));
+    }
   };
 
   const exportBrandingGuide = () => {
@@ -212,6 +269,35 @@ const HospitalBrandingPage = () => {
 
     toast.success("Branding guide exported successfully");
   };
+
+  // Loading state
+  const isLoading = brandingLoading || profileLoading;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-[#50C878]" />
+          <p className="text-gray-600">Loading branding settings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if ((brandingError || profileError) && !branding) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
+          <p className="text-red-600">{brandingError || profileError}</p>
+          <Button onClick={refetchBranding} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -800,7 +886,7 @@ const HospitalBrandingPage = () => {
                   type="button"
                   variant="outline"
                   onClick={resetForm}
-                  disabled={isLoading}
+                  disabled={isSaving}
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Reset to Default
@@ -808,10 +894,10 @@ const HospitalBrandingPage = () => {
 
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSaving}
                   className="bg-gradient-to-r from-[#007C7C] to-[#20B2AA] hover:from-[#006666] hover:to-[#1a9999] text-white"
                 >
-                  {isLoading ? (
+                  {isSaving ? (
                     <>
                       <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                       Saving Changes...

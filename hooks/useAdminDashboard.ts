@@ -6,6 +6,7 @@ import adminApiService, {
   Doctor,
   Staff,
 } from '@/lib/admin-api';
+import { getMockAdminDashboardData } from '@/lib/mocks/admin-dashboard';
 
 /**
  * Hook for managing admin dashboard data
@@ -16,11 +17,13 @@ export function useAdminDashboard() {
   const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingMockData, setIsUsingMockData] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+      setIsUsingMockData(false);
 
       const data = await adminApiService.getDashboardOverview();
       
@@ -29,8 +32,16 @@ export function useAdminDashboard() {
       setPendingActions(data.pendingActions);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-      setError(errorMessage);
       console.error('Error fetching dashboard data:', err);
+
+      const mockData = getMockAdminDashboardData();
+      setStats(mockData.stats);
+      setRecentActivity(mockData.recentActivity);
+      setPendingActions(mockData.pendingActions);
+      setIsUsingMockData(true);
+      setError(
+        `${errorMessage}. Displaying simulated data while the backend is unreachable.`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -45,6 +56,7 @@ export function useAdminDashboard() {
     recentActivity,
     pendingActions,
     isLoading,
+    isUsingMockData,
     error,
     refetch: fetchDashboardData,
   };
@@ -84,7 +96,7 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
   }, [fetchDoctors]);
 
   const updateDoctorStatus = async (
-    doctorId: number,
+    doctorId: string,
     updates: { is_verified?: boolean; is_active?: boolean }
   ) => {
     try {
@@ -98,7 +110,7 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
     }
   };
 
-  const deleteDoctor = async (doctorId: number) => {
+  const deleteDoctor = async (doctorId: string) => {
     try {
       await adminApiService.deleteDoctor(doctorId);
       // Refetch doctors after deletion
@@ -156,7 +168,7 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
   }, [fetchStaff]);
 
   const updateStaffStatus = async (
-    staffId: number,
+    staffId: string,
     updates: { is_verified?: boolean; is_active?: boolean }
   ) => {
     try {
@@ -170,7 +182,7 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
     }
   };
 
-  const deleteStaff = async (staffId: number) => {
+  const deleteStaff = async (staffId: string) => {
     try {
       await adminApiService.deleteStaff(staffId);
       // Refetch staff after deletion

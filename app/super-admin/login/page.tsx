@@ -8,13 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Lock, User, Shield } from 'lucide-react';
-import { SuperAdminAPIService, SUPER_ADMIN_DEFAULT_CREDENTIALS } from '@/lib/super-admin-api';
+import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
+
+// Demo credentials for development
+const DEMO_CREDENTIALS = {
+  email: 'super.admin@athaarva.com',
+  password: 'supersecure',
+} as const;
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated, loading: authLoading } = useSuperAdminAuth();
   const [formData, setFormData] = useState({
-    email: SUPER_ADMIN_DEFAULT_CREDENTIALS.email,
-    password: SUPER_ADMIN_DEFAULT_CREDENTIALS.password,
+    email: DEMO_CREDENTIALS.email,
+    password: DEMO_CREDENTIALS.password,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,37 +30,14 @@ export default function SuperAdminLoginPage() {
 
   // Check if already authenticated
   useEffect(() => {
-    let isActive = true;
-
-    const verifyExistingSession = async () => {
-      if (!SuperAdminAPIService.isAuthenticated()) {
-        if (isActive) {
-          setIsCheckingSession(false);
-        }
-        return;
-      }
-
-      let redirected = false;
-
-      try {
-        await SuperAdminAPIService.getProfile();
-        redirected = true;
+    if (!authLoading) {
+      if (isAuthenticated) {
         router.replace('/super-admin/invites');
-      } catch {
-        SuperAdminAPIService.logout();
-      } finally {
-        if (isActive && !redirected) {
-          setIsCheckingSession(false);
-        }
+      } else {
+        setIsCheckingSession(false);
       }
-    };
-
-    verifyExistingSession();
-
-    return () => {
-      isActive = false;
-    };
-  }, [router]);
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -62,8 +46,8 @@ export default function SuperAdminLoginPage() {
 
   const handleUseDemoCredentials = () => {
     setFormData({
-      email: SUPER_ADMIN_DEFAULT_CREDENTIALS.email,
-      password: SUPER_ADMIN_DEFAULT_CREDENTIALS.password,
+      email: DEMO_CREDENTIALS.email,
+      password: DEMO_CREDENTIALS.password,
     });
     setError('');
   };
@@ -74,7 +58,7 @@ export default function SuperAdminLoginPage() {
     setError('');
 
     try {
-      await SuperAdminAPIService.login(formData.email, formData.password);
+      await login(formData.email, formData.password);
       router.push('/super-admin/invites');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -216,11 +200,11 @@ export default function SuperAdminLoginPage() {
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-md">
                     <span className="text-white/60">Email</span>
-                    <code className="text-white font-semibold">{SUPER_ADMIN_DEFAULT_CREDENTIALS.email}</code>
+                    <code className="text-white font-semibold">{DEMO_CREDENTIALS.email}</code>
                   </div>
                   <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-md">
                     <span className="text-white/60">Password</span>
-                    <code className="text-white font-semibold">{SUPER_ADMIN_DEFAULT_CREDENTIALS.password}</code>
+                    <code className="text-white font-semibold">{DEMO_CREDENTIALS.password}</code>
                   </div>
                 </div>
                 <Button

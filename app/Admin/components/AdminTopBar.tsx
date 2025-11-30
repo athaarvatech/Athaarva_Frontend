@@ -13,12 +13,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useHospitalAdminAuth } from "@/contexts/HospitalAdminAuthContext";
 
 interface AdminTopBarProps {
   toggleMobileMenu: () => void;
 }
 
 const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
+  const { user, logout } = useHospitalAdminAuth();
+
+  // Get initials from user name
+  const getInitials = (name?: string) => {
+    if (!name) return "AD";
+    const names = name.split(" ");
+    return names.map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -102,11 +112,11 @@ const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 px-3">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#007C7C] text-white text-sm font-medium">
-                  AH
+                  {getInitials(user?.full_name)}
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">Admin</p>
-                  <p className="text-xs text-gray-500">Atharva Hospital</p>
+                  <p className="text-sm font-medium">{user?.full_name || "Admin"}</p>
+                  <p className="text-xs text-gray-500">{user?.email || "Hospital Admin"}</p>
                 </div>
                 <ChevronDown className="h-4 w-4" />
               </Button>
@@ -128,7 +138,10 @@ const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2 text-red-600">
+              <DropdownMenuItem 
+                className="flex items-center gap-2 text-red-600 cursor-pointer"
+                onClick={logout}
+              >
                 <LogOut className="h-4 w-4" />
                 Sign Out
               </DropdownMenuItem>

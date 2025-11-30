@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Shield, Menu, X, Bell, LogOut } from 'lucide-react';
-import { SuperAdminAPIService } from '@/lib/super-admin-api';
+import { SuperAdminAuthProvider, useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -17,50 +17,22 @@ const NAV_ITEMS = [
   { label: 'Security & Audit', href: '#', disabled: true },
 ];
 
-interface SuperAdminProfile {
-  id: number;
-  email: string;
-  full_name: string;
-  is_active: boolean;
-  created_at: string;
-  last_login: string | null;
-}
-
-export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+function SuperAdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [profile, setProfile] = useState<SuperAdminProfile | null>(null);
+  const { user, loading, isAuthenticated, logout } = useSuperAdminAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
   const isAuthRoute = pathname?.includes('/super-admin/login');
 
   useEffect(() => {
     if (isAuthRoute) {
-      setLoadingProfile(false);
       return;
     }
 
-    const run = async () => {
-      if (!SuperAdminAPIService.isAuthenticated()) {
-        router.replace('/super-admin/login');
-        return;
-      }
-
-      try {
-        setLoadingProfile(true);
-        const result = await SuperAdminAPIService.getProfile();
-        setProfile(result);
-      } catch (error) {
-        console.error('Failed to load super admin profile', error);
-        SuperAdminAPIService.logout();
-        router.replace('/super-admin/login');
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
-
-    run();
-  }, [isAuthRoute, router]);
+    if (!loading && !isAuthenticated) {
+      router.replace('/super-admin/login');
+    }
+  }, [isAuthRoute, loading, isAuthenticated, router]);
 
   const activeHref = useMemo(() => {
     return NAV_ITEMS.find((item) =>
@@ -73,15 +45,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }, [pathname]);
 
   const handleLogout = () => {
-    SuperAdminAPIService.logout();
-    router.replace('/super-admin/login');
+    logout();
   };
 
   if (isAuthRoute) {
     return <>{children}</>;
   }
 
-  if (loadingProfile) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4 text-white/80">
@@ -90,6 +61,10 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </div>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -111,8 +86,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                 <Bell className="h-5 w-5" />
               </Button>
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-medium">{profile?.full_name}</span>
-                <span className="text-xs text-white/70">{profile?.email}</span>
+                <span className="text-sm font-medium">{user?.full_name || 'Super Admin'}</span>
+                <span className="text-xs text-white/70">{user?.email}</span>
               </div>
               <Button
                 variant="outline"
@@ -163,5 +138,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         {children}
       </main>
     </div>
+  );
+}
+
+export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SuperAdminAuthProvider>
+      <SuperAdminLayoutContent>{children}</SuperAdminLayoutContent>
+    </SuperAdminAuthProvider>
   );
 }
