@@ -1,311 +1,373 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Quote, PlayCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { TemplateBlueprint } from './templateBlueprints';
+import React from "react";
+import {
+  ArrowRight, Star, ChevronDown, ChevronUp, Globe, Phone, Mail, MapPin,
+  Heart, Brain, Bone, Baby, Activity, Ribbon, Stethoscope, Clock, Users,
+  Award, Shield, Cpu, Building2, Video, FileText, Home, ClipboardCheck
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { TemplateBlueprint } from "./templateBlueprints";
 
 export interface TemplatePreviewRendererProps {
   blueprint: TemplateBlueprint;
-  device: 'desktop' | 'tablet' | 'mobile';
+  device: "desktop" | "tablet" | "mobile";
 }
 
-const sectionAnimation = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.35, ease: 'easeOut' },
+const iconMap: Record<string, React.ElementType> = {
+  Heart, Brain, Bone, Baby, Activity, Ribbon, Stethoscope, Clock, Users,
+  Award, Shield, Cpu, Building2, Video, FileText, Home, ClipboardCheck, Globe, Phone, Mail, MapPin
 };
 
+const getIcon = (iconName: string) => iconMap[iconName] || Heart;
+
 export function TemplatePreviewRenderer({ blueprint, device }: TemplatePreviewRendererProps) {
+  const scale = device === "mobile" ? "scale-[0.5]" : device === "tablet" ? "scale-[0.75]" : "";
   return (
     <div
-      className={cn(
-        'h-full w-full overflow-y-auto bg-white',
-        device === 'desktop' && 'px-0',
-        device === 'tablet' && 'scale-[0.92] origin-top',
-        device === 'mobile' && 'scale-[0.7] origin-top'
-      )}
-      style={{
-        background: blueprint.palette.background,
-        fontFamily: blueprint.typography.body,
-      }}
+      className={cn("h-full w-full overflow-y-auto overflow-x-hidden", scale && `${scale} origin-top-left`)}
+      style={{ background: blueprint.palette.background, width: device === "mobile" ? "200%" : device === "tablet" ? "133%" : "100%" }}
     >
-      <main className="min-h-full">
-        <HeroSection blueprint={blueprint} />
-        <StatsStrip blueprint={blueprint} />
-        <SpecialtiesSection blueprint={blueprint} />
-        <DifferentiatorsSection blueprint={blueprint} />
-        <DoctorsSection blueprint={blueprint} />
-        <FacilitySection blueprint={blueprint} />
-        <TestimonialsSection blueprint={blueprint} />
-        <ProgramsSection blueprint={blueprint} />
-        <Footer blueprint={blueprint} />
-      </main>
+      <HeroSection blueprint={blueprint} />
+      <div className="relative z-10 -mt-8 px-4 md:px-8 max-w-5xl mx-auto"><StatsStrip blueprint={blueprint} /></div>
+      <div className="px-4 md:px-8 max-w-5xl mx-auto">
+        {blueprint.about && <section className="py-12"><AboutSection blueprint={blueprint} /></section>}
+        <section className="py-10">{blueprint.centersOfExcellence ? <CentersOfExcellence blueprint={blueprint} /> : <SpecialtiesGrid blueprint={blueprint} />}</section>
+        <section className="py-10"><DoctorsCarousel blueprint={blueprint} /></section>
+        {blueprint.infrastructureCards && <section className="py-10"><InfrastructureSection blueprint={blueprint} /></section>}
+        {blueprint.services && <section className="py-10"><ServicesSection blueprint={blueprint} /></section>}
+        {blueprint.internationalPatients && <section className="py-10"><InternationalSection blueprint={blueprint} /></section>}
+        <section className="py-10"><TestimonialsSection blueprint={blueprint} /></section>
+        {blueprint.news && <section className="py-10"><NewsSection blueprint={blueprint} /></section>}
+        {blueprint.faqs && <section className="py-10"><FAQSection blueprint={blueprint} /></section>}
+        <section className="py-10"><FacilitiesSection blueprint={blueprint} /></section>
+      </div>
+      <FooterSection blueprint={blueprint} />
     </div>
   );
 }
 
 function HeroSection({ blueprint }: { blueprint: TemplateBlueprint }) {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        backgroundImage: blueprint.palette.gradient,
-        color: 'white',
-        fontFamily: blueprint.typography.heading,
-      }}
-    >
-      <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-8 py-16 md:flex-row md:items-center">
-        <div className="flex-1 space-y-5">
-          <span className="text-sm uppercase tracking-[0.4em] text-white/70">
-            {blueprint.hero.eyebrow}
-          </span>
-          <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-            {blueprint.hero.title}
-          </h1>
-          <p className="text-lg text-white/80" style={{ fontFamily: blueprint.typography.body }}>
-            {blueprint.hero.subtitle}
-          </p>
+    <header className="relative min-h-[320px] flex items-center overflow-hidden" style={{ background: blueprint.palette.gradient }}>
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/20 -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/20 translate-y-1/2 -translate-x-1/2" />
+      </div>
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-16">
+        <div className="max-w-2xl">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>{blueprint.hero.eyebrow}</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4" style={{ fontFamily: blueprint.typography.heading }}>{blueprint.hero.title}</h1>
+          <p className="text-white/90 text-base md:text-lg mb-6 leading-relaxed">{blueprint.hero.subtitle}</p>
           <div className="flex flex-wrap gap-3">
-            <a
-              href={blueprint.hero.primaryCta.href}
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5"
-            >
-              {blueprint.hero.primaryCta.label}
-            </a>
-            <a
-              href={blueprint.hero.secondaryCta.href}
-              className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white/90"
-            >
-              {blueprint.hero.secondaryCta.label}
-            </a>
-          </div>
-        </div>
-        <div className="mt-8 flex flex-1 justify-center md:mt-0">
-          <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.3em] text-white/70">Immersive OR Suite</p>
-            <div className="mt-4 h-48 w-64 rounded-2xl bg-black/30 shadow-inner">
-              <div className="flex h-full items-center justify-center">
-                <PlayCircle className="h-12 w-12 text-white/60" />
-              </div>
-            </div>
-            <p className="mt-3 text-xs text-white/80">{blueprint.hero.heroImageAlt}</p>
+            <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm shadow-lg" style={{ background: "white", color: blueprint.palette.accent }}>{blueprint.hero.primaryCta.label}<ArrowRight className="w-4 h-4" /></button>
+            <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm" style={{ background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)" }}><Phone className="w-4 h-4" />{blueprint.hero.secondaryCta.label}</button>
           </div>
         </div>
       </div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff22,transparent_55%)]" />
-    </section>
+    </header>
   );
 }
 
 function StatsStrip({ blueprint }: { blueprint: TemplateBlueprint }) {
   return (
-    <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-6 py-10 text-center sm:grid-cols-3">
-      {blueprint.hero.stats.map((stat) => (
-        <div key={stat.label} className="rounded-2xl border border-white/40 bg-white/80 p-6 shadow-sm">
-          <p className="text-3xl font-bold" style={{ color: blueprint.palette.accent }}>
-            {stat.value}
-          </p>
-          <p className="text-xs uppercase tracking-wide text-slate-500">{stat.label}</p>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-1 rounded-xl overflow-hidden shadow-xl bg-white">
+      {blueprint.hero.stats.map((stat, idx) => (
+        <div key={stat.label} className="p-4 text-center hover:bg-slate-50 transition-colors" style={{ borderRight: idx < 3 ? "1px solid #e2e8f0" : "none" }}>
+          <div className="text-2xl md:text-3xl font-bold" style={{ color: blueprint.palette.accent }}>{stat.value}</div>
+          <div className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-medium">{stat.label}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function SpecialtiesSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+function AboutSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.about) return null;
   return (
-    <motion.section {...sectionAnimation} className="mx-auto max-w-6xl px-6 py-12">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.4em] text-slate-400">Centres of Excellence</p>
-          <h2 className="text-3xl font-semibold text-slate-900" style={{ fontFamily: blueprint.typography.heading }}>
-            Specialty depth built for outcomes
-          </h2>
-        </div>
-        <button className="text-sm font-semibold text-slate-700">Download Clinical Brief →</button>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {blueprint.specialties.map((specialty) => (
-          <div key={specialty.title} className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl" role="img" aria-hidden>
-                {specialty.icon}
-              </span>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">{specialty.title}</h3>
-                <p className="text-sm text-slate-600">{specialty.description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.section>
-  );
-}
-
-function DifferentiatorsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto grid max-w-6xl gap-6 px-6 py-12 md:grid-cols-3">
-        {blueprint.differentiators.map((item) => (
-          <div key={item.title} className="rounded-2xl border border-slate-200/80 bg-white px-5 py-6 shadow">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Why it works</p>
-            <h3 className="mt-2 text-xl font-semibold text-slate-900">{item.title}</h3>
-            <p className="text-sm text-slate-600">{item.description}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function DoctorsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.4em] text-slate-400">Physician voices</p>
-          <h2 className="text-3xl font-semibold text-slate-900" style={{ fontFamily: blueprint.typography.heading }}>
-            Meet the program leads
-          </h2>
-        </div>
-        <button className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">
-          View all doctors
-        </button>
-      </div>
-      <div className="grid gap-6 md:grid-cols-2">
-        {blueprint.doctors.map((doctor) => (
-          <div key={doctor.name} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-slate-100" />
-              <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">{doctor.specialty}</p>
-                <h3 className="text-2xl font-semibold text-slate-900">{doctor.name}</h3>
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-slate-600">{doctor.description}</p>
-            <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <PlayCircle className="h-4 w-4" />
-              {doctor.mediaLabel}
-            </button>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FacilitySection({ blueprint }: { blueprint: TemplateBlueprint }) {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8">
-          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Campus snapshots</p>
-          <h2 className="text-3xl font-semibold text-slate-900" style={{ fontFamily: blueprint.typography.heading }}>
-            Designed for families & teams
-          </h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {blueprint.facilityHighlights.map((highlight) => (
-            <div key={highlight.title} className="rounded-3xl border border-slate-200 bg-white shadow">
-              <div className="h-40 rounded-t-3xl bg-slate-100" />
-              <div className="space-y-2 p-5">
-                <h3 className="text-lg font-semibold text-slate-900">{highlight.title}</h3>
-                <p className="text-sm text-slate-600">{highlight.copy}</p>
-              </div>
+    <div className="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: blueprint.palette.accent }}>{blueprint.about.subtitle}</span>
+        <h2 className="text-2xl md:text-3xl font-bold mt-2 mb-4" style={{ color: blueprint.palette.text }}>{blueprint.about.title}</h2>
+        <p className="text-slate-600 leading-relaxed mb-6">{blueprint.about.description}</p>
+        <div className="grid grid-cols-2 gap-3">
+          {blueprint.about.highlights.map(h => (
+            <div key={h.label} className="p-3 rounded-lg" style={{ background: blueprint.palette.accentMuted }}>
+              <div className="text-xl font-bold" style={{ color: blueprint.palette.accent }}>{h.value}</div>
+              <div className="text-xs text-slate-600">{h.label}</div>
             </div>
           ))}
         </div>
       </div>
-    </section>
+      <div className="h-56 rounded-xl flex items-center justify-center" style={{ background: blueprint.palette.surface }}>
+        <Building2 className="w-16 h-16" style={{ color: blueprint.palette.accent, opacity: 0.5 }} />
+      </div>
+    </div>
+  );
+}
+
+function SpecialtiesGrid({ blueprint }: { blueprint: TemplateBlueprint }) {
+  return (
+    <div>
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Our Specialties</h2>
+        <p className="text-slate-500 mt-2">Comprehensive care across all major disciplines</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {blueprint.specialties.slice(0, 6).map(sp => {
+          const Icon = getIcon(sp.icon);
+          return (
+            <div key={sp.name} className="p-4 rounded-xl hover:shadow-md transition-shadow cursor-pointer group" style={{ background: blueprint.palette.surface }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ background: blueprint.palette.accentMuted }}>
+                <Icon className="w-5 h-5" style={{ color: blueprint.palette.accent }} />
+              </div>
+              <h3 className="font-semibold text-sm" style={{ color: blueprint.palette.text }}>{sp.name}</h3>
+              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{sp.description}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CentersOfExcellence({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.centersOfExcellence) return null;
+  return (
+    <div>
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Centers of Excellence</h2>
+        <p className="text-slate-500 mt-2">World-class specialized care units</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {blueprint.centersOfExcellence.map(center => {
+          const Icon = getIcon(center.icon);
+          return (
+            <div key={center.name} className="p-4 rounded-xl text-center hover:shadow-lg transition-all cursor-pointer group" style={{ background: blueprint.palette.surface }}>
+              <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ background: blueprint.palette.accentMuted }}>
+                <Icon className="w-6 h-6" style={{ color: blueprint.palette.accent }} />
+              </div>
+              <h3 className="font-semibold text-xs" style={{ color: blueprint.palette.text }}>{center.name}</h3>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DoctorsCarousel({ blueprint }: { blueprint: TemplateBlueprint }) {
+  return (
+    <div>
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Our Expert Doctors</h2>
+        <p className="text-slate-500 mt-2">Meet our world-renowned medical specialists</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {blueprint.doctors.slice(0, 4).map(doc => (
+          <div key={doc.name} className="rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow group bg-white">
+            <div className="h-28 flex items-center justify-center" style={{ background: blueprint.palette.surface }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg" style={{ background: blueprint.palette.gradient }}>
+                {doc.name.split(" ").map(n => n[0]).join("")}
+              </div>
+            </div>
+            <div className="p-3">
+              <h3 className="font-semibold text-sm truncate" style={{ color: blueprint.palette.text }}>{doc.name}</h3>
+              <p className="text-xs truncate" style={{ color: blueprint.palette.accent }}>{doc.title}</p>
+              <p className="text-xs text-slate-400 mt-1">{doc.experience}</p>
+              <button className="w-full mt-2 py-1.5 rounded-md text-xs font-medium" style={{ background: blueprint.palette.accentMuted, color: blueprint.palette.accent }}>Book Appointment</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InfrastructureSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.infrastructureCards) return null;
+  return (
+    <div className="rounded-2xl p-6" style={{ background: blueprint.palette.surface }}>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>World-Class Infrastructure</h2>
+        <p className="text-slate-500 mt-2">State-of-the-art facilities for optimal care</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {blueprint.infrastructureCards.map(card => (
+          <div key={card.title} className="p-4 rounded-xl text-center bg-white">
+            <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3" style={{ background: blueprint.palette.accentMuted }}>
+              <Cpu className="w-6 h-6" style={{ color: blueprint.palette.accent }} />
+            </div>
+            <h3 className="font-semibold text-xs mb-1" style={{ color: blueprint.palette.text }}>{card.title}</h3>
+            <p className="text-xs text-slate-500 line-clamp-2">{card.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ServicesSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.services) return null;
+  return (
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Hospital Services</h2>
+      </div>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        {blueprint.services.map(svc => (
+          <div key={svc.name} className="p-3 rounded-lg text-center hover:shadow-md transition-shadow cursor-pointer" style={{ background: blueprint.palette.surface }}>
+            <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center mb-2" style={{ background: blueprint.palette.accentMuted }}>
+              <Activity className="w-5 h-5" style={{ color: blueprint.palette.accent }} />
+            </div>
+            <h3 className="text-xs font-medium" style={{ color: blueprint.palette.text }}>{svc.name}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InternationalSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.internationalPatients) return null;
+  return (
+    <div className="rounded-2xl p-6 text-white" style={{ background: blueprint.palette.gradient }}>
+      <div className="flex items-start gap-4 mb-4">
+        <Globe className="w-8 h-8 flex-shrink-0" />
+        <div>
+          <h2 className="text-xl font-bold mb-2">{blueprint.internationalPatients.title}</h2>
+          <p className="text-white/80 text-sm">{blueprint.internationalPatients.description}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {blueprint.internationalPatients.features.slice(0, 6).map(f => (
+          <div key={f} className="flex items-center gap-2 text-xs text-white/90">
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />{f}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
 function TestimonialsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
   return (
-    <section className="bg-slate-900/95 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8 flex items-center gap-3">
-          <Quote className="h-8 w-8 text-white/60" />
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-white/60">Family stories</p>
-            <h2 className="text-3xl font-semibold" style={{ fontFamily: blueprint.typography.heading }}>
-              Trust that travels borders
-            </h2>
-          </div>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {blueprint.testimonials.map((testimonial) => (
-            <div key={testimonial.patient} className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg">
-              <p className="text-lg font-medium leading-relaxed text-white/90">{testimonial.quote}</p>
-              <div className="mt-4 text-sm text-white/70">
-                {testimonial.patient} · {testimonial.procedure}
+    <div className="rounded-2xl p-6" style={{ background: blueprint.palette.surface }}>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Patient Stories</h2>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        {blueprint.testimonials.slice(0, 2).map(t => (
+          <div key={t.name} className="p-4 rounded-xl bg-white">
+            <div className="flex gap-0.5 mb-2">
+              {[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
+            </div>
+            <p className="text-sm text-slate-600 italic mb-3 line-clamp-3">&quot;{t.quote}&quot;</p>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: blueprint.palette.gradient }}>{t.name[0]}</div>
+              <div>
+                <div className="text-sm font-medium">{t.name}</div>
+                <div className="text-xs text-slate-400">{t.location}</div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ProgramsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Signature programs</p>
-            <h2 className="text-3xl font-semibold text-slate-900" style={{ fontFamily: blueprint.typography.heading }}>
-              Pathways built with you
-            </h2>
           </div>
-          <button className="text-sm font-semibold text-slate-700">View all pathways →</button>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {blueprint.programs.map((program) => (
-            <div key={program.title} className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{program.meta}</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900">{program.title}</h3>
-              <p className="text-sm text-slate-600">{program.description}</p>
-              <button className="mt-4 text-sm font-semibold text-slate-900">View care map →</button>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
 
-function Footer({ blueprint }: { blueprint: TemplateBlueprint }) {
+function NewsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  if (!blueprint.news) return null;
   return (
-    <footer className="bg-slate-900 text-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-3">
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-white/60">Contact navigator</p>
-          <p className="text-lg font-semibold">{blueprint.footer.contact.phone}</p>
-          <p className="text-sm text-white/70">{blueprint.footer.contact.email}</p>
-          <p className="mt-2 text-sm text-white/60">{blueprint.footer.contact.location}</p>
-        </div>
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-white/60">Quick links</p>
-          <ul className="mt-3 space-y-2 text-sm text-white/80">
-            {blueprint.footer.quickLinks.map((link) => (
-              <li key={link}>{link}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-white/60">Plan your journey</p>
-          <p className="mt-3 text-sm text-white/80">
-            Patient concierge desk coordinates travel, visas, insurance paperwork, and virtual second opinions in under 48 hours.
-          </p>
-        </div>
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Latest News</h2>
       </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
-        © {new Date().getFullYear()} Athaarva Health Templates · Crafted for preview only
+      <div className="grid md:grid-cols-3 gap-4">
+        {blueprint.news.map(item => (
+          <div key={item.title} className="rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
+            <div className="h-24" style={{ background: blueprint.palette.surface }} />
+            <div className="p-3">
+              <div className="text-xs text-slate-400 mb-1">{item.date}</div>
+              <h3 className="text-sm font-semibold line-clamp-2" style={{ color: blueprint.palette.text }}>{item.title}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FAQSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  const [openIndex, setOpenIndex] = React.useState<number>(0);
+  if (!blueprint.faqs) return null;
+  return (
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Frequently Asked Questions</h2>
+      </div>
+      <div className="space-y-2 max-w-2xl mx-auto">
+        {blueprint.faqs.slice(0, 4).map((faq, idx) => (
+          <div key={faq.question} className="rounded-lg overflow-hidden bg-white">
+            <button className="w-full px-4 py-3 flex items-center justify-between text-left" onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}>
+              <span className="text-sm font-medium pr-4" style={{ color: blueprint.palette.text }}>{faq.question}</span>
+              {openIndex === idx ? <ChevronUp className="w-4 h-4 flex-shrink-0 text-slate-400" /> : <ChevronDown className="w-4 h-4 flex-shrink-0 text-slate-400" />}
+            </button>
+            {openIndex === idx && <div className="px-4 pb-3 text-xs text-slate-600">{faq.answer}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FacilitiesSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  return (
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold" style={{ color: blueprint.palette.text }}>Our Facilities</h2>
+      </div>
+      <div className="grid md:grid-cols-3 gap-4">
+        {blueprint.facilityHighlights.slice(0, 3).map(f => (
+          <div key={f.title} className="rounded-xl overflow-hidden shadow-sm bg-white">
+            <div className="h-28" style={{ background: blueprint.palette.surface }} />
+            <div className="p-3">
+              <h3 className="text-sm font-semibold" style={{ color: blueprint.palette.text }}>{f.title}</h3>
+              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{f.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FooterSection({ blueprint }: { blueprint: TemplateBlueprint }) {
+  return (
+    <footer className="mt-12 bg-slate-900 text-white">
+      <div className="max-w-5xl mx-auto px-6 py-10">
+        <div className="grid md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="font-bold text-lg mb-3">{blueprint.footer.tagline}</h3>
+            <p className="text-slate-400 text-sm">Excellence in healthcare, compassion in care.</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Quick Links</h4>
+            <ul className="space-y-1.5">
+              {blueprint.footer.links.slice(0, 4).map(link => <li key={link.label} className="text-slate-400 text-xs hover:text-white cursor-pointer">{link.label}</li>)}
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Contact</h4>
+            <div className="space-y-1.5 text-xs text-slate-400">
+              <div className="flex items-center gap-2"><Phone className="w-3 h-3" /> 1800-XXX-XXXX</div>
+              <div className="flex items-center gap-2"><Mail className="w-3 h-3" /> info@hospital.com</div>
+              <div className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Hospital Address</div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-slate-800 mt-8 pt-6 text-center text-xs text-slate-500">{blueprint.footer.copyright}</div>
       </div>
     </footer>
   );

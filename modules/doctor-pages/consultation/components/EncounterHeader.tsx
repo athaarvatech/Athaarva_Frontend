@@ -21,7 +21,7 @@ import {
   Heart,
   Pill,
   Activity,
-  Sync,
+  RefreshCw,
   Play,
 } from "lucide-react";
 import { useConsultation } from "../context/ConsultationContext";
@@ -387,7 +387,7 @@ export function EncounterHeader() {
                     <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Sync size={16} className="text-amber-600" />
+                          <RefreshCw size={16} className="text-amber-600" />
                           <span className="text-sm font-medium text-amber-800">
                             Changes pending sync
                           </span>
@@ -401,7 +401,7 @@ export function EncounterHeader() {
                             className="h-7 px-3 text-xs border-amber-300 text-amber-700 hover:bg-amber-100"
                           >
                             {isLoading ? (
-                              <Sync size={12} className="animate-spin" />
+                              <RefreshCw size={12} className="animate-spin" />
                             ) : (
                               "Sync"
                             )}

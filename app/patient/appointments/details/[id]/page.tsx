@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format, isPast, isToday, addMinutes } from "date-fns";
@@ -154,8 +154,9 @@ const mockAppointment: Appointment = {
 export default function AppointmentDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("details");
   const [isJoiningCall, setIsJoiningCall] = useState(false);
