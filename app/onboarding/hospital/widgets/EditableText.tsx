@@ -4,6 +4,9 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AIContentAssistant } from "./AIContentAssistant";
+
+export type FieldType = "hero-title" | "hero-subtitle" | "description" | "tagline" | "generic";
 
 export interface EditableTextProps {
   value: string;
@@ -16,6 +19,10 @@ export interface EditableTextProps {
   editIndicator?: "icon" | "border" | "both" | "none";
   disabled?: boolean;
   style?: React.CSSProperties;
+  /** Field type for AI content suggestions */
+  fieldType?: FieldType;
+  /** Show AI content assistant button */
+  showAIAssistant?: boolean;
 }
 
 /**
@@ -40,6 +47,8 @@ export function EditableText({
   editIndicator = "both",
   disabled = false,
   style,
+  fieldType = "generic",
+  showAIAssistant = true,
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [localValue, setLocalValue] = useState(value);
@@ -109,6 +118,11 @@ export function EditableText({
     }
   }, [isEditing, localValue, multiline, adjustTextareaHeight]);
 
+  // Handle applying AI suggestion
+  const handleApplyAISuggestion = useCallback((suggestion: string) => {
+    setLocalValue(suggestion);
+  }, []);
+
   if (isEditing) {
     const inputClassName = cn(
       "w-full bg-transparent border-2 border-healthcare-primary rounded-md px-2 py-1",
@@ -119,45 +133,63 @@ export function EditableText({
 
     if (multiline) {
       return (
-        <textarea
-          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+        <div className="relative flex items-start gap-2">
+          <textarea
+            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            value={localValue}
+            onChange={(e) => {
+              const newVal = maxLength
+                ? e.target.value.slice(0, maxLength)
+                : e.target.value;
+              setLocalValue(newVal);
+              adjustTextareaHeight();
+            }}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            className={cn(
+              inputClassName,
+              "resize-none overflow-hidden min-h-[2em] flex-1"
+            )}
+            style={style}
+            placeholder={placeholder}
+          />
+          {showAIAssistant && (
+            <AIContentAssistant
+              fieldType={fieldType}
+              currentText={localValue}
+              onApply={handleApplyAISuggestion}
+            />
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative flex items-center gap-2">
+        <input
+          ref={inputRef as React.RefObject<HTMLInputElement>}
+          type="text"
           value={localValue}
           onChange={(e) => {
             const newVal = maxLength
               ? e.target.value.slice(0, maxLength)
               : e.target.value;
             setLocalValue(newVal);
-            adjustTextareaHeight();
           }}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          className={cn(
-            inputClassName,
-            "resize-none overflow-hidden min-h-[2em]"
-          )}
+          className={cn(inputClassName, "flex-1")}
           style={style}
           placeholder={placeholder}
         />
-      );
-    }
-
-    return (
-      <input
-        ref={inputRef as React.RefObject<HTMLInputElement>}
-        type="text"
-        value={localValue}
-        onChange={(e) => {
-          const newVal = maxLength
-            ? e.target.value.slice(0, maxLength)
-            : e.target.value;
-          setLocalValue(newVal);
-        }}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        className={inputClassName}
-        style={style}
-        placeholder={placeholder}
-      />
+        {showAIAssistant && (
+          <AIContentAssistant
+            fieldType={fieldType}
+            currentText={localValue}
+            onApply={handleApplyAISuggestion}
+          />
+        )}
+      </div>
     );
   }
 

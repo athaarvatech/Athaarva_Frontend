@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import type {
   TemplateData,
   CustomizedTemplateData,
+  LocationData,
 } from "@/contexts/HospitalOnboardingContextV2";
 import {
   TEMPLATE_BLUEPRINTS,
@@ -30,6 +31,7 @@ import {
 } from "./templateBlueprints";
 import { EditableTemplatePreviewRenderer } from "./EditableTemplatePreviewRenderer";
 import { ThemeCustomizer } from "./ThemeCustomizer";
+import { useGlobalContactSync } from "./GlobalContactSync";
 
 // Re-export for convenience
 export type { CustomizedTemplateData } from "@/contexts/HospitalOnboardingContextV2";
@@ -38,6 +40,8 @@ interface TemplateGalleryProps {
   templates?: TemplateData[];
   selectedTemplate: CustomizedTemplateData | null;
   onSelectTemplate: (template: CustomizedTemplateData) => void;
+  /** Location data for Global Contact Sync (optional) */
+  locations?: LocationData[];
   className?: string;
 }
 
@@ -120,6 +124,7 @@ export function TemplateGallery({
   templates = MOCK_TEMPLATES,
   selectedTemplate,
   onSelectTemplate,
+  locations = [],
   className,
 }: TemplateGalleryProps) {
   const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
@@ -169,6 +174,7 @@ export function TemplateGallery({
             setPreviewTemplate(null);
           }}
           isSelected={selectedTemplate?.id === previewTemplate.id}
+          locations={locations}
         />
       )}
 
@@ -211,7 +217,6 @@ export function TemplateGallery({
               <div className="transform scale-[0.5] origin-top h-[400px] overflow-hidden">
                 <EditableTemplatePreviewRenderer
                   blueprint={selectedTemplate.customizedBlueprint}
-                  device="desktop"
                   onBlueprintChange={() => {}} // Read-only
                   isEditMode={false}
                 />
@@ -495,6 +500,8 @@ interface TemplatePreviewModalProps {
   onClose: () => void;
   onSelect: (customizedData: CustomizedTemplateData) => void;
   isSelected: boolean;
+  /** Location data for Global Contact Sync */
+  locations?: LocationData[];
 }
 
 function TemplatePreviewModal({
@@ -502,12 +509,11 @@ function TemplatePreviewModal({
   onClose,
   onSelect,
   isSelected,
+  locations = [],
 }: TemplatePreviewModalProps) {
-  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
-    "desktop"
-  );
   const [isEditMode, setIsEditMode] = useState(true);
   const [showThemePanel, setShowThemePanel] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Initialize local blueprint state from the template
   const originalBlueprint = useMemo(
@@ -518,6 +524,18 @@ function TemplatePreviewModal({
     useState<TemplateBlueprint | null>(
       originalBlueprint ? { ...originalBlueprint } : null
     );
+
+  // Global Contact Sync - syncs wizard locations to footer
+  useGlobalContactSync(
+    locations,
+    editedBlueprint,
+    (updates) => {
+      if (editedBlueprint) {
+        setEditedBlueprint({ ...editedBlueprint, ...updates });
+      }
+    },
+    { preserveCustomized: false }
+  );
 
   // Reset handler
   const handleReset = () => {
@@ -622,35 +640,9 @@ function TemplatePreviewModal({
 
         {/* Toolbar */}
         <div className="flex items-center justify-between px-6 py-3 bg-gray-50 border-b border-gray-200">
-          {/* Device Selector */}
+          {/* Info */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500 mr-2">View:</span>
-            {(["desktop", "tablet", "mobile"] as const).map((d) => {
-              const Icon =
-                d === "desktop"
-                  ? Monitor
-                  : d === "tablet"
-                  ? Tablet
-                  : Smartphone;
-              return (
-                <Button
-                  key={d}
-                  variant={device === d ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setDevice(d)}
-                  className={cn(
-                    "gap-1",
-                    device === d &&
-                      "bg-healthcare-primary hover:bg-healthcare-primary/90"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {d.charAt(0).toUpperCase() + d.slice(1)}
-                  </span>
-                </Button>
-              );
-            })}
+            <span className="text-sm text-gray-500">Use the toolbar at the bottom to switch devices</span>
           </div>
 
           {/* Actions */}
@@ -667,7 +659,7 @@ function TemplatePreviewModal({
                   )}
                 >
                   <Palette className="w-4 h-4 mr-1" />
-                  Theme
+                  Colors & Fonts
                 </Button>
                 <Button
                   variant="outline"
@@ -683,53 +675,46 @@ function TemplatePreviewModal({
           </div>
         </div>
 
-        {/* Preview Area - Scrollable with optional Theme Panel */}
+        {/* Preview Area - Full width with optional Theme Panel */}
         <div className="flex-1 overflow-hidden flex">
-          {/* Theme Customizer Sidebar */}
+          {/* Theme Customizer Panel (Colors & Fonts only) */}
           {isEditMode && showThemePanel && editedBlueprint && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 300, opacity: 1 }}
+              animate={{ width: 320, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="h-full overflow-y-auto border-r border-gray-200 bg-white"
+              className="h-full overflow-y-auto border-r border-gray-200 bg-white flex-shrink-0"
             >
-              <ThemeCustomizer
-                palette={editedBlueprint.palette}
-                typography={editedBlueprint.typography}
-                onPaletteChange={(palette) => handleThemeUpdate({ palette })}
-                onTypographyChange={(typography) =>
-                  handleThemeUpdate({ typography })
-                }
-                originalPalette={originalBlueprint?.palette}
-                originalTypography={originalBlueprint?.typography}
-              />
+              <div className="p-4">
+                <ThemeCustomizer
+                  palette={editedBlueprint.palette}
+                  typography={editedBlueprint.typography}
+                  onPaletteChange={(palette) => handleThemeUpdate({ palette })}
+                  onTypographyChange={(typography) =>
+                    handleThemeUpdate({ typography })
+                  }
+                  originalPalette={originalBlueprint?.palette}
+                  originalTypography={originalBlueprint?.typography}
+                />
+              </div>
             </motion.div>
           )}
 
           {/* Preview Area */}
-          <div className="flex-1 overflow-auto p-6 bg-gray-100">
-            <div
-              className={cn(
-                "mx-auto bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-gray-200/70 transition-all duration-300",
-                device === "desktop" && "w-full max-w-5xl",
-                device === "tablet" && "w-[768px] max-w-full",
-                device === "mobile" && "w-[375px] max-w-full"
-              )}
-              style={{
-                minHeight:
-                  device === "desktop"
-                    ? "600px"
-                    : device === "tablet"
-                    ? "1024px"
-                    : "667px",
-              }}
-            >
+          <div className="flex-1 overflow-hidden bg-gray-100">
+            <div className="h-full w-full">
               {editedBlueprint ? (
                 <EditableTemplatePreviewRenderer
                   blueprint={editedBlueprint}
-                  device={device}
-                  onBlueprintChange={setEditedBlueprint}
+
+                  onBlueprintChange={(newBlueprint) => {
+                    setEditedBlueprint(newBlueprint);
+                    setHasChanges(true);
+                  }}
                   isEditMode={isEditMode}
+                  onToggleEditMode={() => setIsEditMode(!isEditMode)}
+                  onResetAll={handleReset}
+                  hasChanges={hasChanges}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-gray-400 min-h-[400px]">

@@ -1,15 +1,208 @@
 import type { TemplateData } from "@/contexts/HospitalOnboardingContextV2";
 
-// Image data type for uploaded images
+/**
+ * =============================================================================
+ * TEMPLATE BLUEPRINTS - COMPREHENSIVE HOSPITAL WEBSITE CONFIGURATION
+ * =============================================================================
+ * 
+ * This module defines the complete data structure for hospital website templates.
+ * It integrates four core modules:
+ * 
+ * 1. BRANDING STUDIO - Colors, logos, fonts, theme settings
+ * 2. SITE CONTENT - Hero sections, about us, footer content
+ * 3. SERVICES & PRICING - Medical services and pricing tables
+ * 4. COMPLIANCE & DOCUMENTATION - Certifications, policies, legal docs
+ * 
+ * HOW TO EDIT:
+ * - Each section has inline editing support in the template preview
+ * - Click on any text element to edit directly
+ * - Hover over images to upload new ones
+ * - Use the sidebar panels for structured data entry
+ * - Changes auto-save to the context state
+ * 
+ * DATA FLOW:
+ * templateBlueprints.ts → HospitalOnboardingContextV2 → EditableTemplatePreviewRenderer
+ * =============================================================================
+ */
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+/** Image data type for uploaded images */
 export interface UploadedImageData {
   file: File | null;
   previewUrl: string;
   originalUrl?: string;
 }
 
+/** Social media link configuration */
+export interface SocialLink {
+  platform: "facebook" | "twitter" | "instagram" | "linkedin" | "youtube" | "whatsapp";
+  url: string;
+  enabled: boolean;
+}
+
+/**
+ * BRANDING STUDIO TYPES
+ * Controls visual identity across the template
+ */
+export interface BrandingConfig {
+  /** Hospital/organization name */
+  name: string;
+  /** Short tagline or slogan */
+  tagline: string;
+  /** Detailed description for SEO and about sections */
+  description: string;
+  /** Logo configurations */
+  logos: {
+    primary?: UploadedImageData;
+    secondary?: UploadedImageData;  // For dark backgrounds
+    favicon?: UploadedImageData;
+  };
+  /** Social media links */
+  socialLinks: SocialLink[];
+  /** Contact information */
+  contactInfo: {
+    primaryPhone: string;
+    secondaryPhone?: string;
+    email: string;
+    emergencyHotline?: string;
+    whatsapp?: string;
+  };
+  /** Business hours */
+  businessHours: {
+    weekdays: string;
+    weekends: string;
+    emergencyNote: string;
+  };
+}
+
+/**
+ * SERVICES & PRICING TYPES
+ * Structures medical services and pricing information
+ */
+export interface ServiceItem {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  icon: string;
+  /** Starting price or price range */
+  priceRange?: {
+    min: number;
+    max?: number;
+    currency: string;
+    unit: "per consultation" | "per procedure" | "per package" | "per day";
+  };
+  /** Key features/inclusions */
+  features: string[];
+  /** Is this a featured/popular service? */
+  featured: boolean;
+  /** Duration if applicable */
+  duration?: string;
+}
+
+export interface PricingPackage {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  billingCycle: "one-time" | "monthly" | "yearly";
+  features: string[];
+  recommended: boolean;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+export interface ServicesAndPricing {
+  /** Section header content */
+  sectionTitle: string;
+  sectionSubtitle: string;
+  /** List of medical services */
+  services: ServiceItem[];
+  /** Health packages/bundles */
+  packages: PricingPackage[];
+  /** Insurance partners */
+  insurancePartners: {
+    name: string;
+    logo?: UploadedImageData;
+  }[];
+  /** Payment methods accepted */
+  paymentMethods: string[];
+  /** Price disclaimer text */
+  priceDisclaimer: string;
+}
+
+/**
+ * COMPLIANCE & DOCUMENTATION TYPES
+ * Legal, certifications, and regulatory information
+ */
+export interface Certification {
+  id: string;
+  name: string;
+  issuingBody: string;
+  certificationNumber?: string;
+  validFrom?: string;
+  validUntil?: string;
+  logo?: UploadedImageData;
+  verificationUrl?: string;
+}
+
+export interface LegalDocument {
+  id: string;
+  title: string;
+  type: "privacy-policy" | "terms-of-service" | "refund-policy" | "disclaimer" | "consent-form" | "other";
+  /** URL to the document or inline content */
+  url?: string;
+  content?: string;
+  lastUpdated: string;
+  required: boolean;
+}
+
+export interface ComplianceAndDocs {
+  /** Accreditations and certifications */
+  certifications: Certification[];
+  /** Legal documents */
+  legalDocuments: LegalDocument[];
+  /** Regulatory registrations */
+  registrations: {
+    type: string;
+    number: string;
+    authority: string;
+  }[];
+  /** Data protection & privacy settings */
+  dataProtection: {
+    gdprCompliant: boolean;
+    hipaaCompliant: boolean;
+    dataRetentionPolicy: string;
+    cookiePolicy: string;
+  };
+  /** Emergency protocols display */
+  emergencyProtocols: {
+    enabled: boolean;
+    content: string;
+  };
+}
+
+/**
+ * MAIN TEMPLATE BLUEPRINT TYPE
+ * Complete structure for a hospital website template
+ */
 export type TemplateBlueprint = {
   id: TemplateData["id"];
-  // Branding images
+  
+  // =========================================================================
+  // MODULE 1: BRANDING STUDIO
+  // =========================================================================
+  /** 
+   * BRANDING STUDIO
+   * Click the logo area to upload, use Theme Customizer panel for colors/fonts
+   */
+  branding: BrandingConfig;
+  
+  /** Uploaded images for various sections */
   images?: {
     logo?: UploadedImageData;
     heroImage?: UploadedImageData;
@@ -17,15 +210,8 @@ export type TemplateBlueprint = {
     doctorAvatars?: UploadedImageData[];
     facilityImages?: UploadedImageData[];
   };
-  hero: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    primaryCta: { label: string; href: string };
-    secondaryCta: { label: string; href: string };
-    stats: Array<{ label: string; value: string }>;
-    heroImageAlt: string;
-  };
+  
+  /** Color palette - Edit via Theme Customizer panel */
   palette: {
     background: string;
     surface: string;
@@ -35,59 +221,332 @@ export type TemplateBlueprint = {
     textMuted: string;
     gradient: string;
   };
+  
+  /** Typography settings - Edit via Theme Customizer panel */
   typography: {
     heading: string;
     body: string;
   };
-  specialties: Array<{ name: string; icon: string; description: string }>;
-  differentiators: Array<{ title: string; description: string; icon: string }>;
+  
+  // =========================================================================
+  // MODULE 2: SITE CONTENT
+  // =========================================================================
+  /**
+   * HERO SECTION
+   * Click any text to edit inline. Upload hero image by hovering the media area.
+   */
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    primaryCta: { label: string; href: string };
+    secondaryCta: { label: string; href: string };
+    stats: Array<{ label: string; value: string }>;
+    heroImageAlt: string;
+  };
+  
+  /**
+   * ABOUT SECTION
+   * Click to edit hospital description, mission, and highlights.
+   */
+  about?: {
+    title: string;
+    subtitle: string;
+    description: string;
+    mission?: string;
+    vision?: string;
+    highlights: Array<{ label: string; value: string }>;
+  };
+  
+  /** Specialty departments - Click + to add, hover to remove */
+  specialties: Array<{ name?: string; icon: string; title?: string; description: string }>;
+  
+  /** Key differentiators - What makes this hospital unique */
+  differentiators: Array<{ title: string; description: string; icon?: string }>;
+  
+  /** Doctor profiles - Upload photos, edit credentials inline */
   doctors: Array<{
     name: string;
-    title: string;
+    title?: string;
     specialty: string;
     description: string;
     mediaLabel: string;
     photo?: UploadedImageData;
+    qualifications?: string[];
+    experience?: string;
   }>;
+  
+  /** Patient testimonials - Click to edit quotes and details */
   testimonials: Array<{
-    name: string;
+    name?: string;
     quote: string;
-    rating: number;
-    location: string;
+    rating?: number;
+    location?: string;
+    patient?: string;
+    procedure?: string;
   }>;
+  
+  /** Facility highlights with images */
   facilityHighlights: Array<{
     title: string;
     copy: string;
     image?: UploadedImageData;
   }>;
+  
+  /** Healthcare programs and pathways */
   programs: Array<{ title: string; meta: string; description: string }>;
-  footer: {
-    tagline: string;
-    copyright: string;
-    links: Array<{ label: string; href: string }>;
-  };
-  about?: {
-    title: string;
-    subtitle: string;
-    description: string;
-    highlights: Array<{ label: string; value: string }>;
-  };
+  
+  /** Infrastructure cards */
   infrastructureCards?: Array<{ title: string; description: string; icon: string }>;
+  
+  /** Centers of excellence */
   centersOfExcellence?: Array<{ name: string; icon: string; description: string }>;
-  services?: Array<{ name: string; icon: string; description: string }>;
+  
+  /** International patients section */
   internationalPatients?: {
     title: string;
     description: string;
     features: Array<string>;
   };
+  
+  /** News and updates */
   news?: Array<{ title: string; date: string; excerpt: string; image: string }>;
+  
+  /** Breakthrough cases/success stories */
   breakthroughCases?: Array<{ title: string; description: string; doctor: string; outcome: string }>;
+  
+  /** FAQs */
   faqs?: Array<{ question: string; answer: string }>;
+  
+  /** Footer content - Edit contact info, links, and copyright */
+  footer: {
+    contact: {
+      phone: string;
+      email: string;
+      location: string;
+    };
+    quickLinks: string[];
+    tagline?: string;
+    copyright?: string;
+    links?: Array<{ label: string; href: string }>;
+  };
+  
+  // =========================================================================
+  // MODULE 3: SERVICES & PRICING
+  // =========================================================================
+  /**
+   * SERVICES & PRICING
+   * Use the Services panel in sidebar to add/edit services and packages.
+   */
+  servicesAndPricing?: ServicesAndPricing;
+  
+  /** Legacy services array for backwards compatibility */
+  services?: Array<{ name: string; icon: string; description: string }>;
+  
+  // =========================================================================
+  // MODULE 4: COMPLIANCE & DOCUMENTATION
+  // =========================================================================
+  /**
+   * COMPLIANCE & DOCUMENTATION
+   * Upload certifications, configure legal documents via Compliance panel.
+   */
+  compliance?: ComplianceAndDocs;
+};
+
+// ============================================================================
+// DEFAULT VALUES FOR NEW TEMPLATES
+// ============================================================================
+
+/** Default branding configuration */
+export const DEFAULT_BRANDING: BrandingConfig = {
+  name: "Your Hospital Name",
+  tagline: "Quality Healthcare, Compassionate Care",
+  description: "A leading healthcare institution committed to providing world-class medical services.",
+  logos: {},
+  socialLinks: [
+    { platform: "facebook", url: "", enabled: true },
+    { platform: "twitter", url: "", enabled: true },
+    { platform: "instagram", url: "", enabled: true },
+    { platform: "linkedin", url: "", enabled: true },
+    { platform: "youtube", url: "", enabled: false },
+    { platform: "whatsapp", url: "", enabled: true },
+  ],
+  contactInfo: {
+    primaryPhone: "+1 (800) 123-4567",
+    email: "info@yourhospital.com",
+    emergencyHotline: "+1 (800) 911-HELP",
+  },
+  businessHours: {
+    weekdays: "Mon-Fri: 8:00 AM - 8:00 PM",
+    weekends: "Sat-Sun: 9:00 AM - 5:00 PM",
+    emergencyNote: "Emergency services available 24/7",
+  },
+};
+
+/** Default services and pricing configuration */
+export const DEFAULT_SERVICES_PRICING: ServicesAndPricing = {
+  sectionTitle: "Our Services",
+  sectionSubtitle: "Comprehensive healthcare solutions tailored to your needs",
+  services: [
+    {
+      id: "srv-1",
+      name: "General Consultation",
+      category: "Primary Care",
+      description: "Comprehensive health assessment with our experienced physicians.",
+      icon: "🩺",
+      priceRange: { min: 50, max: 150, currency: "USD", unit: "per consultation" },
+      features: ["Physical examination", "Health assessment", "Prescription if needed"],
+      featured: true,
+      duration: "30-45 minutes",
+    },
+    {
+      id: "srv-2",
+      name: "Specialist Consultation",
+      category: "Specialty Care",
+      description: "Expert consultation with our board-certified specialists.",
+      icon: "👨‍⚕️",
+      priceRange: { min: 100, max: 300, currency: "USD", unit: "per consultation" },
+      features: ["Expert diagnosis", "Treatment planning", "Follow-up coordination"],
+      featured: true,
+      duration: "45-60 minutes",
+    },
+    {
+      id: "srv-3",
+      name: "Diagnostic Imaging",
+      category: "Diagnostics",
+      description: "State-of-the-art imaging services including X-ray, CT, MRI.",
+      icon: "🔬",
+      priceRange: { min: 75, max: 500, currency: "USD", unit: "per procedure" },
+      features: ["Same-day results", "Expert radiologists", "Digital reports"],
+      featured: false,
+    },
+  ],
+  packages: [
+    {
+      id: "pkg-1",
+      name: "Basic Health Check",
+      description: "Essential screening for overall health assessment",
+      price: 199,
+      currency: "USD",
+      billingCycle: "one-time",
+      features: [
+        "Complete blood count",
+        "Lipid profile",
+        "Blood sugar test",
+        "Physical examination",
+        "Doctor consultation",
+      ],
+      recommended: false,
+      ctaLabel: "Book Now",
+      ctaHref: "/book/basic-health-check",
+    },
+    {
+      id: "pkg-2",
+      name: "Executive Health Package",
+      description: "Comprehensive screening for busy professionals",
+      price: 499,
+      currency: "USD",
+      billingCycle: "one-time",
+      features: [
+        "All Basic Health Check tests",
+        "Cardiac screening (ECG, Echo)",
+        "Liver & kidney function",
+        "Thyroid profile",
+        "Chest X-ray",
+        "Executive consultation",
+      ],
+      recommended: true,
+      ctaLabel: "Book Now",
+      ctaHref: "/book/executive-health",
+    },
+  ],
+  insurancePartners: [],
+  paymentMethods: ["Cash", "Credit/Debit Cards", "Insurance", "EMI Options"],
+  priceDisclaimer: "Prices are indicative and may vary based on individual requirements. Please contact us for accurate pricing.",
+};
+
+/** Default compliance configuration */
+export const DEFAULT_COMPLIANCE: ComplianceAndDocs = {
+  certifications: [
+    {
+      id: "cert-1",
+      name: "NABH Accreditation",
+      issuingBody: "National Accreditation Board for Hospitals",
+      validFrom: "2024-01-01",
+      validUntil: "2027-01-01",
+    },
+  ],
+  legalDocuments: [
+    {
+      id: "doc-1",
+      title: "Privacy Policy",
+      type: "privacy-policy",
+      url: "/legal/privacy-policy",
+      lastUpdated: "2024-01-01",
+      required: true,
+    },
+    {
+      id: "doc-2",
+      title: "Terms of Service",
+      type: "terms-of-service",
+      url: "/legal/terms-of-service",
+      lastUpdated: "2024-01-01",
+      required: true,
+    },
+    {
+      id: "doc-3",
+      title: "Refund Policy",
+      type: "refund-policy",
+      url: "/legal/refund-policy",
+      lastUpdated: "2024-01-01",
+      required: false,
+    },
+  ],
+  registrations: [],
+  dataProtection: {
+    gdprCompliant: false,
+    hipaaCompliant: false,
+    dataRetentionPolicy: "",
+    cookiePolicy: "",
+  },
+  emergencyProtocols: {
+    enabled: false,
+    content: "",
+  },
 };
 
 export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
   "modern-healthcare": {
     id: "modern-healthcare",
+    
+    // BRANDING STUDIO
+    branding: {
+      name: "InspireCare Medical City",
+      tagline: "Flagship Smart Hospital",
+      description: "Hybrid hospital campus combining advanced robotics, precision oncology, and 24/7 connected care across four continents.",
+      logos: {},
+      socialLinks: [
+        { platform: "facebook", url: "https://facebook.com/inspirecare", enabled: true },
+        { platform: "twitter", url: "https://twitter.com/inspirecare", enabled: true },
+        { platform: "instagram", url: "https://instagram.com/inspirecare", enabled: true },
+        { platform: "linkedin", url: "https://linkedin.com/company/inspirecare", enabled: true },
+        { platform: "youtube", url: "https://youtube.com/inspirecare", enabled: true },
+        { platform: "whatsapp", url: "+912240001414", enabled: true },
+      ],
+      contactInfo: {
+        primaryPhone: "+91 22 4000 1414",
+        secondaryPhone: "+91 22 4000 1415",
+        email: "navigator@inspirecare.health",
+        emergencyHotline: "+91 22 4000 9999",
+        whatsapp: "+91 98765 43210",
+      },
+      businessHours: {
+        weekdays: "Mon-Fri: 7:00 AM - 10:00 PM",
+        weekends: "Sat-Sun: 8:00 AM - 8:00 PM",
+        emergencyNote: "24/7 Emergency & Trauma Center",
+      },
+    },
+    
     hero: {
       eyebrow: "Flagship Smart Hospital",
       title: "InspireCare Medical City",
@@ -110,10 +569,6 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       text: "#0f172a",
       textMuted: "#475569",
       gradient: "linear-gradient(135deg, #0E9F9F, #2563EB)",
-    },
-    typography: {
-      heading: '"Space Grotesk", Inter, sans-serif',
-      body: 'Inter, "Noto Sans", system-ui, sans-serif',
     },
     typography: { heading: 'font-sans font-bold', body: 'font-sans' },
     specialties: [
@@ -235,9 +690,96 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         "Virtual Tour",
       ],
     },
+    
+    // SERVICES & PRICING
+    servicesAndPricing: {
+      sectionTitle: "World-Class Medical Services",
+      sectionSubtitle: "Comprehensive care with transparent pricing",
+      services: [
+        {
+          id: "srv-cardiac",
+          name: "Cardiac Sciences",
+          category: "Heart Care",
+          description: "Complete cardiac care from diagnostics to complex interventions",
+          icon: "🫀",
+          priceRange: { min: 500, max: 50000, currency: "USD", unit: "per procedure" },
+          features: ["24/7 Cath Lab", "Structural Heart Program", "Cardiac Rehab"],
+          featured: true,
+          duration: "Varies by procedure",
+        },
+        {
+          id: "srv-onco",
+          name: "Precision Oncology",
+          category: "Cancer Care",
+          description: "Personalized cancer treatment with genomic profiling",
+          icon: "🧬",
+          priceRange: { min: 1000, max: 100000, currency: "USD", unit: "per package" },
+          features: ["Molecular Tumor Board", "CAR-T Therapy", "Clinical Trials Access"],
+          featured: true,
+        },
+      ],
+      packages: [
+        {
+          id: "pkg-exec",
+          name: "Global Executive Health",
+          description: "5-day comprehensive health assessment for executives",
+          price: 4999,
+          currency: "USD",
+          billingCycle: "one-time",
+          features: ["Metabolic profiling", "Cardiac stress testing", "Genomic panel", "Lifestyle consultation"],
+          recommended: true,
+          ctaLabel: "Book Assessment",
+          ctaHref: "/book/executive-health",
+        },
+      ],
+      insurancePartners: [{ name: "Blue Cross" }, { name: "United Healthcare" }, { name: "Aetna" }],
+      paymentMethods: ["International Cards", "Wire Transfer", "Insurance", "Payment Plans"],
+      priceDisclaimer: "Prices shown are estimates. Final costs depend on individual case complexity.",
+    },
+    
+    // COMPLIANCE & DOCUMENTATION
+    compliance: {
+      certifications: [
+        { id: "cert-jci", name: "JCI Accreditation", issuingBody: "Joint Commission International", validFrom: "2023-06-01", validUntil: "2026-06-01" },
+        { id: "cert-nabh", name: "NABH Accreditation", issuingBody: "NABH India", validFrom: "2024-01-01", validUntil: "2027-01-01" },
+      ],
+      legalDocuments: [
+        { id: "doc-privacy", title: "Privacy Policy", type: "privacy-policy", url: "/legal/privacy", lastUpdated: "2024-01-15", required: true },
+        { id: "doc-terms", title: "Terms of Service", type: "terms-of-service", url: "/legal/terms", lastUpdated: "2024-01-15", required: true },
+      ],
+      registrations: [{ type: "Hospital Registration", number: "HRN-MH-2020-1234", authority: "Maharashtra Medical Council" }],
+      dataProtection: { gdprCompliant: true, hipaaCompliant: true, dataRetentionPolicy: "10 years", cookiePolicy: "Essential cookies only" },
+      emergencyProtocols: { enabled: true, content: "In case of emergency, call our 24/7 hotline." },
+    },
   },
   "telehealth-first": {
     id: "telehealth-first",
+    
+    // BRANDING STUDIO
+    branding: {
+      name: "PulseConnect Virtual Hospital",
+      tagline: "Cloud Native Hospital",
+      description: "Nationwide mesh of teleclinics, diagnostics drones, and same-day infusion lounges built for chronic care at home.",
+      logos: {},
+      socialLinks: [
+        { platform: "facebook", url: "", enabled: true },
+        { platform: "twitter", url: "", enabled: true },
+        { platform: "instagram", url: "", enabled: true },
+        { platform: "linkedin", url: "", enabled: true },
+        { platform: "youtube", url: "", enabled: false },
+        { platform: "whatsapp", url: "", enabled: true },
+      ],
+      contactInfo: {
+        primaryPhone: "+1 (415) 555-0146",
+        email: "hello@pulseconnect.health",
+      },
+      businessHours: {
+        weekdays: "24/7 Virtual Care",
+        weekends: "24/7 Virtual Care",
+        emergencyNote: "Connect instantly with our virtual care team",
+      },
+    },
+    
     hero: {
       eyebrow: "Cloud Native Hospital",
       title: "PulseConnect Virtual Hospital",
@@ -260,10 +802,6 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       text: "#0f172a",
       textMuted: "#475569",
       gradient: "linear-gradient(135deg, #2563EB, #06B6D4)",
-    },
-    typography: {
-      heading: '"Sora", "Inter", sans-serif',
-      body: 'Inter, "IBM Plex Sans", system-ui, sans-serif',
     },
     typography: { heading: 'font-sans font-bold', body: 'font-sans' },
     specialties: [
@@ -380,9 +918,39 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         "Clinical Research",
       ],
     },
+    
+    // SERVICES & PRICING for Telehealth
+    servicesAndPricing: DEFAULT_SERVICES_PRICING,
+    compliance: DEFAULT_COMPLIANCE,
   },
   heritage: {
     id: "heritage",
+    
+    // BRANDING STUDIO
+    branding: {
+      name: "St. Raphael Heritage Medical Centre",
+      tagline: "125 Years of Trust",
+      description: "Faith-rooted academic hospital blending classical hospitality with cutting-edge transplant science.",
+      logos: {},
+      socialLinks: [
+        { platform: "facebook", url: "", enabled: true },
+        { platform: "twitter", url: "", enabled: true },
+        { platform: "instagram", url: "", enabled: true },
+        { platform: "linkedin", url: "", enabled: true },
+        { platform: "youtube", url: "", enabled: false },
+        { platform: "whatsapp", url: "", enabled: true },
+      ],
+      contactInfo: {
+        primaryPhone: "+44 20 7123 4750",
+        email: "welcome@straphael.org",
+      },
+      businessHours: {
+        weekdays: "Mon-Fri: 7:00 AM - 9:00 PM",
+        weekends: "Sat-Sun: 8:00 AM - 6:00 PM",
+        emergencyNote: "24/7 Emergency Department",
+      },
+    },
+    
     hero: {
       eyebrow: "125 Years of Trust",
       title: "St. Raphael Heritage Medical Centre",
@@ -405,10 +973,6 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       text: "#1f2937",
       textMuted: "#6b7280",
       gradient: "linear-gradient(135deg, #B45309, #92400E)",
-    },
-    typography: {
-      heading: '"Playfair Display", "IBM Plex Serif", serif',
-      body: '"Source Sans Pro", system-ui, sans-serif',
     },
     typography: { heading: 'font-serif font-bold', body: 'font-sans' },
     specialties: [
@@ -525,8 +1089,10 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         "Residency Programs",
       ],
     },
+    
+    // SERVICES & PRICING for Heritage
+    servicesAndPricing: DEFAULT_SERVICES_PRICING,
+    compliance: DEFAULT_COMPLIANCE,
   },
 };
 
-// Alias export for backwards compatibility
-export const TEMPLATE_BLUEPRINTS = templateBlueprints;

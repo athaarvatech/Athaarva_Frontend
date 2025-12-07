@@ -91,6 +91,7 @@ export default function InvitationTemplateStep() {
               version_locked: false,
             });
           }}
+          locations={data.locations}
         />
       </motion.div>
 

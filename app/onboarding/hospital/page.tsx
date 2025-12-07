@@ -1,20 +1,35 @@
 "use client";
 
 /**
- * Hospital Onboarding Page v2 - 12-Step Comprehensive Wizard
+ * Hospital Onboarding Page v3 - Consolidated 8-Step Wizard
  * 
- * This is the refactored version integrating HospitalOnboardingContextV2
- * with all 12 steps. Rename this file to page.tsx to activate.
+ * This is the streamlined version with on-canvas editing for branding,
+ * content, services, and compliance. Steps that can be edited directly
+ * on the template preview have been removed from the wizard.
+ * 
+ * REMOVED STEPS (now on-canvas):
+ * - Branding Studio → Canvas Theme Presets
+ * - Site Content → Canvas Inline Editing
+ * - Services & Pricing → Canvas Services Section
+ * - Compliance & Documentation → Canvas Compliance Section
+ * 
+ * REMAINING STEPS:
+ * 0. Invitation & Template Selection
+ * 1. Organization Profile (legal info)
+ * 2. Locations & Contacts (addresses, geocoding)
+ * 3. Leadership & Team (doctors, staff)
+ * 4. Operational Policies (hours, policies)
+ * 5. Integrations & Preferences (APIs, settings)
+ * 6. Admin & Staff Invitations
+ * 7. Review & Submission
  * 
  * Features:
  * - Token-gated invitation validation
- * - 12-step comprehensive wizard
+ * - On-canvas editing for branding, content, services, compliance
+ * - Theme presets for one-click styling
  * - Autosave with localStorage persistence
  * - Activity log sidebar
- * - Contextual help panels
- * - Progress tracking across all steps
- * - WCAG compliance checking
- * - Draft saving and resumption
+ * - Progress tracking
  */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -52,16 +67,13 @@ import {
 } from "@/contexts/HospitalOnboardingContextV2";
 import { API_CONFIG } from "@/lib/api-config";
 
-// Import step components
+// Import step components (consolidated - 8 steps)
 import InvitationTemplateStep from "./steps/InvitationTemplateStep";
 import OrganizationProfileStep from "./steps/OrganizationProfileStep";
 import LocationsContactsStep from "./steps/LocationsContactsStep";
-import BrandingStudioStep from "./steps/BrandingStudioStep";
-import SiteContentStep from "./steps/SiteContentStep";
-import ServicesPricingStep from "./steps/ServicesPricingStep";
+// NOTE: Branding, SiteContent, Services, Compliance moved to on-canvas editing
 import LeadershipTeamStep from "./steps/LeadershipTeamStep";
 import OperationalPoliciesStep from "./steps/OperationalPoliciesStep";
-import ComplianceDocumentationStep from "./steps/ComplianceDocumentationStep";
 import IntegrationsPreferencesStep from "./steps/IntegrationsPreferencesStep";
 import AdminStaffInvitationsStep from "./steps/AdminStaffInvitationsStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
@@ -79,10 +91,20 @@ interface StepConfig {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   component: React.ComponentType;
-  category: "Setup" | "Branding" | "Operations" | "Review";
+  category: "Setup" | "Operations" | "Review";
   estimatedMinutes: number;
+  helpText?: string;
 }
 
+/**
+ * CONSOLIDATED STEP CONFIGS - 8 Steps
+ * 
+ * Steps removed and moved to on-canvas editing:
+ * - Branding Studio (colors, fonts, assets) → Canvas Theme Presets + Inline Editing
+ * - Site Content (hero, services) → Canvas Inline Text Editing
+ * - Services & Pricing (procedures, pricing) → EditableServicesSection
+ * - Compliance & Documentation (certs, docs) → EditableComplianceSection
+ */
 const STEP_CONFIGS: StepConfig[] = [
   {
     id: 0,
@@ -92,6 +114,7 @@ const STEP_CONFIGS: StepConfig[] = [
     component: InvitationTemplateStep,
     category: "Setup",
     estimatedMinutes: 3,
+    helpText: "Select a template to customize. All branding, content, services, and compliance can be edited directly on the canvas preview.",
   },
   {
     id: 1,
@@ -101,6 +124,7 @@ const STEP_CONFIGS: StepConfig[] = [
     component: OrganizationProfileStep,
     category: "Setup",
     estimatedMinutes: 8,
+    helpText: "Enter your organization's legal information for compliance and invoicing.",
   },
   {
     id: 2,
@@ -110,87 +134,57 @@ const STEP_CONFIGS: StepConfig[] = [
     component: LocationsContactsStep,
     category: "Setup",
     estimatedMinutes: 10,
+    helpText: "Add all your facility locations. Each location will have its own page on your site.",
   },
   {
     id: 3,
-    title: "Branding Studio",
-    description: "Colors, typography, assets with WCAG",
-    icon: Palette,
-    component: BrandingStudioStep,
-    category: "Branding",
-    estimatedMinutes: 12,
-  },
-  {
-    id: 4,
-    title: "Site Content",
-    description: "Hero, services, testimonials, FAQ",
-    icon: FileText,
-    component: SiteContentStep,
-    category: "Branding",
-    estimatedMinutes: 15,
-  },
-  {
-    id: 5,
-    title: "Services & Pricing",
-    description: "Departments, procedures, consultation types",
-    icon: DollarSign,
-    component: ServicesPricingStep,
-    category: "Operations",
-    estimatedMinutes: 12,
-  },
-  {
-    id: 6,
     title: "Leadership & Team",
     description: "Leadership cards, staffing plan",
     icon: Users,
     component: LeadershipTeamStep,
     category: "Operations",
     estimatedMinutes: 10,
+    helpText: "Add leadership team members. Doctors and staff can also be edited on the canvas.",
   },
   {
-    id: 7,
+    id: 4,
     title: "Operational Policies",
     description: "Hours, buffers, cancellation policies",
     icon: Settings,
     component: OperationalPoliciesStep,
     category: "Operations",
     estimatedMinutes: 8,
+    helpText: "Configure your operating hours, appointment buffers, and cancellation policies.",
   },
   {
-    id: 8,
-    title: "Compliance & Documentation",
-    description: "Accreditation uploads, DPO contact",
-    icon: Shield,
-    component: ComplianceDocumentationStep,
-    category: "Operations",
-    estimatedMinutes: 10,
-  },
-  {
-    id: 9,
+    id: 5,
     title: "Integrations & Preferences",
     description: "Messaging, analytics, LLM opt-in",
     icon: Zap,
     component: IntegrationsPreferencesStep,
     category: "Operations",
     estimatedMinutes: 7,
+    helpText: "Connect external services and configure AI-powered features.",
   },
   {
-    id: 10,
+    id: 6,
     title: "Admin & Staff Invitations",
     description: "Invite team members with roles",
     icon: UserPlus,
     component: AdminStaffInvitationsStep,
     category: "Operations",
     estimatedMinutes: 8,
+    helpText: "Invite staff members who will manage your platform.",
   },
   {
-    id: 11,
+    id: 7,
     title: "Review & Submission",
-    description: "Final review, acknowledgements, publish plan",
+    description: "Final review, acknowledgements, publish",
     icon: ListChecks,
     component: ReviewSubmissionStep,
     category: "Review",
     estimatedMinutes: 5,
+    helpText: "Review all information before submitting. You can still edit the canvas after submission.",
   },
 ];
 
@@ -396,7 +390,8 @@ function HospitalOnboardingContent({
   }, [data.metadata.last_saved_at]);
 
   const handleNext = () => {
-    if (currentStep === 11) {
+    // 8-step wizard: step 7 (index 7) is the final review step
+    if (currentStep === STEP_CONFIGS.length - 1) {
       handleSubmit();
     } else {
       setCurrentStep(currentStep + 1);

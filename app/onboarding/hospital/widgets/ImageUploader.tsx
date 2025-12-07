@@ -2,9 +2,10 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Camera, Trash2, RefreshCw } from "lucide-react";
+import { Upload, X, Camera, Trash2, RefreshCw, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { StockImagePicker, type StockImage } from "./StockImagePicker";
 
 export interface UploadedImage {
   file: File | null;
@@ -23,6 +24,8 @@ export interface ImageUploaderProps {
   variant?: "default" | "compact" | "circle" | "hero";
   showOverlay?: boolean;
   disabled?: boolean;
+  /** Show stock image picker alongside upload */
+  showStockPicker?: boolean;
 }
 
 const aspectRatioClasses = {
@@ -48,10 +51,23 @@ export function ImageUploader({
   variant = "default",
   showOverlay = true,
   disabled = false,
+  showStockPicker = true,
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleStockImageSelect = useCallback(
+    (image: StockImage) => {
+      setError(null);
+      onChange({
+        file: null,
+        previewUrl: image.url,
+        originalUrl: image.url,
+      });
+    },
+    [onChange]
+  );
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -189,7 +205,7 @@ export function ImageUploader({
               <div
                 className={cn(
                   "absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200",
-                  "flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100"
+                  "flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 flex-wrap"
                 )}
               >
                 <Button
@@ -201,6 +217,12 @@ export function ImageUploader({
                   <Camera className="w-4 h-4 mr-1" />
                   Change
                 </Button>
+                {showStockPicker && (
+                  <StockImagePicker
+                    onSelect={handleStockImageSelect}
+                    triggerVariant="button"
+                  />
+                )}
                 {hasCustomImage && value?.originalUrl && (
                   <Button
                     variant="secondary"
@@ -267,6 +289,14 @@ export function ImageUploader({
             <p className="text-xs text-gray-400 mt-1">
               PNG, JPG, WebP up to {maxSizeMB}MB
             </p>
+            {showStockPicker && !isDragging && (
+              <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                <StockImagePicker
+                  onSelect={handleStockImageSelect}
+                  triggerVariant="link"
+                />
+              </div>
+            )}
           </div>
         )}
       </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Quote, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,12 +16,22 @@ import {
   AvatarUploader,
   FacilityImageUploader,
 } from "./ImageUploader";
+import { EditableSection, QuickActionsDock, type DeviceMode } from "./OnCanvasToolbar";
+import { EditableServicesSection } from "./EditableServicesSection";
+import { EditableComplianceSection } from "./EditableComplianceSection";
+import { CanvasThemePanel, type ThemePreset } from "./CanvasThemePanel";
+import { DeviceFrameWrapper } from "./DeviceFrameWrapper";
 
 export interface EditableTemplatePreviewRendererProps {
   blueprint: TemplateBlueprint;
-  device: "desktop" | "tablet" | "mobile";
   onBlueprintChange: (updatedBlueprint: TemplateBlueprint) => void;
   isEditMode?: boolean;
+  onToggleEditMode?: () => void;
+  onResetAll?: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
+  hasChanges?: boolean;
+  initialDeviceMode?: DeviceMode;
 }
 
 const sectionAnimation = {
@@ -33,13 +43,36 @@ const sectionAnimation = {
 /**
  * EditableTemplatePreviewRenderer - A WYSIWYG canvas for editing website templates.
  * Each section is editable inline. Changes are propagated up to the parent via onBlueprintChange.
+ * 
+ * ON-CANVAS EDITING PATTERN:
+ * - Each section is wrapped in <EditableSection> for hover outlines and toolbar
+ * - Individual fields use <EditableText> for inline editing
+ * - Floating toolbars appear on hover with section-specific actions
+ * - QuickActionsDock at bottom for global edit mode toggle
  */
 export function EditableTemplatePreviewRenderer({
   blueprint,
-  device,
   onBlueprintChange,
   isEditMode = true,
+  onToggleEditMode,
+  onResetAll,
+  onSave,
+  isSaving,
+  hasChanges,
+  initialDeviceMode = "desktop",
 }: EditableTemplatePreviewRendererProps) {
+  // Local edit mode state if not controlled externally
+  const [localEditMode, setLocalEditMode] = useState(isEditMode);
+  const effectiveEditMode = onToggleEditMode ? isEditMode : localEditMode;
+  const handleToggleEditMode = onToggleEditMode || (() => setLocalEditMode(!localEditMode));
+
+  // Device mode state for responsive preview
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>(initialDeviceMode);
+
+  // Store original palette/typography for reset functionality
+  const [originalPalette] = useState(() => blueprint.palette);
+  const [originalTypography] = useState(() => blueprint.typography);
+
   // Helper to update nested properties immutably
   const updateBlueprint = <K extends keyof TemplateBlueprint>(
     key: K,
@@ -47,6 +80,23 @@ export function EditableTemplatePreviewRenderer({
   ) => {
     onBlueprintChange({ ...blueprint, [key]: value });
   };
+
+  // Theme preset handlers
+  const handleApplyPreset = useCallback((preset: ThemePreset) => {
+    onBlueprintChange({
+      ...blueprint,
+      palette: preset.palette,
+      typography: preset.typography,
+    });
+  }, [blueprint, onBlueprintChange]);
+
+  const handlePaletteChange = useCallback((palette: TemplateBlueprint["palette"]) => {
+    updateBlueprint("palette", palette);
+  }, [blueprint, onBlueprintChange]);
+
+  const handleTypographyChange = useCallback((typography: TemplateBlueprint["typography"]) => {
+    updateBlueprint("typography", typography);
+  }, [blueprint, onBlueprintChange]);
 
   const updateHero = (updates: Partial<TemplateBlueprint["hero"]>) => {
     updateBlueprint("hero", { ...blueprint.hero, ...updates });
@@ -59,86 +109,144 @@ export function EditableTemplatePreviewRenderer({
   };
 
   return (
-    <div
-      className={cn(
-        "h-full w-full overflow-y-auto bg-white",
-        device === "desktop" && "px-0",
-        device === "tablet" && "scale-[0.92] origin-top",
-        device === "mobile" && "scale-[0.7] origin-top"
-      )}
-      style={{
-        background: blueprint.palette.background,
-        fontFamily: blueprint.typography.body,
-      }}
-    >
-      {/* Edit Mode Banner */}
-      {isEditMode && (
-        <div className="sticky top-0 z-50 bg-healthcare-primary/95 text-white px-4 py-2 text-center text-sm backdrop-blur">
-          <span className="font-medium">🎨 Canvas Mode</span> — Click on any
-          text to edit, hover on images to upload. Your changes are saved
-          automatically.
-        </div>
+    <DeviceFrameWrapper deviceMode={deviceMode}>
+      <div
+        className={cn(
+          "h-full w-full overflow-y-auto bg-white relative",
+        )}
+        style={{
+          background: blueprint.palette.background,
+          fontFamily: blueprint.typography.body,
+        }}
+      >
+        {/* Edit Mode Banner - Minimal, dismissable */}
+        {effectiveEditMode && (
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="sticky top-0 z-50 bg-gradient-to-r from-gray-900 to-gray-800 text-white px-4 py-2 backdrop-blur-md"
+          >
+            <div className="max-w-6xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <span className="text-xs font-medium">Editing</span>
+                </div>
+                <span className="text-sm text-white/80">
+                  Click text to edit • Hover sections for tools • Use <span className="font-medium text-white">Theme</span> panel for styling
+                </span>
+            </div>
+          </div>
+        </motion.div>
       )}
 
-      <main className="min-h-full">
+      <main className="min-h-full pb-24">
         <EditableHeroSection
           blueprint={blueprint}
           onUpdate={updateHero}
           onImageUpdate={updateImages}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableStatsStrip
           blueprint={blueprint}
           onUpdate={(stats) => updateHero({ stats })}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableSpecialtiesSection
           blueprint={blueprint}
           onUpdate={(specialties) =>
             updateBlueprint("specialties", specialties)
           }
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableDifferentiatorsSection
           blueprint={blueprint}
           onUpdate={(differentiators) =>
             updateBlueprint("differentiators", differentiators)
           }
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableDoctorsSection
           blueprint={blueprint}
           onUpdate={(doctors) => updateBlueprint("doctors", doctors)}
           onImageUpdate={updateImages}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
+        
+        {/* NEW: Services & Pricing Section */}
+        <EditableServicesSection
+          servicesAndPricing={blueprint.servicesAndPricing}
+          onUpdate={(servicesAndPricing) =>
+            updateBlueprint("servicesAndPricing", servicesAndPricing)
+          }
+          isEditMode={effectiveEditMode}
+          accentColor={blueprint.palette.accent}
+          typography={blueprint.typography}
+        />
+
         <EditableFacilitySection
           blueprint={blueprint}
           onUpdate={(facilityHighlights) =>
             updateBlueprint("facilityHighlights", facilityHighlights)
           }
           onImageUpdate={updateImages}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableTestimonialsSection
           blueprint={blueprint}
           onUpdate={(testimonials) =>
             updateBlueprint("testimonials", testimonials)
           }
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
         <EditableProgramsSection
           blueprint={blueprint}
           onUpdate={(programs) => updateBlueprint("programs", programs)}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
+
+        {/* NEW: Compliance Section */}
+        <EditableComplianceSection
+          compliance={blueprint.compliance}
+          onUpdate={(compliance) => updateBlueprint("compliance", compliance)}
+          isEditMode={effectiveEditMode}
+          accentColor={blueprint.palette.accent}
+          typography={blueprint.typography}
+        />
+
         <EditableFooter
           blueprint={blueprint}
           onUpdate={(footer) => updateBlueprint("footer", footer)}
-          isEditMode={isEditMode}
+          isEditMode={effectiveEditMode}
         />
       </main>
-    </div>
+
+      {/* Quick Actions Dock - Fixed at bottom right */}
+      <QuickActionsDock
+        isEditMode={effectiveEditMode}
+        onToggleEditMode={handleToggleEditMode}
+        onResetAll={onResetAll}
+        onSave={onSave}
+        isSaving={isSaving}
+        hasChanges={hasChanges}
+        deviceMode={deviceMode}
+        onDeviceModeChange={setDeviceMode}
+        palette={blueprint.palette}
+      />
+
+      {/* Theme Panel - Fixed at bottom left */}
+      <CanvasThemePanel
+        isEditMode={effectiveEditMode}
+        currentPalette={blueprint.palette}
+        currentTypography={blueprint.typography}
+        onApplyPreset={handleApplyPreset}
+        onPaletteChange={handlePaletteChange}
+        onTypographyChange={handleTypographyChange}
+        originalPalette={originalPalette}
+        originalTypography={originalTypography}
+      />
+      </div>
+    </DeviceFrameWrapper>
   );
 }
 

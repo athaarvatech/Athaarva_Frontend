@@ -13,17 +13,13 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 const STEP_NAMES = [
-  'Template Selection',
+  'Invitation & Template',
   'Organization Profile',
   'Locations & Contacts',
-  'Branding Studio',
-  'Site Content',
-  'Services & Pricing',
   'Leadership & Team',
   'Operational Policies',
-  'Compliance & Documentation',
-  'Integrations',
-  'Admin Invitations',
+  'Integrations & Preferences',
+  'Admin & Staff Invitations',
   'Review & Submission',
 ];
 
