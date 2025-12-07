@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -41,142 +42,77 @@ import {
   MoreHorizontal,
   Shield,
   ShieldOff,
+  Loader2,
+  AlertTriangle,
+  Mail,
+  Clock,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-
-interface Staff {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  role: string;
-  department: string;
-  loginId: string;
-  employeeId: string;
-  shift: string;
-  status: "active" | "inactive" | "pending";
-  lastLogin: string;
-  joinDate: string;
-}
+import { useHospitalStaff } from "@/hooks/useHospitalAdmin";
+import { StaffMember } from "@/lib/api/hospital-admin";
 
 const ManageStaffPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  const [inviteForm, setInviteForm] = useState({
+    email: "",
+    full_name: "",
+    role: "",
+    department: "",
+  });
+  const [isInviting, setIsInviting] = useState(false);
 
-  // Mock data
-  const [staff, setStaff] = useState<Staff[]>([
-    {
-      id: "1",
-      fullName: "Mary Williams",
-      email: "mary.williams@hospital.com",
-      phone: "(555) 111-2222",
-      role: "Registered Nurse",
-      department: "Intensive Care Unit",
-      loginId: "mary.williams",
-      employeeId: "EMP10001",
-      shift: "Day Shift (6 AM - 6 PM)",
-      status: "active",
-      lastLogin: "2024-01-15",
-      joinDate: "2023-05-01",
-    },
-    {
-      id: "2",
-      fullName: "John Davis",
-      email: "john.davis@hospital.com",
-      phone: "(555) 222-3333",
-      role: "Lab Technician",
-      department: "Laboratory",
-      loginId: "john.davis",
-      employeeId: "EMP10002",
-      shift: "Morning Shift (8 AM - 4 PM)",
-      status: "active",
-      lastLogin: "2024-01-14",
-      joinDate: "2023-02-15",
-    },
-    {
-      id: "3",
-      fullName: "Lisa Thompson",
-      email: "lisa.thompson@hospital.com",
-      phone: "(555) 333-4444",
-      role: "Receptionist",
-      department: "Outpatient Department",
-      loginId: "lisa.thompson",
-      employeeId: "EMP10003",
-      shift: "Full-Time Regular",
-      status: "inactive",
-      lastLogin: "2024-01-08",
-      joinDate: "2023-08-20",
-    },
-    {
-      id: "4",
-      fullName: "James Brown",
-      email: "james.brown@hospital.com",
-      phone: "(555) 444-5555",
-      role: "Pharmacist",
-      department: "Pharmacy",
-      loginId: "james.brown",
-      employeeId: "EMP10004",
-      shift: "Evening Shift (4 PM - 12 AM)",
-      status: "pending",
-      lastLogin: "Never",
-      joinDate: "2024-01-10",
-    },
-    {
-      id: "5",
-      fullName: "Sarah Lee",
-      email: "sarah.lee@hospital.com",
-      phone: "(555) 555-6666",
-      role: "Physical Therapist",
-      department: "Physical Therapy",
-      loginId: "sarah.lee",
-      employeeId: "EMP10005",
-      shift: "Day Shift (6 AM - 6 PM)",
-      status: "active",
-      lastLogin: "2024-01-15",
-      joinDate: "2023-11-01",
-    },
-  ]);
+  // Use real API hook
+  const { 
+    staff, 
+    isLoading, 
+    error, 
+    refetch, 
+    inviteStaff, 
+    updateStaff, 
+    removeStaff 
+  } = useHospitalStaff();
 
   const roles = [
     "all",
-    "Registered Nurse",
-    "Lab Technician",
-    "Receptionist",
-    "Pharmacist",
-    "Physical Therapist",
-    "Medical Assistant",
+    "receptionist",
+    "nurse",
+    "lab_technician",
+    "pharmacist",
+    "admin_staff",
+    "billing_staff",
+    "it_support",
   ];
-  const departments = [
-    "all",
-    "Intensive Care Unit",
-    "Laboratory",
-    "Outpatient Department",
-    "Pharmacy",
-    "Physical Therapy",
-    "Emergency Department",
-  ];
-  const statuses = ["all", "active", "inactive", "pending"];
+
+  const roleLabels: Record<string, string> = {
+    receptionist: "Receptionist",
+    nurse: "Nurse",
+    lab_technician: "Lab Technician",
+    pharmacist: "Pharmacist",
+    admin_staff: "Admin Staff",
+    billing_staff: "Billing Staff",
+    it_support: "IT Support",
+  };
+
+  const statuses = ["all", "invited", "active", "suspended", "inactive"];
 
   // Filter staff
   const filteredStaff = staff.filter((member) => {
     const matchesSearch =
-      member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
+      member.role.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || member.status === statusFilter;
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
-    const matchesDepartment =
-      departmentFilter === "all" || member.department === departmentFilter;
 
-    return matchesSearch && matchesStatus && matchesRole && matchesDepartment;
+    return matchesSearch && matchesStatus && matchesRole;
   });
 
   const getStatusBadge = (status: string) => {
@@ -193,10 +129,17 @@ const ManageStaffPage = () => {
             Inactive
           </Badge>
         );
-      case "pending":
+      case "invited":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            Pending
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            <Mail className="h-3 w-3 mr-1" />
+            Invited
+          </Badge>
+        );
+      case "suspended":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-200">
+            Suspended
           </Badge>
         );
       default:
@@ -204,46 +147,92 @@ const ManageStaffPage = () => {
     }
   };
 
-  const handleStatusToggle = (staffMember: Staff) => {
-    const newStatus = staffMember.status === "active" ? "inactive" : "active";
-    setStaff((prev) =>
-      prev.map((s) =>
-        s.id === staffMember.id ? { ...s, status: newStatus } : s
-      )
-    );
-    toast.success(
-      `Staff member ${
-        newStatus === "active" ? "activated" : "deactivated"
-      } successfully`
-    );
-  };
-
-  const handleDeleteStaff = () => {
-    if (selectedStaff) {
-      setStaff((prev) => prev.filter((s) => s.id !== selectedStaff.id));
-      toast.success("Staff member removed successfully");
-      setDeleteDialogOpen(false);
-      setSelectedStaff(null);
+  const handleStatusToggle = async (staffMember: StaffMember) => {
+    const newStatus = staffMember.status === "active" ? "suspended" : "active";
+    const result = await updateStaff(staffMember.id, { status: newStatus });
+    if (result.success) {
+      toast.success(
+        `Staff member ${newStatus === "active" ? "activated" : "suspended"} successfully`
+      );
+    } else {
+      toast.error(result.error || "Failed to update staff status");
     }
   };
 
-  const handleResetPassword = () => {
+  const handleDeleteStaff = async () => {
     if (selectedStaff) {
-      toast.success(`Password reset email sent to ${selectedStaff.email}`);
-      setResetPasswordDialogOpen(false);
-      setSelectedStaff(null);
+      const result = await removeStaff(selectedStaff.id);
+      if (result.success) {
+        toast.success("Staff member removed successfully");
+        setDeleteDialogOpen(false);
+        setSelectedStaff(null);
+      } else {
+        toast.error(result.error || "Failed to remove staff member");
+      }
     }
   };
 
-  const openDeleteDialog = (staffMember: Staff) => {
+  const handleInviteStaff = async () => {
+    if (!inviteForm.email || !inviteForm.full_name || !inviteForm.role) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsInviting(true);
+    const result = await inviteStaff({
+      email: inviteForm.email,
+      full_name: inviteForm.full_name,
+      role: inviteForm.role,
+      department: inviteForm.department || undefined,
+    });
+
+    if (result.success) {
+      toast.success(`Invitation sent to ${inviteForm.email}`);
+      setInviteDialogOpen(false);
+      setInviteForm({ email: "", full_name: "", role: "", department: "" });
+    } else {
+      toast.error(result.error || "Failed to send invitation");
+    }
+    setIsInviting(false);
+  };
+
+  const openDeleteDialog = (staffMember: StaffMember) => {
     setSelectedStaff(staffMember);
     setDeleteDialogOpen(true);
   };
 
-  const openResetPasswordDialog = (staffMember: Staff) => {
-    setSelectedStaff(staffMember);
-    setResetPasswordDialogOpen(true);
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Never";
+    return new Date(dateString).toLocaleDateString();
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-[#20B2AA]" />
+          <p className="text-gray-600">Loading staff...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && staff.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
+          <p className="text-red-600">{error}</p>
+          <Button onClick={refetch} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -260,11 +249,16 @@ const ManageStaffPage = () => {
         </div>
 
         <div className="flex gap-3">
-          <Button asChild className="bg-[#20B2AA] hover:bg-[#1a9a91]">
-            <Link href="/Admin/add-staff">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Staff
-            </Link>
+          <Button variant="outline" onClick={refetch}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+          <Button 
+            className="bg-[#20B2AA] hover:bg-[#1a9a91]"
+            onClick={() => setInviteDialogOpen(true)}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite Staff
           </Button>
         </div>
       </div>
@@ -299,28 +293,28 @@ const ManageStaffPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-gray-200">
+        <Card className="border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <ShieldOff className="h-5 w-5 text-gray-600" />
+              <Mail className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Inactive</p>
-                <p className="text-xl font-bold text-gray-600">
-                  {staff.filter((s) => s.status === "inactive").length}
+                <p className="text-sm text-gray-600">Pending Invites</p>
+                <p className="text-xl font-bold text-blue-600">
+                  {staff.filter((s) => s.status === "invited").length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200">
+        <Card className="border-red-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <MoreHorizontal className="h-5 w-5 text-yellow-600" />
+              <ShieldOff className="h-5 w-5 text-red-600" />
               <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-xl font-bold text-yellow-600">
-                  {staff.filter((s) => s.status === "pending").length}
+                <p className="text-sm text-gray-600">Suspended</p>
+                <p className="text-xl font-bold text-red-600">
+                  {staff.filter((s) => s.status === "suspended").length}
                 </p>
               </div>
             </div>
@@ -337,7 +331,7 @@ const ManageStaffPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-4">
             <div>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -372,23 +366,7 @@ const ManageStaffPage = () => {
               <SelectContent>
                 {roles.map((role) => (
                   <SelectItem key={role} value={role}>
-                    {role === "all" ? "All Roles" : role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={departmentFilter}
-              onValueChange={setDepartmentFilter}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept === "all" ? "All Departments" : dept}
+                    {role === "all" ? "All Roles" : roleLabels[role] || role}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -400,7 +378,6 @@ const ManageStaffPage = () => {
                 setSearchTerm("");
                 setStatusFilter("all");
                 setRoleFilter("all");
-                setDepartmentFilter("all");
               }}
             >
               <RotateCcw className="mr-2 h-4 w-4" />
@@ -423,10 +400,9 @@ const ManageStaffPage = () => {
                   <TableHead>Staff Member</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Employee ID</TableHead>
-                  <TableHead>Shift</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Last Active</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -435,27 +411,31 @@ const ManageStaffPage = () => {
                   <TableRow key={member.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div>
-                        <p className="font-medium">{member.fullName}</p>
+                        <p className="font-medium">{member.full_name}</p>
                         <p className="text-sm text-gray-500">{member.email}</p>
-                        <p className="text-sm text-gray-500">{member.phone}</p>
+                        {member.phone && (
+                          <p className="text-sm text-gray-500">{member.phone}</p>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell>{member.role}</TableCell>
-                    <TableCell>{member.department}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{member.employeeId}</Badge>
+                      <Badge variant="outline">
+                        {roleLabels[member.role] || member.role}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">{member.shift}</span>
+                      {member.department || <span className="text-gray-400">—</span>}
                     </TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
                     <TableCell>
-                      <span
-                        className={
-                          member.lastLogin === "Never" ? "text-red-500" : ""
-                        }
-                      >
-                        {member.lastLogin}
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Clock className="h-3 w-3" />
+                        {formatDate(member.joined_at)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={!member.last_active_at ? "text-gray-400" : ""}>
+                        {formatDate(member.last_active_at)}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -472,19 +452,13 @@ const ManageStaffPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => openResetPasswordDialog(member)}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
                           onClick={() => handleStatusToggle(member)}
                           className={
                             member.status === "active"
                               ? "text-red-600 hover:text-red-700"
                               : "text-green-600 hover:text-green-700"
                           }
+                          disabled={member.status === "invited"}
                         >
                           {member.status === "active" ? (
                             <ShieldOff className="h-4 w-4" />
@@ -517,13 +491,107 @@ const ManageStaffPage = () => {
         </CardContent>
       </Card>
 
+      {/* Invite Staff Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Invite Staff Member</DialogTitle>
+            <DialogDescription>
+              Send an invitation email to add a new staff member to your hospital.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="invite-name">Full Name *</Label>
+              <Input
+                id="invite-name"
+                value={inviteForm.full_name}
+                onChange={(e) =>
+                  setInviteForm({ ...inviteForm, full_name: e.target.value })
+                }
+                placeholder="John Smith"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="invite-email">Email *</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={inviteForm.email}
+                onChange={(e) =>
+                  setInviteForm({ ...inviteForm, email: e.target.value })
+                }
+                placeholder="john.smith@email.com"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="invite-role">Role *</Label>
+              <Select
+                value={inviteForm.role}
+                onValueChange={(value) =>
+                  setInviteForm({ ...inviteForm, role: value })
+                }
+              >
+                <SelectTrigger id="invite-role">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.filter(r => r !== "all").map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {roleLabels[role] || role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="invite-department">Department</Label>
+              <Input
+                id="invite-department"
+                value={inviteForm.department}
+                onChange={(e) =>
+                  setInviteForm({ ...inviteForm, department: e.target.value })
+                }
+                placeholder="e.g., Emergency, Cardiology"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setInviteDialogOpen(false)}
+              disabled={isInviting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleInviteStaff}
+              className="bg-[#20B2AA] hover:bg-[#1a9a91]"
+              disabled={isInviting}
+            >
+              {isInviting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Invitation
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {selectedStaff?.fullName}? This
+              Are you sure you want to remove {selectedStaff?.full_name}? This
               action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -536,36 +604,6 @@ const ManageStaffPage = () => {
             </Button>
             <Button variant="destructive" onClick={handleDeleteStaff}>
               Delete Staff
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reset Password Dialog */}
-      <Dialog
-        open={resetPasswordDialogOpen}
-        onOpenChange={setResetPasswordDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>
-              Send a password reset email to {selectedStaff?.fullName} at{" "}
-              {selectedStaff?.email}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setResetPasswordDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleResetPassword}
-              className="bg-[#20B2AA] hover:bg-[#1a9a91]"
-            >
-              Send Reset Email
             </Button>
           </DialogFooter>
         </DialogContent>

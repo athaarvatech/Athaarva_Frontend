@@ -10,6 +10,9 @@ import { EncounterHeader } from "./components/EncounterHeader";
 import { SmartDocumentationPanel } from "./components/SmartDocumentationPanel";
 import { EHRIntegrationPanel } from "./components/EHRIntegrationPanel";
 import { EPrescriptionPanel } from "./components/EPrescriptionPanel";
+import { LabOrderPanel } from "./components/LabOrderPanel";
+import { FollowUpScheduler } from "./components/FollowUpScheduler";
+import { ConsultationSummary } from "./components/ConsultationSummary";
 
 // Import context provider
 import { ConsultationProvider } from "./context/ConsultationContext";
@@ -45,7 +48,7 @@ export function ConsultationPage() {
                     onValueChange={setActiveTab}
                     className="w-full sm:w-auto"
                   >
-                    <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">
+                    <TabsList className="grid w-full grid-cols-6 bg-gray-100 p-1 rounded-lg">
                       <TabsTrigger
                         value="documentation"
                         className="text-xs sm:text-sm py-2"
@@ -59,10 +62,28 @@ export function ConsultationPage() {
                         💊 Rx
                       </TabsTrigger>
                       <TabsTrigger
+                        value="labs"
+                        className="text-xs sm:text-sm py-2"
+                      >
+                        🧪 Labs
+                      </TabsTrigger>
+                      <TabsTrigger
                         value="ehr"
                         className="text-xs sm:text-sm py-2"
                       >
                         📋 Records
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="followup"
+                        className="text-xs sm:text-sm py-2"
+                      >
+                        📅 Follow-up
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="summary"
+                        className="text-xs sm:text-sm py-2"
+                      >
+                        ✅ Summary
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -118,6 +139,42 @@ export function ConsultationPage() {
                     <EHRIntegrationPanel />
                   </div>
                 </Card>
+
+                {/* Lab & Diagnostic Orders */}
+                <Card className="shadow-sm border border-gray-200">
+                  <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-amber-100">
+                    <h3 className="text-lg font-semibold text-[#006D77] flex items-center gap-2">
+                      🧪 Lab & Diagnostic Orders
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <LabOrderPanel />
+                  </div>
+                </Card>
+
+                {/* Follow-Up Scheduling */}
+                <Card className="shadow-sm border border-gray-200">
+                  <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-cyan-50 to-cyan-100">
+                    <h3 className="text-lg font-semibold text-[#006D77] flex items-center gap-2">
+                      📅 Follow-Up Scheduling
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <FollowUpScheduler />
+                  </div>
+                </Card>
+
+                {/* Consultation Summary */}
+                <Card className="shadow-sm border border-gray-200">
+                  <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-emerald-100">
+                    <h3 className="text-lg font-semibold text-[#006D77] flex items-center gap-2">
+                      ✅ Consultation Summary
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <ConsultationSummary />
+                  </div>
+                </Card>
               </div>
             ) : (
               /* Mobile/Tablet Layout - Tabbed Interface */
@@ -157,6 +214,45 @@ export function ConsultationPage() {
                     </div>
                     <div className="p-4">
                       <EHRIntegrationPanel />
+                    </div>
+                  </Card>
+                )}
+
+                {activeTab === "labs" && (
+                  <Card className="shadow-sm border border-gray-200">
+                    <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-amber-100">
+                      <h3 className="font-semibold text-[#006D77] flex items-center gap-2">
+                        🧪 Lab & Diagnostic Orders
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <LabOrderPanel />
+                    </div>
+                  </Card>
+                )}
+
+                {activeTab === "followup" && (
+                  <Card className="shadow-sm border border-gray-200">
+                    <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-cyan-50 to-cyan-100">
+                      <h3 className="font-semibold text-[#006D77] flex items-center gap-2">
+                        📅 Follow-Up Scheduling
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <FollowUpScheduler />
+                    </div>
+                  </Card>
+                )}
+
+                {activeTab === "summary" && (
+                  <Card className="shadow-sm border border-gray-200">
+                    <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-emerald-100">
+                      <h3 className="font-semibold text-[#006D77] flex items-center gap-2">
+                        ✅ Consultation Summary
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <ConsultationSummary />
                     </div>
                   </Card>
                 )}

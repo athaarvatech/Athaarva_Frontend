@@ -4,14 +4,15 @@ import ProductDetailClient from './ProductDetailClient';
 import { ProductService } from '../../lib/products';
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     handle: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   try {
-    const product = await ProductService.getProductByHandle(params.handle);
+    const resolvedParams = await params;
+    const product = await ProductService.getProductByHandle(resolvedParams.handle);
     
     if (!product) {
       return {
@@ -37,7 +38,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   try {
-    const product = await ProductService.getProductByHandle(params.handle);
+    const resolvedParams = await params;
+    const product = await ProductService.getProductByHandle(resolvedParams.handle);
 
     if (!product) {
       notFound();

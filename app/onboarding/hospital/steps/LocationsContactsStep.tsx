@@ -37,18 +37,18 @@ export default function LocationsContactsStep() {
       is_headquarters: locations.length === 0,
     };
 
-    updateData('locations', { locations: [...locations, newLocation] } as any);
+    updateData('locations', [...locations, newLocation]);
   };
 
   const updateLocation = (id: string, updates: Partial<LocationData>) => {
     const updatedLocations = locations.map(loc =>
       loc.id === id ? { ...loc, ...updates } : loc
     );
-    updateData('locations', updatedLocations as any);
+    updateData('locations', updatedLocations);
   };
 
   const removeLocation = (id: string) => {
-    updateData('locations', locations.filter(loc => loc.id !== id) as any);
+    updateData('locations', locations.filter(loc => loc.id !== id));
   };
 
   const handleGeocode = async (id: string, address: string) => {

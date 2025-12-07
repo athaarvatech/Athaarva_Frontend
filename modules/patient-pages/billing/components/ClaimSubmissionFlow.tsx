@@ -632,3 +632,5 @@ export function ClaimSubmissionFlow({ onClose }: { onClose: () => void }) {
     </Card>
   );
 }
+
+export default ClaimSubmissionFlow;

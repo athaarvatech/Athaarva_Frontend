@@ -249,7 +249,7 @@ export interface HospitalOnboardingContextType {
   getStepCompletion: () => { [step: number]: boolean };
   updateData: <T extends keyof HospitalOnboardingData>(
     section: T,
-    updates: Partial<HospitalOnboardingData[T]> | ((prev: HospitalOnboardingData[T]) => Partial<HospitalOnboardingData[T]>)
+    updates: Partial<HospitalOnboardingData[T]> | HospitalOnboardingData[T] | ((prev: HospitalOnboardingData[T]) => HospitalOnboardingData[T])
   ) => void;
   setCurrentStep: (step: number) => void;
   nextStep: () => void;
@@ -429,12 +429,24 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
 
   const updateData = useCallback(<T extends keyof HospitalOnboardingData>(
     section: T,
-    updates: Partial<HospitalOnboardingData[T]> | ((prev: HospitalOnboardingData[T]) => Partial<HospitalOnboardingData[T]>)
+    updates: Partial<HospitalOnboardingData[T]> | HospitalOnboardingData[T] | ((prev: HospitalOnboardingData[T]) => HospitalOnboardingData[T])
   ) => {
     setData((prev) => {
-      const updatedSection = typeof updates === 'function'
-        ? { ...prev[section], ...updates(prev[section]) }
-        : { ...prev[section], ...updates };
+      let updatedSection: HospitalOnboardingData[T];
+      
+      if (typeof updates === 'function') {
+        // Function update - call it with previous value
+        updatedSection = updates(prev[section]);
+      } else if (Array.isArray(prev[section])) {
+        // For array sections (locations, adminTeam), replace the whole array
+        updatedSection = updates as HospitalOnboardingData[T];
+      } else if (typeof prev[section] === 'object' && prev[section] !== null) {
+        // For object sections, merge updates
+        updatedSection = { ...prev[section], ...updates } as HospitalOnboardingData[T];
+      } else {
+        // Fallback: direct replacement
+        updatedSection = updates as HospitalOnboardingData[T];
+      }
 
       return {
         ...prev,
@@ -648,7 +660,28 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
 
       if (savedData) {
         const parsed = JSON.parse(savedData) as HospitalOnboardingData;
-        setData(parsed);
+        // Ensure arrays are properly initialized (for backward compatibility with old localStorage data)
+        setData({
+          ...initialData,
+          ...parsed,
+          locations: Array.isArray(parsed.locations) ? parsed.locations : [],
+          siteContent: {
+            ...initialData.siteContent,
+            ...parsed.siteContent,
+            testimonials: Array.isArray(parsed.siteContent?.testimonials) ? parsed.siteContent.testimonials : [],
+          },
+          leadershipTeam: {
+            ...initialData.leadershipTeam,
+            ...parsed.leadershipTeam,
+            leadership_cards: Array.isArray(parsed.leadershipTeam?.leadership_cards) ? parsed.leadershipTeam.leadership_cards : [],
+          },
+          compliance: {
+            ...initialData.compliance,
+            ...parsed.compliance,
+            documents: Array.isArray(parsed.compliance?.documents) ? parsed.compliance.documents : [],
+            consent_templates: Array.isArray(parsed.compliance?.consent_templates) ? parsed.compliance.consent_templates : [],
+          },
+        });
       }
       if (savedStep) {
         const parsedStep = parseInt(savedStep, 10);
@@ -686,6 +719,13 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   // ============================================================================
 
   const buildSubmissionPayload = useCallback(() => {
+    // Ensure arrays are safely accessed
+    const locations = Array.isArray(data.locations) ? data.locations : [];
+    const testimonials = Array.isArray(data.siteContent?.testimonials) ? data.siteContent.testimonials : [];
+    const leadershipCards = Array.isArray(data.leadershipTeam?.leadership_cards) ? data.leadershipTeam.leadership_cards : [];
+    const complianceDocs = Array.isArray(data.compliance?.documents) ? data.compliance.documents : [];
+    const consentTemplates = Array.isArray(data.compliance?.consent_templates) ? data.compliance.consent_templates : [];
+
     return {
       invitation_token: data.invitation.token,
       template: {
@@ -694,7 +734,7 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         preview_snapshot_url: data.template.selected_template?.preview_snapshot_url,
       },
       organization_profile: data.organizationProfile,
-      locations: data.locations.map(loc => ({
+      locations: locations.map(loc => ({
         ...loc,
         profile_photo_file: undefined, // Remove file objects
       })),
@@ -708,14 +748,14 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       },
       site_content: {
         ...data.siteContent,
-        testimonials: data.siteContent.testimonials.map(t => ({
+        testimonials: testimonials.map(t => ({
           ...t,
           consent_file: undefined,
         })),
       },
       services_pricing: data.servicesPricing,
       leadership_team: {
-        leadership_cards: data.leadershipTeam.leadership_cards.map(card => ({
+        leadership_cards: leadershipCards.map(card => ({
           ...card,
           profile_photo_file: undefined,
         })),
@@ -724,11 +764,11 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       operational_policies: data.operationalPolicies,
       compliance: {
         ...data.compliance,
-        documents: data.compliance.documents.map(doc => ({
+        documents: complianceDocs.map(doc => ({
           ...doc,
           file: undefined,
         })),
-        consent_templates: data.compliance.consent_templates.map(t => ({
+        consent_templates: consentTemplates.map(t => ({
           ...t,
           file: undefined,
         })),

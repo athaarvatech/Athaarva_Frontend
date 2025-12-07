@@ -8,13 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Lock, User, Shield } from 'lucide-react';
-import { SuperAdminAPIService } from '@/lib/super-admin-api';
+import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
+
+// Demo credentials for development
+const DEMO_CREDENTIALS = {
+  email: 'super.admin@athaarva.com',
+  password: 'supersecure',
+} as const;
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated, loading: authLoading } = useSuperAdminAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: DEMO_CREDENTIALS.email,
+    password: DEMO_CREDENTIALS.password,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,41 +30,26 @@ export default function SuperAdminLoginPage() {
 
   // Check if already authenticated
   useEffect(() => {
-    let isActive = true;
-
-    const verifyExistingSession = async () => {
-      if (!SuperAdminAPIService.isAuthenticated()) {
-        if (isActive) {
-          setIsCheckingSession(false);
-        }
-        return;
-      }
-
-      let redirected = false;
-
-      try {
-        await SuperAdminAPIService.getProfile();
-        redirected = true;
+    if (!authLoading) {
+      if (isAuthenticated) {
         router.replace('/super-admin/invites');
-      } catch {
-        SuperAdminAPIService.logout();
-      } finally {
-        if (isActive && !redirected) {
-          setIsCheckingSession(false);
-        }
+      } else {
+        setIsCheckingSession(false);
       }
-    };
-
-    verifyExistingSession();
-
-    return () => {
-      isActive = false;
-    };
-  }, [router]);
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setError(''); // Clear error when user types
+  };
+
+  const handleUseDemoCredentials = () => {
+    setFormData({
+      email: DEMO_CREDENTIALS.email,
+      password: DEMO_CREDENTIALS.password,
+    });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +58,7 @@ export default function SuperAdminLoginPage() {
     setError('');
 
     try {
-      await SuperAdminAPIService.login(formData.email, formData.password);
+      await login(formData.email, formData.password);
       router.push('/super-admin/invites');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -201,10 +193,35 @@ export default function SuperAdminLoginPage() {
             </form>
 
             {/* Security Notice */}
-            <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-              <p className="text-yellow-200 text-sm text-center">
-                🔒 This is a secure administrative portal. All access is logged and monitored.
-              </p>
+            <div className="mt-6 space-y-4">
+              <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80">
+                <p className="font-semibold text-white">Sandbox credentials</p>
+                <p className="text-white/60 text-sm mb-3">Use the demo account below until the real auth service is wired:</p>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-md">
+                    <span className="text-white/60">Email</span>
+                    <code className="text-white font-semibold">{DEMO_CREDENTIALS.email}</code>
+                  </div>
+                  <div className="flex items-center justify-between bg-white/5 px-3 py-2 rounded-md">
+                    <span className="text-white/60">Password</span>
+                    <code className="text-white font-semibold">{DEMO_CREDENTIALS.password}</code>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleUseDemoCredentials}
+                  className="w-full mt-3 border-white/30 text-white hover:bg-white/10"
+                >
+                  Fill form with sandbox credentials
+                </Button>
+              </div>
+
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <p className="text-yellow-200 text-sm text-center">
+                  🔒 This is a secure administrative portal. All access is logged and monitored.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

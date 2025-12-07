@@ -1,23 +1,34 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import AdminTopBar from "./components/AdminTopBar";
 import AdminSidebar from "./components/AdminSidebar";
+import { HospitalAdminAuthProvider, useHospitalAdminAuth } from "@/contexts/HospitalAdminAuthContext";
+import { Loader2 } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const AdminLayout = ({ children }: AdminLayoutProps) => {
+function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading, isAuthenticated } = useHospitalAdminAuth();
 
   // Close mobile menu when pathname changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace("/auth?redirect=/Admin");
+    }
+  }, [loading, isAuthenticated, router]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -26,6 +37,23 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const handleSidebarCollapseChange = (collapsed: boolean) => {
     setIsSidebarCollapsed(collapsed);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-[#007C7C]" />
+          <p className="text-gray-600">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,6 +82,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </main>
       </div>
     </div>
+  );
+}
+
+const AdminLayout = ({ children }: AdminLayoutProps) => {
+  return (
+    <HospitalAdminAuthProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </HospitalAdminAuthProvider>
   );
 };
 

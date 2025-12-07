@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, XCircle, Clock, Building2 } from 'lucide-react';
-import { SuperAdminAPIService, HospitalOnboardingAPIService } from '@/lib/super-admin-api';
+import { SuperAdminAPIService } from '@/lib/super-admin-api';
 import { HospitalOnboardingProvider } from '@/contexts/HospitalOnboardingContext';
 
 // Import hospital onboarding components

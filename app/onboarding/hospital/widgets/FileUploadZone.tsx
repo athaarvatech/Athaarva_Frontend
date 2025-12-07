@@ -97,17 +97,20 @@ export function FileUploadZone({
     if (onUploadComplete) {
       setIsUploading(true);
       setUploadProgress(0);
+      let progress = 0;
 
       const interval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsUploading(false);
+        progress += 10;
+        setUploadProgress(progress);
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setIsUploading(false);
+          // Use setTimeout to defer the callback and avoid setState during render
+          setTimeout(() => {
             onUploadComplete(`/uploads/${file.name}`);
-            return 100;
-          }
-          return prev + 10;
-        });
+          }, 0);
+        }
       }, 200);
     }
   }, [accept, maxSizeMB, preview, onFileSelect, onUploadComplete]);
