@@ -39,19 +39,21 @@ export type TemplateBlueprint = {
     heading: string;
     body: string;
   };
-  specialties: Array<{ icon: string; title: string; description: string }>;
-  differentiators: Array<{ title: string; description: string }>;
+  specialties: Array<{ name: string; icon: string; description: string }>;
+  differentiators: Array<{ title: string; description: string; icon: string }>;
   doctors: Array<{
     name: string;
+    title: string;
     specialty: string;
     description: string;
     mediaLabel: string;
     photo?: UploadedImageData;
   }>;
   testimonials: Array<{
+    name: string;
     quote: string;
-    patient: string;
-    procedure: string;
+    rating: number;
+    location: string;
   }>;
   facilityHighlights: Array<{
     title: string;
@@ -60,13 +62,27 @@ export type TemplateBlueprint = {
   }>;
   programs: Array<{ title: string; meta: string; description: string }>;
   footer: {
-    contact: {
-      phone: string;
-      email: string;
-      location: string;
-    };
-    quickLinks: string[];
+    tagline: string;
+    copyright: string;
+    links: Array<{ label: string; href: string }>;
   };
+  about?: {
+    title: string;
+    subtitle: string;
+    description: string;
+    highlights: Array<{ label: string; value: string }>;
+  };
+  infrastructureCards?: Array<{ title: string; description: string; icon: string }>;
+  centersOfExcellence?: Array<{ name: string; icon: string; description: string }>;
+  services?: Array<{ name: string; icon: string; description: string }>;
+  internationalPatients?: {
+    title: string;
+    description: string;
+    features: Array<string>;
+  };
+  news?: Array<{ title: string; date: string; excerpt: string; image: string }>;
+  breakthroughCases?: Array<{ title: string; description: string; doctor: string; outcome: string }>;
+  faqs?: Array<{ question: string; answer: string }>;
 };
 
 export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
@@ -99,6 +115,7 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       heading: '"Space Grotesk", Inter, sans-serif',
       body: 'Inter, "Noto Sans", system-ui, sans-serif',
     },
+    typography: { heading: 'font-sans font-bold', body: 'font-sans' },
     specialties: [
       {
         icon: "🫀",
@@ -248,6 +265,7 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       heading: '"Sora", "Inter", sans-serif',
       body: 'Inter, "IBM Plex Sans", system-ui, sans-serif',
     },
+    typography: { heading: 'font-sans font-bold', body: 'font-sans' },
     specialties: [
       {
         icon: "💓",
@@ -392,6 +410,7 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       heading: '"Playfair Display", "IBM Plex Serif", serif',
       body: '"Source Sans Pro", system-ui, sans-serif',
     },
+    typography: { heading: 'font-serif font-bold', body: 'font-sans' },
     specialties: [
       {
         icon: "🫁",
@@ -508,3 +527,6 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
     },
   },
 };
+
+// Alias export for backwards compatibility
+export const TEMPLATE_BLUEPRINTS = templateBlueprints;

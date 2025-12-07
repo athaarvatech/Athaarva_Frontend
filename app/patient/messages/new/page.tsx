@@ -1,22 +1,32 @@
-import { useState } from "react";
-import { Textarea, Button } from "@components/ui";
-import { Sparkles, Paperclip, X, Send } from "@components/icons";
+"use client";
+
+import { useState, ChangeEvent } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Paperclip, X, Send } from "lucide-react";
+
+interface FileAttachment {
+  name: string;
+  size: number;
+  previewUrl: string;
+}
 
 export default function NewMessagePage() {
-  const [selectedRecipient, setSelectedRecipient] = useState(null);
-  const [messageBody, setMessageBody] = useState("");
-  const [aiSymptomSuggestions, setAiSymptomSuggestions] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedRecipient, setSelectedRecipient] = useState<string>("");
+  const [messageBody, setMessageBody] = useState<string>("");
+  const [aiSymptomSuggestions, setAiSymptomSuggestions] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<FileAttachment[]>([]);
 
-  const checkForSymptoms = (text) => {
+  const checkForSymptoms = (text: string) => {
     setMessageBody(text);
     // Simulate AI suggestions based on the message body
     const suggestions = ["Fever", "Cough", "Headache"];
     setAiSymptomSuggestions(suggestions);
   };
 
-  const handleFileSelect = (event) => {
-    const files = Array.from(event.target.files).map((file) => ({
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+    const files: FileAttachment[] = Array.from(event.target.files).map((file) => ({
       name: file.name,
       size: file.size,
       previewUrl: URL.createObjectURL(file),
@@ -24,7 +34,7 @@ export default function NewMessagePage() {
     setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
-  const removeFile = (index) => {
+  const removeFile = (index: number) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
@@ -105,7 +115,7 @@ export default function NewMessagePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => document.getElementById("file-upload").click()}
+                onClick={() => document.getElementById("file-upload")?.click()}
               >
                 <Paperclip className="mr-2 h-4 w-4" />
                 Select Files

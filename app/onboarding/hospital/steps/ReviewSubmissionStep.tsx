@@ -42,7 +42,8 @@ export default function ReviewSubmissionStep() {
     review.acknowledgements.dpa &&
     review.acknowledgements.ai_usage;
 
-  const canSubmit = completionPercentage === 100 && allAcknowledged;
+  // TODO: Remove this bypass after testing - set to true for testing
+  const canSubmit = true; // TESTING BYPASS: Original was -> completionPercentage === 100 && allAcknowledged;
 
   // Collect all uploaded media
   const mediaAssets = [

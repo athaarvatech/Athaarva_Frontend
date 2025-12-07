@@ -58,3 +58,13 @@ export type {
   StaffInviteRequest,
   DashboardStats,
 } from './hospital-admin';
+
+export { teamAPI } from './team';
+export type {
+  TeamMember,
+  InvitationRequest,
+  BulkInvitationRequest,
+  PendingInvitation,
+  InvitationValidationResponse,
+  TeamStats,
+} from './team';

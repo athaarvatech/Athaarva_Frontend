@@ -6,8 +6,10 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
+import PatientAppointmentService, { Appointment as ApiAppointment } from "@/lib/services/PatientAppointmentService";
 
 // Define types for our context - aligned with backend UUID architecture
 export interface Appointment {
@@ -66,14 +68,16 @@ interface AppointmentContextType {
     id: string, // UUID only
     updatedData: Partial<Appointment>
   ) => void;
-  cancelAppointment: (id: string) => void; // UUID only
+  cancelAppointment: (id: string, reason?: string) => Promise<void>; // UUID only
   deleteAppointment: (id: string) => void; // UUID only
+  rescheduleAppointment: (id: string, newDate: string, newTime: string, reason?: string) => Promise<void>; // UUID only
   getAppointmentById: (id: string) => Appointment | undefined; // UUID only
   navigateToAppointmentDetails: (id: string) => void; // UUID only
   navigateToBooking: () => void;
   upcomingAppointments: Appointment[];
   pastAppointments: Appointment[];
   loadingAppointments: boolean;
+  refreshAppointments: () => Promise<void>;
 }
 
 // Create the context
@@ -93,11 +97,76 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        // In a real app, this would be an API call
-        // For now, we'll use mock data or localStorage
+        // Get patient ID from session/auth - using placeholder for now
+        // In production, this would come from AuthContext
+        const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+        
+        if (patientId) {
+          // Fetch from API
+          const [upcomingResult, pastResult] = await Promise.all([
+            PatientAppointmentService.getUpcomingAppointments(patientId, 20).catch(() => null),
+            PatientAppointmentService.getPastAppointments(patientId, { limit: 50 }).catch(() => null),
+          ]);
+
+          // Handle the different return types - using explicit any to handle API response shape
+          /* eslint-disable @typescript-eslint/no-explicit-any */
+          const upcomingList: any[] = upcomingResult ? (Array.isArray(upcomingResult) ? upcomingResult : []) : [];
+          const pastList: any[] = pastResult ? (Array.isArray(pastResult) ? pastResult : (pastResult?.appointments || [])) : [];
+          /* eslint-enable @typescript-eslint/no-explicit-any */
+
+          // Transform API response to Appointment format used by context
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transformAppointment = (apt: any): Appointment => ({
+            id: apt.id,
+            patient_id: apt.patient_id,
+            doctor_id: apt.doctor_id,
+            tenant_id: apt.hospital_id,
+            title: apt.reason || 'Appointment',
+            date: new Date(apt.appointment_date),
+            time: apt.start_time || '',
+            type: apt.appointment_type === 'telemedicine' ? 'video' : 'in-person',
+            status: apt.status as Appointment['status'],
+            location: apt.hospital?.address || null,
+            notes: apt.notes || '',
+            reason: apt.reason || '',
+            doctor: apt.doctor?.name || '',
+            doctorPhoto: apt.doctor?.profile_image || '',
+            specialty: apt.doctor?.specialty || '',
+            duration: 30, // Default duration
+            created_at: apt.created_at,
+            updated_at: apt.updated_at,
+          });
+
+          const allAppointments = [
+            ...upcomingList.map(transformAppointment),
+            ...pastList.map(transformAppointment),
+          ];
+
+          setAppointments(allAppointments);
+
+          // Also store in localStorage for offline access
+          localStorage.setItem("appointments", JSON.stringify(allAppointments));
+        } else {
+          // No patient ID - fallback to localStorage
+          const storedAppointments = localStorage.getItem("appointments");
+          if (storedAppointments) {
+            const parsedAppointments = JSON.parse(
+              storedAppointments,
+              (key, value) => {
+                if (key === "date" || key === "startTime" || key === "endTime") {
+                  return new Date(value);
+                }
+                return value;
+              }
+            );
+            setAppointments(parsedAppointments);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch appointments from API:", error);
+        // Fallback to localStorage if API fails
         const storedAppointments = localStorage.getItem("appointments");
         if (storedAppointments) {
-          // Parse dates from string to Date objects
           const parsedAppointments = JSON.parse(
             storedAppointments,
             (key, value) => {
@@ -108,14 +177,7 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
             }
           );
           setAppointments(parsedAppointments);
-        } else {
-          // Use mock data initially
-          // This would be your API call in a real application
-          const mockAppointments: Appointment[] = [];
-          setAppointments(mockAppointments);
         }
-      } catch (error) {
-        console.error("Failed to fetch appointments:", error);
       } finally {
         setLoadingAppointments(false);
       }
@@ -201,10 +263,92 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   // Cancel an appointment
-  const cancelAppointment = (id: string) => {
-    // UUID only
-    updateAppointment(id, { status: "cancelled" });
-  };
+  const cancelAppointment = useCallback(async (id: string, reason: string = "Cancelled by patient") => {
+    try {
+      // Call API to cancel
+      await PatientAppointmentService.cancelAppointment(id, { reason });
+      // Update local state
+      updateAppointment(id, { status: "cancelled" });
+    } catch (error) {
+      console.error("Failed to cancel appointment via API:", error);
+      // Still update local state for offline support
+      updateAppointment(id, { status: "cancelled" });
+    }
+  }, []);
+
+  // Reschedule an appointment
+  const rescheduleAppointment = useCallback(async (id: string, newDate: string, newTime: string, reason?: string) => {
+    try {
+      // Call API to reschedule
+      const result = await PatientAppointmentService.rescheduleAppointment(id, { 
+        new_date: newDate, 
+        new_time: newTime, 
+        reason 
+      });
+      // Update local state with new date/time
+      updateAppointment(id, { 
+        date: new Date(result.appointment_date),
+        time: result.start_time,
+        status: 'scheduled'
+      });
+    } catch (error) {
+      console.error("Failed to reschedule appointment via API:", error);
+      throw error;
+    }
+  }, []);
+
+  // Refresh appointments from API
+  const refreshAppointments = useCallback(async () => {
+    setLoadingAppointments(true);
+    try {
+      const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+      if (patientId) {
+        const [upcomingResult, pastResult] = await Promise.all([
+          PatientAppointmentService.getUpcomingAppointments(patientId, 20).catch(() => null),
+          PatientAppointmentService.getPastAppointments(patientId, { limit: 50 }).catch(() => null),
+        ]);
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const upcomingList: any[] = upcomingResult ? (Array.isArray(upcomingResult) ? upcomingResult : []) : [];
+        const pastList: any[] = pastResult ? (Array.isArray(pastResult) ? pastResult : (pastResult?.appointments || [])) : [];
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformAppointment = (apt: any): Appointment => ({
+          id: apt.id,
+          patient_id: apt.patient_id,
+          doctor_id: apt.doctor_id,
+          tenant_id: apt.hospital_id,
+          title: apt.reason || 'Appointment',
+          date: new Date(apt.appointment_date),
+          time: apt.start_time || '',
+          type: apt.appointment_type === 'telemedicine' ? 'video' : 'in-person',
+          status: apt.status as Appointment['status'],
+          location: apt.hospital?.address || null,
+          notes: apt.notes || '',
+          reason: apt.reason || '',
+          doctor: apt.doctor?.name || '',
+          doctorPhoto: apt.doctor?.profile_image || '',
+          specialty: apt.doctor?.specialty || '',
+          duration: 30,
+          created_at: apt.created_at,
+          updated_at: apt.updated_at,
+        });
+
+        const allAppointments = [
+          ...upcomingList.map(transformAppointment),
+          ...pastList.map(transformAppointment),
+        ];
+
+        setAppointments(allAppointments);
+        localStorage.setItem("appointments", JSON.stringify(allAppointments));
+      }
+    } catch (error) {
+      console.error("Failed to refresh appointments:", error);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  }, []);
 
   // Delete an appointment
   const deleteAppointment = (id: string) => {
@@ -237,12 +381,14 @@ export const AppointmentProvider: React.FC<{ children: ReactNode }> = ({
     updateAppointment,
     cancelAppointment,
     deleteAppointment,
+    rescheduleAppointment,
     getAppointmentById,
     navigateToAppointmentDetails,
     navigateToBooking,
     upcomingAppointments,
     pastAppointments,
     loadingAppointments,
+    refreshAppointments,
   };
 
   return (

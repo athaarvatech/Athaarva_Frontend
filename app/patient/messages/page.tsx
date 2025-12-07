@@ -1,48 +1,26 @@
 "use client";
 
-import React from "react";
-import { MessageSquare } from "lucide-react";
-
-export default function MessagesPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-        <h2 className="text-lg font-medium text-gray-600 mb-2">
-          Messages Feature Under Development
-        </h2>
-        <p className="text-gray-500">
-          This feature is currently being updated and will be available soon.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/* 
-ORIGINAL COMPONENT - COMMENTED OUT FOR FUTURE REFERENCE
-
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   MessageSquare, 
   Search, 
-  Filter, 
   PlusCircle, 
   Paperclip, 
   Send, 
   ChevronLeft, 
-  Image, 
-  Sparkles, 
+  Image as ImageIcon,
   FileText,
-  Clock, 
-  Calendar,
   MoreVertical,
   Phone,
   Video,
   Star,
   StarOff,
-  Trash
+  Clock,
+  Check,
+  CheckCheck,
+  Smile,
+  X
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,9 +32,178 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format, formatDistanceToNow } from 'date-fns';
+
+// Types
+interface Message {
+  id: string;
+  sender: 'patient' | 'doctor' | 'staff';
+  content: string;
+  timestamp: Date;
+  status: 'sending' | 'sent' | 'delivered' | 'read';
+  attachment?: {
+    name: string;
+    type: string;
+    size: string;
+    url?: string;
+  };
+}
+
+interface Conversation {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  timestamp: Date;
+  unread: boolean;
+  unreadCount: number;
+  isStarred: boolean;
+  isOnline: boolean;
+  role: string;
+  messages: Message[];
+}
+
+// Mock data
+const mockConversations: Conversation[] = [
+  {
+    id: '1',
+    name: 'Dr. Sarah Johnson',
+    avatar: '/avatars/dr-johnson.png',
+    lastMessage: 'Your blood test results look normal. Let me know if you have any questions.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 30),
+    unread: true,
+    unreadCount: 2,
+    isStarred: false,
+    isOnline: true,
+    role: 'Cardiologist',
+    messages: [
+      {
+        id: '101',
+        sender: 'doctor',
+        content: 'Hello! I hope you are feeling better today. I\'ve reviewed your test results.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60),
+        status: 'read'
+      },
+      {
+        id: '102',
+        sender: 'patient',
+        content: 'Hi Dr. Johnson, thank you for checking. I\'m feeling much better, just a bit tired still.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 50),
+        status: 'read'
+      },
+      {
+        id: '103',
+        sender: 'doctor',
+        content: 'Your blood test results look normal. Let me know if you have any questions.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 30),
+        status: 'read'
+      }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Dr. Michael Chen',
+    avatar: '/avatars/dr-chen.png',
+    lastMessage: 'Please make sure to take the medication as prescribed.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
+    unread: false,
+    unreadCount: 0,
+    isStarred: true,
+    isOnline: false,
+    role: 'Primary Care',
+    messages: [
+      {
+        id: '201',
+        sender: 'doctor',
+        content: 'I\'ve prescribed a new medication for your hypertension.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
+        status: 'read',
+        attachment: {
+          name: 'Prescription.pdf',
+          type: 'application/pdf',
+          size: '156 KB'
+        }
+      },
+      {
+        id: '202',
+        sender: 'patient',
+        content: 'Thank you, Dr. Chen. I\'ll pick it up today. How often should I take it?',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3.5),
+        status: 'read'
+      },
+      {
+        id: '203',
+        sender: 'doctor',
+        content: 'Please make sure to take the medication as prescribed.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
+        status: 'read'
+      }
+    ]
+  },
+  {
+    id: '3',
+    name: 'Front Desk',
+    avatar: '/avatars/nurse-williams.png',
+    lastMessage: 'Your appointment has been confirmed for tomorrow at 10:00 AM.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
+    unread: false,
+    unreadCount: 0,
+    isStarred: false,
+    isOnline: true,
+    role: 'Hospital Staff',
+    messages: [
+      {
+        id: '301',
+        sender: 'staff',
+        content: 'Hello! I wanted to confirm your appointment with Dr. Johnson.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 9),
+        status: 'read'
+      },
+      {
+        id: '302',
+        sender: 'patient',
+        content: 'Hi, yes I can make it. What time is it again?',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8.5),
+        status: 'read'
+      },
+      {
+        id: '303',
+        sender: 'staff',
+        content: 'Your appointment has been confirmed for tomorrow at 10:00 AM.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
+        status: 'read'
+      }
+    ]
+  }
+];
+
+// Mock doctors for new message
+const mockDoctors = [
+  { id: 'd1', name: 'Dr. Sarah Johnson', specialty: 'Cardiologist' },
+  { id: 'd2', name: 'Dr. Michael Chen', specialty: 'Primary Care' },
+  { id: 'd3', name: 'Dr. Emily Roberts', specialty: 'Dermatologist' },
+  { id: 'd4', name: 'Dr. James Wilson', specialty: 'Orthopedist' },
+];
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -66,223 +213,43 @@ export default function MessagesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [messageText, setMessageText] = useState('');
-  const [activeChatId, setActiveChatId] = useState(selectedId || null);
-  const [conversations, setConversations] = useState([]);
-  const [showAIsuggestions, setShowAIsuggestions] = useState(false);
-  const fileInputRef = useRef(null);
-  const messagesEndRef = useRef(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(selectedId || null);
+  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [showNewMessageDialog, setShowNewMessageDialog] = useState(false);
+  const [newMessageDoctor, setNewMessageDoctor] = useState('');
+  const [newMessageSubject, setNewMessageSubject] = useState('');
+  const [newMessageContent, setNewMessageContent] = useState('');
+  const [isSending, setIsSending] = useState(false);
   
-  // Mock conversations data
-  const mockConversations = [
-    {
-      id: '1',
-      name: 'Dr. Sarah Johnson',
-      avatar: '/avatars/dr-johnson.png',
-      lastMessage: 'Your blood test results look normal. Let me know if you have any questions.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      unread: true,
-      isStarred: false,
-      isOnline: false,
-      role: 'Cardiologist',
-      messages: [
-        {
-          id: '101',
-          sender: 'doctor',
-          content: 'Hello Emma, I hope you are feeling better today. Ive reviewed your test results.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60),
-          status: 'read'
-        },
-        {
-          id: '102',
-          sender: 'patient',
-          content: 'Hi Dr. Johnson, thank you for checking. Im feeling much better, just a bit tired still.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 50),
-          status: 'sent'
-        },
-        {
-          id: '103',
-          sender: 'doctor',
-          content: 'Your blood test results look normal. Let me know if you have any questions.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30),
-          status: 'read'
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Dr. Michael Chen',
-      avatar: '/avatars/dr-chen.png',
-      lastMessage: 'Please make sure to take the medication as prescribed, and let me know if you experience any side effects.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-      unread: false,
-      isStarred: true,
-      isOnline: true,
-      role: 'Primary Care',
-      messages: [
-        {
-          id: '201',
-          sender: 'doctor',
-          content: 'Ive prescribed a new medication for your hypertension. Please see the attached prescription.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-          status: 'read',
-          attachment: {
-            name: 'Prescription.pdf',
-            type: 'application/pdf',
-            size: '156 KB'
-          }
-        },
-        {
-          id: '202',
-          sender: 'patient',
-          content: 'Thank you, Dr. Chen. Ill pick it up today. How often should I take it?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3.5),
-          status: 'sent'
-        },
-        {
-          id: '203',
-          sender: 'doctor',
-          content: 'Please make sure to take the medication as prescribed, and let me know if you experience any side effects.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-          status: 'read'
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Nurse Williams',
-      avatar: '/avatars/nurse-williams.png',
-      lastMessage: 'Your appointment with Dr. Johnson has been confirmed for tomorrow at 10:00 AM.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-      unread: false,
-      isStarred: false,
-      isOnline: true,
-      role: 'Nurse Practitioner',
-      messages: [
-        {
-          id: '301',
-          sender: 'other',
-          content: 'Hello Emma, I wanted to confirm your appointment with Dr. Johnson.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 9),
-          status: 'read'
-        },
-        {
-          id: '302',
-          sender: 'patient',
-          content: 'Hi Nurse Williams, yes I can make it. What time is it again?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8.5),
-          status: 'sent'
-        },
-        {
-          id: '303',
-          sender: 'other',
-          content: 'Your appointment with Dr. Johnson has been confirmed for tomorrow at 10:00 AM.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-          status: 'read'
-        }
-      ]
-    }
-  ];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // AI-suggested responses
-  const aiSuggestions = [
-    "Yes, I can make it to the appointment tomorrow.",
-    "Ive been experiencing some side effects from the medication.",
-    "Thank you for the information, I'll follow the instructions.",
-  ];
-
-  // Load conversations data
+  // Scroll to bottom when messages change
   useEffect(() => {
-    setConversations(mockConversations);
-    
-    // Set active chat from URL parameter if available
-    if (selectedId) {
-      setActiveChatId(selectedId);
-    }
-  }, [selectedId]);
-
-  // Scroll to bottom of messages
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeChatId, conversations]);
-  
-  // Filter conversations based on search and filter
-  const filteredConversations = conversations.filter(conversation => {
-    const matchesSearch = conversation.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || 
-                          (filter === 'unread' && conversation.unread) || 
-                          (filter === 'starred' && conversation.isStarred);
-    
+
+  // Filter conversations
+  const filteredConversations = conversations.filter(conv => {
+    const matchesSearch = conv.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = 
+      filter === 'all' || 
+      (filter === 'unread' && conv.unread) || 
+      (filter === 'starred' && conv.isStarred);
     return matchesSearch && matchesFilter;
   });
-  
+
   // Get active conversation
   const activeConversation = conversations.find(conv => conv.id === activeChatId);
-  
-  // Send message handler
-  const handleSendMessage = () => {
-    if (!messageText.trim() && !fileInputRef.current?.files?.length) return;
-    
-    const newMessage = {
-      id: `new-${Date.now()}`,
-      sender: 'patient',
-      content: messageText,
-      timestamp: new Date(),
-      status: 'sending'
-    };
-    
-    // Update conversations with the new message
-    setConversations(conversations.map(conv => 
-      conv.id === activeChatId 
-        ? { 
-            ...conv, 
-            messages: [...conv.messages, newMessage],
-            lastMessage: messageText,
-            timestamp: new Date()
-          }
-        : conv
-    ));
-    
-    // Clear input field
-    setMessageText('');
-    setShowAIsuggestions(false);
-    
-    // Simulate message being sent
-    setTimeout(() => {
-      setConversations(conversations.map(conv => 
-        conv.id === activeChatId 
-          ? { 
-              ...conv, 
-              messages: conv.messages.map(msg => 
-                msg.id === newMessage.id ? { ...msg, status: 'sent' } : msg
-              )
-            }
-          : conv
-      ));
-    }, 1000);
-  };
-  
-  // Toggle star status of a conversation
-  const toggleStar = (id) => {
-    setConversations(conversations.map(conv => 
-      conv.id === id ? { ...conv, isStarred: !conv.isStarred } : conv
-    ));
-  };
-  
-  // Mark conversation as read
-  const markAsRead = (id) => {
-    setConversations(conversations.map(conv => 
-      conv.id === id ? { ...conv, unread: false } : conv
-    ));
-  };
-  
-  // Format timestamp for display
-  const formatTimestamp = (date) => {
+
+  // Format timestamp
+  const formatTimestamp = (date: Date) => {
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
     
-    if (diffInHours < 24) {
+    if (diffInHours < 1) {
+      return formatDistanceToNow(date, { addSuffix: true });
+    } else if (diffInHours < 24) {
       return format(date, 'h:mm a');
     } else if (diffInHours < 48) {
       return 'Yesterday';
@@ -291,27 +258,157 @@ export default function MessagesPage() {
     }
   };
 
+  // Send message
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !activeChatId) return;
+    
+    const newMessage: Message = {
+      id: `msg-${Date.now()}`,
+      sender: 'patient',
+      content: messageText,
+      timestamp: new Date(),
+      status: 'sending'
+    };
+
+    // Update conversations
+    setConversations(prev => prev.map(conv => 
+      conv.id === activeChatId
+        ? {
+            ...conv,
+            messages: [...conv.messages, newMessage],
+            lastMessage: messageText,
+            timestamp: new Date()
+          }
+        : conv
+    ));
+
+    setMessageText('');
+
+    // Simulate sending
+    setTimeout(() => {
+      setConversations(prev => prev.map(conv => 
+        conv.id === activeChatId
+          ? {
+              ...conv,
+              messages: conv.messages.map(msg => 
+                msg.id === newMessage.id ? { ...msg, status: 'sent' as const } : msg
+              )
+            }
+          : conv
+      ));
+    }, 500);
+
+    // Simulate delivery
+    setTimeout(() => {
+      setConversations(prev => prev.map(conv => 
+        conv.id === activeChatId
+          ? {
+              ...conv,
+              messages: conv.messages.map(msg => 
+                msg.id === newMessage.id ? { ...msg, status: 'delivered' as const } : msg
+              )
+            }
+          : conv
+      ));
+    }, 1500);
+  };
+
+  // Toggle star
+  const toggleStar = (id: string) => {
+    setConversations(prev => prev.map(conv =>
+      conv.id === id ? { ...conv, isStarred: !conv.isStarred } : conv
+    ));
+  };
+
+  // Mark as read
+  const markAsRead = (id: string) => {
+    setConversations(prev => prev.map(conv =>
+      conv.id === id ? { ...conv, unread: false, unreadCount: 0 } : conv
+    ));
+  };
+
+  // Create new conversation
+  const handleCreateConversation = async () => {
+    if (!newMessageDoctor || !newMessageContent.trim()) return;
+    
+    setIsSending(true);
+    
+    const doctor = mockDoctors.find(d => d.id === newMessageDoctor);
+    if (!doctor) return;
+
+    const newConversation: Conversation = {
+      id: `conv-${Date.now()}`,
+      name: doctor.name,
+      avatar: '',
+      lastMessage: newMessageContent,
+      timestamp: new Date(),
+      unread: false,
+      unreadCount: 0,
+      isStarred: false,
+      isOnline: Math.random() > 0.5,
+      role: doctor.specialty,
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          sender: 'patient',
+          content: newMessageSubject ? `**${newMessageSubject}**\n\n${newMessageContent}` : newMessageContent,
+          timestamp: new Date(),
+          status: 'sent'
+        }
+      ]
+    };
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    setConversations(prev => [newConversation, ...prev]);
+    setActiveChatId(newConversation.id);
+    setShowNewMessageDialog(false);
+    setNewMessageDoctor('');
+    setNewMessageSubject('');
+    setNewMessageContent('');
+    setIsSending(false);
+  };
+
+  // Message status icon
+  const MessageStatus = ({ status }: { status: string }) => {
+    switch (status) {
+      case 'sending':
+        return <Clock className="h-3 w-3 opacity-70" />;
+      case 'sent':
+        return <Check className="h-3 w-3 opacity-70" />;
+      case 'delivered':
+        return <CheckCheck className="h-3 w-3 opacity-70" />;
+      case 'read':
+        return <CheckCheck className="h-3 w-3 text-blue-400" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="h-screen flex flex-col">
-      <div className="container mx-auto p-4 flex-grow flex flex-col md:flex-row h-full max-h-full overflow-hidden">
-        // Sidebar
-        <div className={`w-full md:w-1/3 lg:w-1/4 border-r p-4 ${
-          activeChatId && 'hidden md:block'
+    <div className="h-[calc(100vh-120px)] flex flex-col">
+      <div className="flex flex-col md:flex-row h-full overflow-hidden border rounded-lg bg-white">
+        {/* Sidebar */}
+        <div className={`w-full md:w-80 lg:w-96 border-r flex flex-col ${
+          activeChatId ? 'hidden md:flex' : 'flex'
         }`}>
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-bold text-[#006D77]">Messages</h1>
-            <Link href="/patient/messages/new">
-              <Button className="bg-[#006D77] hover:bg-[#00585F]">
-                <PlusCircle size={16} className="mr-2" />
-                New Message
+          {/* Header */}
+          <div className="p-4 border-b">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-xl font-bold text-[#006D77]">Messages</h1>
+              <Button 
+                className="bg-[#006D77] hover:bg-[#00585F]"
+                onClick={() => setShowNewMessageDialog(true)}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New
               </Button>
-            </Link>
-          </div>
-          
-          // Search and Filter
-          <div className="mb-4">
-            <div className="relative mb-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            </div>
+            
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search conversations..." 
                 className="pl-9"
@@ -320,7 +417,8 @@ export default function MessagesPage() {
               />
             </div>
             
-            <Tabs defaultValue={filter} value={filter} onValueChange={setFilter}>
+            {/* Filter tabs */}
+            <Tabs value={filter} onValueChange={setFilter}>
               <TabsList className="grid grid-cols-3 w-full">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="unread">Unread</TabsTrigger>
@@ -329,311 +427,315 @@ export default function MessagesPage() {
             </Tabs>
           </div>
           
-          // Conversation List
-          <div className="overflow-y-auto h-full pb-20">
+          {/* Conversation List */}
+          <ScrollArea className="flex-1">
             {filteredConversations.length > 0 ? (
-              filteredConversations.map((conversation) => (
-                <div 
-                  key={conversation.id}
-                  className={`p-3 mb-2 rounded-lg cursor-pointer ${
-                    conversation.id === activeChatId 
-                      ? 'bg-[#F0F9FA] border-[#006D77]/20' 
-                      : 'hover:bg-gray-50 border border-transparent'
-                  }`}
-                  onClick={() => {
-                    setActiveChatId(conversation.id);
-                    if (conversation.unread) {
-                      markAsRead(conversation.id);
-                    }
-                    
-                    // Update URL without refresh
-                    router.push(`/patient/messages?id=${conversation.id}`, { scroll: false });
-                  }}
-                >
-                  <div className="flex items-start">
-                    <div className="relative">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={conversation.avatar} alt={conversation.name} />
-                        <AvatarFallback>{conversation.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      {conversation.isOnline && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
-                    </div>
-                    
-                    <div className="ml-3 flex-grow min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium truncate">
-                          {conversation.name}
-                        </h3>
-                        <div className="flex items-center">
-                          <button 
-                            className="p-1 text-gray-400 hover:text-amber-400"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStar(conversation.id);
-                            }}
-                          >
-                            {conversation.isStarred ? (
-                              <Star size={14} className="fill-amber-400 text-amber-400" />
-                            ) : (
-                              <Star size={14} />
+              <div className="p-2">
+                {filteredConversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-1 ${
+                      conv.id === activeChatId
+                        ? 'bg-[#006D77]/10 border border-[#006D77]/20'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => {
+                      setActiveChatId(conv.id);
+                      markAsRead(conv.id);
+                      router.push(`/patient/messages?id=${conv.id}`, { scroll: false });
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={conv.avatar} alt={conv.name} />
+                          <AvatarFallback>{conv.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        {conv.isOnline && (
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className={`font-medium truncate ${conv.unread ? 'text-gray-900' : 'text-gray-700'}`}>
+                            {conv.name}
+                          </h3>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {conv.isStarred && (
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                             )}
-                          </button>
-                          <span className="text-xs text-gray-500 ml-1">
-                            {formatTimestamp(conversation.timestamp)}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500">{conversation.role}</p>
-                      <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
-                    </div>
-                    
-                    {conversation.unread && (
-                      <div className="ml-2 w-2 h-2 rounded-full bg-[#006D77]"></div>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500">No conversations found</p>
-                <Link href="/patient/messages/new">
-                  <Button variant="outline" className="mt-2">
-                    Start a new conversation
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-
-        // Main Chat Area
-        {activeChatId ? (
-          <div className="w-full md:w-2/3 lg:w-3/4 flex flex-col h-full">
-            {activeConversation && (
-              <>
-                // Chat Header
-                <div className="p-4 border-b flex justify-between items-center">
-                  <div className="flex items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="md:hidden mr-2"
-                      onClick={() => {
-                        setActiveChatId(null);
-                        router.push('/patient/messages', { scroll: false });
-                      }}
-                    >
-                      <ChevronLeft size={16} />
-                    </Button>
-                    
-                    <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src={activeConversation.avatar} alt={activeConversation.name} />
-                      <AvatarFallback>{activeConversation.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div>
-                      <h2 className="font-medium">{activeConversation.name}</h2>
-                      <div className="flex items-center">
-                        <span className="text-sm text-gray-500">{activeConversation.role}</span>
-                        {activeConversation.isOnline && (
-                          <Badge className="ml-2 bg-green-100 text-green-800 border-green-200">Online</Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                      <Phone size={18} />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                      <Video size={18} />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                          <MoreVertical size={18} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => toggleStar(activeConversation.id)}>
-                          {activeConversation.isStarred ? (
-                            <>
-                              <StarOff className="mr-2 h-4 w-4" />
-                              <span>Unstar Conversation</span>
-                            </>
-                          ) : (
-                            <>
-                              <Star className="mr-2 h-4 w-4" />
-                              <span>Star Conversation</span>
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Trash className="mr-2 h-4 w-4" />
-                          <span>Delete Conversation</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                
-                // Messages
-                <div className="flex-grow p-4 overflow-y-auto">
-                  <div className="space-y-4">
-                    {activeConversation.messages.map((message) => (
-                      <div 
-                        key={message.id} 
-                        className={`flex ${
-                          message.sender === 'patient' ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        {message.sender !== 'patient' && (
-                          <Avatar className="h-8 w-8 mr-2 mt-1">
-                            <AvatarImage 
-                              src={activeConversation.avatar} 
-                              alt={activeConversation.name} 
-                            />
-                            <AvatarFallback>{activeConversation.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                        )}
-                        
-                        <div className={`max-w-[70%] ${
-                          message.sender === 'patient' 
-                            ? 'bg-[#006D77] text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                            : 'bg-gray-100 text-gray-800 rounded-tl-lg rounded-tr-lg rounded-br-lg'
-                        } p-3 shadow-sm`}>
-                          <div className="mb-1">{message.content}</div>
-                          
-                          {message.attachment && (
-                            <div className="mt-2 bg-white/20 p-2 rounded flex items-center text-sm">
-                              <FileText className="h-4 w-4 mr-2" />
-                              <span>{message.attachment.name}</span>
-                              <span className="ml-auto text-xs opacity-70">{message.attachment.size}</span>
-                            </div>
-                          )}
-                          
-                          <div className="text-right mt-1">
-                            <span className={`text-xs ${
-                              message.sender === 'patient' ? 'text-white/70' : 'text-gray-500'
-                            }`}>
-                              {format(message.timestamp, 'h:mm a')}
-                              {message.sender === 'patient' && (
-                                <span className="ml-1">
-                                  {message.status === 'sending' ? '...' : 
-                                   message.status === 'sent' ? '✓' : 
-                                   message.status === 'delivered' ? '✓✓' : 
-                                   '✓✓'}
-                                </span>
-                              )}
+                            <span className="text-xs text-gray-500">
+                              {formatTimestamp(conv.timestamp)}
                             </span>
                           </div>
                         </div>
+                        <p className="text-xs text-gray-500">{conv.role}</p>
+                        <p className={`text-sm truncate ${conv.unread ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                          {conv.lastMessage}
+                        </p>
                       </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </div>
-                
-                // AI Suggestions
-                {showAIsuggestions && (
-                  <div className="px-4 py-2 border-t border-gray-100">
-                    <div className="flex items-center text-sm text-[#006D77] mb-2">
-                      <Sparkles size={16} className="mr-1" />
-                      <span>AI-suggested responses:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {aiSuggestions.map((suggestion, index) => (
-                        <button
-                          key={index}
-                          className="px-3 py-1.5 bg-[#F0F9FA] text-[#006D77] rounded-full text-sm hover:bg-[#E8F3F4]"
-                          onClick={() => {
-                            setMessageText(suggestion);
-                            setShowAIsuggestions(false);
-                          }}
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
+                      
+                      {conv.unreadCount > 0 && (
+                        <Badge className="bg-[#006D77] text-white h-5 px-1.5 min-w-[20px] justify-center">
+                          {conv.unreadCount}
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                )}
-                
-                // Message Input
-                <div className="p-4 border-t">
-                  <div className="flex items-end gap-2">
-                    <div className="flex-grow relative">
-                      <Input 
-                        placeholder="Type a message..." 
-                        className="pr-10 py-6"
-                        value={messageText}
-                        onChange={(e) => {
-                          setMessageText(e.target.value);
-                          // Show AI suggestions when user starts typing
-                          if (e.target.value && !showAIsuggestions) {
-                            setShowAIsuggestions(true);
-                          } else if (!e.target.value) {
-                            setShowAIsuggestions(false);
-                          }
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleSendMessage();
-                          }
-                        }}
-                      />
-                      <button 
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Paperclip size={18} />
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          multiple
-                          onChange={(e) => {
-                            // Handle file attachment
-                            console.log('Files selected:', e.target.files);
-                            // In a real app, you would upload the files here
-                          }}
-                        />
-                      </button>
-                    </div>
-                    <Button 
-                      className="bg-[#006D77] hover:bg-[#00585F] h-[44px] w-[44px] p-0"
-                      onClick={handleSendMessage}
-                      disabled={!messageText.trim()}
-                    >
-                      <Send size={18} />
-                    </Button>
-                  </div>
-                </div>
-              </>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 px-4">
+                <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500">No conversations found</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => setShowNewMessageDialog(true)}
+                >
+                  Start a new conversation
+                </Button>
+              </div>
             )}
+          </ScrollArea>
+        </div>
+
+        {/* Chat Area */}
+        {activeChatId && activeConversation ? (
+          <div className="flex-1 flex flex-col h-full">
+            {/* Chat Header */}
+            <div className="p-4 border-b flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  onClick={() => {
+                    setActiveChatId(null);
+                    router.push('/patient/messages', { scroll: false });
+                  }}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={activeConversation.avatar} alt={activeConversation.name} />
+                  <AvatarFallback>{activeConversation.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                
+                <div>
+                  <h2 className="font-medium">{activeConversation.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">{activeConversation.role}</span>
+                    {activeConversation.isOnline && (
+                      <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 text-xs">
+                        Online
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon">
+                  <Video className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Phone className="h-5 w-5" />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => toggleStar(activeConversation.id)}>
+                      {activeConversation.isStarred ? (
+                        <>
+                          <StarOff className="h-4 w-4 mr-2" />
+                          Unstar
+                        </>
+                      ) : (
+                        <>
+                          <Star className="h-4 w-4 mr-2" />
+                          Star
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {activeConversation.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.sender === 'patient' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.sender !== 'patient' && (
+                      <Avatar className="h-8 w-8 mr-2">
+                        <AvatarImage src={activeConversation.avatar} />
+                        <AvatarFallback>{activeConversation.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    
+                    <div
+                      className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+                        message.sender === 'patient'
+                          ? 'bg-[#006D77] text-white rounded-br-sm'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      
+                      {message.attachment && (
+                        <div className={`mt-2 p-2 rounded flex items-center gap-2 text-sm ${
+                          message.sender === 'patient' ? 'bg-white/20' : 'bg-white'
+                        }`}>
+                          <FileText className="h-4 w-4" />
+                          <span>{message.attachment.name}</span>
+                          <span className="text-xs opacity-70">{message.attachment.size}</span>
+                        </div>
+                      )}
+                      
+                      <div className={`flex items-center justify-end gap-1 mt-1 text-xs ${
+                        message.sender === 'patient' ? 'text-white/70' : 'text-gray-500'
+                      }`}>
+                        <span>{format(message.timestamp, 'h:mm a')}</span>
+                        {message.sender === 'patient' && <MessageStatus status={message.status} />}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+            
+            {/* Message Input */}
+            <div className="p-4 border-t">
+              <div className="flex items-end gap-2">
+                <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                  <Paperclip className="h-5 w-5" />
+                  <input type="file" ref={fileInputRef} className="hidden" />
+                </Button>
+                
+                <div className="flex-1 relative">
+                  <Input
+                    placeholder="Type a message..."
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    className="pr-10"
+                  />
+                  <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <Button
+                  className="bg-[#006D77] hover:bg-[#00585F]"
+                  onClick={handleSendMessage}
+                  disabled={!messageText.trim()}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="w-full md:w-2/3 lg:w-3/4 hidden md:flex items-center justify-center bg-gray-50 text-center p-8">
-            <div>
+          <div className="flex-1 hidden md:flex items-center justify-center bg-gray-50">
+            <div className="text-center p-8">
               <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-lg font-medium text-gray-600 mb-2">Select a conversation</h2>
-              <p className="text-gray-500 mb-4">Choose a conversation from the list or start a new one</p>
-              <Link href="/patient/messages/new">
-                <Button className="bg-[#006D77] hover:bg-[#00585F]">
-                  <PlusCircle size={16} className="mr-2" />
-                  New Message
-                </Button>
-              </Link>
+              <h2 className="text-lg font-medium text-gray-600 mb-2">
+                Select a conversation
+              </h2>
+              <p className="text-gray-500 mb-4">
+                Choose a conversation or start a new one
+              </p>
+              <Button 
+                className="bg-[#006D77] hover:bg-[#00585F]"
+                onClick={() => setShowNewMessageDialog(true)}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Message
+              </Button>
             </div>
           </div>
         )}
       </div>
+
+      {/* New Message Dialog */}
+      <Dialog open={showNewMessageDialog} onOpenChange={setShowNewMessageDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New Message</DialogTitle>
+            <DialogDescription>
+              Start a conversation with your healthcare provider
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>To</Label>
+              <Select value={newMessageDoctor} onValueChange={setNewMessageDoctor}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select a doctor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockDoctors.map((doctor) => (
+                    <SelectItem key={doctor.id} value={doctor.id}>
+                      {doctor.name} - {doctor.specialty}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label>Subject (optional)</Label>
+              <Input
+                placeholder="Brief subject"
+                value={newMessageSubject}
+                onChange={(e) => setNewMessageSubject(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label>Message</Label>
+              <Textarea
+                placeholder="Type your message..."
+                value={newMessageContent}
+                onChange={(e) => setNewMessageContent(e.target.value)}
+                className="mt-1 min-h-[150px]"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewMessageDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#006D77] hover:bg-[#00585F]"
+              onClick={handleCreateConversation}
+              disabled={!newMessageDoctor || !newMessageContent.trim() || isSending}
+            >
+              {isSending ? 'Sending...' : 'Send Message'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-END OF ORIGINAL COMPONENT
-*/

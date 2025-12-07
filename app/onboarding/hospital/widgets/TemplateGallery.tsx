@@ -103,6 +103,17 @@ const MOCK_TEMPLATES: TemplateData[] = [
       "Faith-driven Health Systems",
     ],
   },
+  {
+    id: 'yashoda-inspired',
+    name: 'Super Specialty Medicity',
+    version: '4.0',
+    preview_snapshot_url: '/templates/yashoda-medicity.jpg',
+    thumbnail_url: '/templates/yashoda-medicity-thumb.jpg',
+    description:
+      'Premium multi-super specialty design inspired by leading hospital chains. Features stats strip, centers of excellence, doctor profiles with booking, international patient services, and breakthrough cases.',
+    supported_modules: ['Centers of Excellence', 'International Patients', 'Robotic Surgery', 'Health Checkups', 'Emergency Services'],
+    recommended_for: ['Super Specialty Hospitals', 'Medical Tourism', 'Corporate Hospitals', 'Multi-chain Networks'],
+  },
 ];
 
 export function TemplateGallery({

@@ -13,16 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { isValidEmail, isValidPhone } from '@/lib/onboarding-utils';
 
-interface TeamMember {
-  id: string;
-  full_name: string;
-  role: string;
-  email: string;
-  phone: string;
-  status: 'pending' | 'invited' | 'active';
-  scope_hint?: string;
-  notes?: string;
-}
+import type { TeamMemberData } from '@/contexts/HospitalOnboardingContextV2';
 
 export default function AdminStaffInvitationsStep() {
   const { data, updateData } = useHospitalOnboarding();
@@ -32,7 +23,7 @@ export default function AdminStaffInvitationsStep() {
 
   // Add team member
   const addTeamMember = () => {
-    const newMember: TeamMember = {
+    const newMember: TeamMemberData = {
       id: `member_${Date.now()}`,
       full_name: '',
       role: '',
@@ -43,25 +34,25 @@ export default function AdminStaffInvitationsStep() {
       notes: '',
     };
 
-    updateData('adminTeam', [...adminTeam, newMember] as any);
+    updateData('adminTeam', [...adminTeam, newMember]);
   };
 
   // Update team member
-  const updateTeamMember = (id: string, updates: Partial<TeamMember>) => {
-    const updatedTeam = adminTeam.map((member: TeamMember) =>
+  const updateTeamMember = (id: string, updates: Partial<TeamMemberData>) => {
+    const updatedTeam = adminTeam.map((member) =>
       member.id === id ? { ...member, ...updates } : member
     );
-    updateData('adminTeam', updatedTeam as any);
+    updateData('adminTeam', updatedTeam);
   };
 
   // Remove team member
   const removeTeamMember = (id: string) => {
-    updateData('adminTeam', adminTeam.filter((m: TeamMember) => m.id !== id) as any);
+    updateData('adminTeam', adminTeam.filter((m) => m.id !== id));
   };
 
   // Apply role preset
   const applyRolePreset = (id: string, presetRole: string) => {
-    const presets: { [key: string]: Partial<TeamMember> } = {
+    const presets: { [key: string]: Partial<TeamMemberData> } = {
       'Hospital Admin': {
         role: 'Hospital Admin',
         scope_hint: 'Full platform access, user management, billing',
@@ -132,7 +123,7 @@ export default function AdminStaffInvitationsStep() {
 
       {/* Team Members List */}
       <AnimatePresence>
-        {adminTeam.map((member: TeamMember, index: number) => (
+        {adminTeam.map((member, index) => (
           <TeamMemberCard
             key={member.id}
             member={member}
@@ -177,11 +168,11 @@ export default function AdminStaffInvitationsStep() {
 
 // Team Member Card Component
 interface TeamMemberCardProps {
-  member: TeamMember;
+  member: TeamMemberData;
   index: number;
   rolePresets: string[];
-  statusOptions: any[];
-  onUpdate: (updates: Partial<TeamMember>) => void;
+  statusOptions: { value: string; label: string; color: string; icon: React.ComponentType<{ className?: string }> }[];
+  onUpdate: (updates: Partial<TeamMemberData>) => void;
   onApplyPreset: (role: string) => void;
   onRemove: () => void;
 }
@@ -366,7 +357,7 @@ function TeamMemberCard({
         <Label>Invitation Status</Label>
         <select
           value={member.status}
-          onChange={(e) => onUpdate({ status: e.target.value as TeamMember['status'] })}
+          onChange={(e) => onUpdate({ status: e.target.value as TeamMemberData['status'] })}
           className={cn(
             "w-full px-3 py-2 rounded-md text-sm font-medium border-0",
             currentStatus.color

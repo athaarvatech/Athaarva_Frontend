@@ -5,9 +5,14 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import PatientMedicalRecordsService, {
+  MedicalRecord as ApiMedicalRecord,
+} from "@/lib/services/PatientMedicalRecordsService";
+import PatientPrescriptionService from "@/lib/services/PatientPrescriptionService";
 
 // Define types for medical records
 export interface MedicalRecord {
@@ -44,16 +49,17 @@ interface MedicalRecordsContextType {
     id: string | number,
     updatedData: Partial<MedicalRecord>
   ) => void;
-  deleteRecord: (id: string | number) => void;
+  deleteRecord: (id: string | number) => Promise<void>;
   addMedication: (medication: Medication) => void;
   updateMedication: (
     id: string | number,
     updatedData: Partial<Medication>
   ) => void;
   deleteMedication: (id: string | number) => void;
-  generateRecordsQR: (duration: string) => string;
+  generateRecordsQR: (duration: string) => Promise<string>;
   navigateToRecordDetails: (id: string | number) => void;
   loadingRecords: boolean;
+  refreshRecords: () => Promise<void>;
 }
 
 // Create the context
@@ -74,7 +80,87 @@ export const MedicalRecordsProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const fetchMedicalData = async () => {
       try {
-        // In a real app, this would be API calls
+        // Get patient ID from session/auth
+        const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+        
+        if (patientId) {
+          // Fetch from API
+          const [recordsResult, medicationsResult] = await Promise.all([
+            PatientMedicalRecordsService.getMedicalRecords(patientId, { limit: 100 }).catch(() => null),
+            PatientPrescriptionService.getMedications(patientId).catch(() => null),
+          ]);
+
+          // Transform API records to context format
+          if (recordsResult?.records) {
+            const transformedRecords: MedicalRecord[] = recordsResult.records.map((record: ApiMedicalRecord) => ({
+              id: record.id,
+              title: record.title,
+              date: new Date(record.record_date),
+              type: record.record_type,
+              provider: record.provider_name,
+              content: record.content || record.description || '',
+              attachments: record.file_url ? [record.file_url] : [],
+              status: record.status,
+              sharedWith: record.shared_with?.map(s => s.shared_with_name) || [],
+            }));
+            setRecords(transformedRecords);
+            localStorage.setItem("medicalRecords", JSON.stringify(transformedRecords));
+          }
+
+          // Transform medications
+          if (medicationsResult) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const medicationsList: any[] = Array.isArray(medicationsResult) 
+              ? medicationsResult 
+              : (medicationsResult?.medications || []);
+            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const transformedMedications: Medication[] = medicationsList.map((med: any) => ({
+              id: med.id,
+              name: med.medication_name || med.name,
+              dosage: med.dosage,
+              frequency: med.frequency,
+              startDate: new Date(med.start_date || med.created_at),
+              endDate: med.end_date ? new Date(med.end_date) : undefined,
+              prescribedBy: med.prescribed_by || med.doctor_name || '',
+              instructions: med.instructions || '',
+              status: med.status || 'active',
+              refillsRemaining: med.refills_remaining,
+            }));
+            setMedications(transformedMedications);
+            localStorage.setItem("medications", JSON.stringify(transformedMedications));
+          }
+        } else {
+          // Fallback to localStorage
+          const storedRecords = localStorage.getItem("medicalRecords");
+          const storedMedications = localStorage.getItem("medications");
+
+          if (storedRecords) {
+            const parsedRecords = JSON.parse(storedRecords, (key, value) => {
+              if (key === "date" || key === "expiresAt") {
+                return new Date(value);
+              }
+              return value;
+            });
+            setRecords(parsedRecords);
+          }
+
+          if (storedMedications) {
+            const parsedMedications = JSON.parse(
+              storedMedications,
+              (key, value) => {
+                if (key === "startDate" || key === "endDate") {
+                  return new Date(value);
+                }
+                return value;
+              }
+            );
+            setMedications(parsedMedications);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch medical data from API:", error);
+        // Fallback to localStorage
         const storedRecords = localStorage.getItem("medicalRecords");
         const storedMedications = localStorage.getItem("medications");
 
@@ -100,8 +186,6 @@ export const MedicalRecordsProvider: React.FC<{ children: ReactNode }> = ({
           );
           setMedications(parsedMedications);
         }
-      } catch (error) {
-        console.error("Failed to fetch medical data:", error);
       } finally {
         setLoadingRecords(false);
       }
@@ -205,9 +289,17 @@ export const MedicalRecordsProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
-  const deleteRecord = (id: string | number) => {
-    setRecords((prev) => prev.filter((record) => record.id !== id));
-  };
+  const deleteRecord = useCallback(async (id: string | number) => {
+    try {
+      // Call API to archive the record
+      await PatientMedicalRecordsService.archiveMedicalRecord(String(id));
+      setRecords((prev) => prev.filter((record) => record.id !== id));
+    } catch (error) {
+      console.error("Failed to delete record via API:", error);
+      // Still update local state for offline support
+      setRecords((prev) => prev.filter((record) => record.id !== id));
+    }
+  }, []);
 
   // Medications CRUD operations
   const addMedication = (medication: Medication) => {
@@ -237,27 +329,116 @@ export const MedicalRecordsProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   // QR code generation for medical records sharing
-  const generateRecordsQR = (duration: string) => {
-    // In a real app, this would generate a secure, time-limited access token
-    const expiration = new Date();
-    switch (duration) {
-      case "24hr":
-        expiration.setHours(expiration.getHours() + 24);
-        break;
-      case "7days":
-        expiration.setDate(expiration.getDate() + 7);
-        break;
-      case "30days":
-        expiration.setDate(expiration.getDate() + 30);
-        break;
-      default:
-        expiration.setHours(expiration.getHours() + 24);
+  const generateRecordsQR = useCallback(async (duration: string): Promise<string> => {
+    const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+    
+    if (!patientId) {
+      // Fallback for offline/demo mode
+      const expiration = new Date();
+      switch (duration) {
+        case "24hr":
+          expiration.setHours(expiration.getHours() + 24);
+          break;
+        case "7days":
+          expiration.setDate(expiration.getDate() + 7);
+          break;
+        case "30days":
+          expiration.setDate(expiration.getDate() + 30);
+          break;
+        default:
+          expiration.setHours(expiration.getHours() + 24);
+      }
+      return `medical-records-access-token-expires-${expiration.toISOString()}`;
     }
 
-    // This would typically return a URL or token
-    // For demo purposes, we'll just return a placeholder
-    return `medical-records-access-token-expires-${expiration.toISOString()}`;
-  };
+    try {
+      // Convert duration string to hours
+      let durationHours = 24;
+      switch (duration) {
+        case "24hr":
+          durationHours = 24;
+          break;
+        case "7days":
+          durationHours = 7 * 24;
+          break;
+        case "30days":
+          durationHours = 30 * 24;
+          break;
+      }
+
+      const result = await PatientMedicalRecordsService.generateShareQR(patientId, {
+        share_all: true,
+        duration_hours: durationHours,
+        access_type: 'view',
+      });
+      
+      return result.share_url || result.qr_code_url || result.access_token;
+    } catch (error) {
+      console.error("Failed to generate QR code via API:", error);
+      // Fallback
+      const expiration = new Date();
+      expiration.setHours(expiration.getHours() + 24);
+      return `medical-records-access-token-expires-${expiration.toISOString()}`;
+    }
+  }, []);
+
+  // Refresh records from API
+  const refreshRecords = useCallback(async () => {
+    setLoadingRecords(true);
+    try {
+      const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+      
+      if (patientId) {
+        const [recordsResult, medicationsResult] = await Promise.all([
+          PatientMedicalRecordsService.getMedicalRecords(patientId, { limit: 100 }).catch(() => null),
+          PatientPrescriptionService.getMedications(patientId).catch(() => null),
+        ]);
+
+        if (recordsResult?.records) {
+          const transformedRecords: MedicalRecord[] = recordsResult.records.map((record: ApiMedicalRecord) => ({
+            id: record.id,
+            title: record.title,
+            date: new Date(record.record_date),
+            type: record.record_type,
+            provider: record.provider_name,
+            content: record.content || record.description || '',
+            attachments: record.file_url ? [record.file_url] : [],
+            status: record.status,
+            sharedWith: record.shared_with?.map(s => s.shared_with_name) || [],
+          }));
+          setRecords(transformedRecords);
+          localStorage.setItem("medicalRecords", JSON.stringify(transformedRecords));
+        }
+
+        if (medicationsResult) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const medicationsList: any[] = Array.isArray(medicationsResult) 
+            ? medicationsResult 
+            : (medicationsResult?.medications || []);
+          
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transformedMedications: Medication[] = medicationsList.map((med: any) => ({
+            id: med.id,
+            name: med.medication_name || med.name,
+            dosage: med.dosage,
+            frequency: med.frequency,
+            startDate: new Date(med.start_date || med.created_at),
+            endDate: med.end_date ? new Date(med.end_date) : undefined,
+            prescribedBy: med.prescribed_by || med.doctor_name || '',
+            instructions: med.instructions || '',
+            status: med.status || 'active',
+            refillsRemaining: med.refills_remaining,
+          }));
+          setMedications(transformedMedications);
+          localStorage.setItem("medications", JSON.stringify(transformedMedications));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh medical records:", error);
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, []);
 
   // Navigation helper
   const navigateToRecordDetails = (id: string | number) => {
@@ -278,6 +459,7 @@ export const MedicalRecordsProvider: React.FC<{ children: ReactNode }> = ({
     generateRecordsQR,
     navigateToRecordDetails,
     loadingRecords,
+    refreshRecords,
   };
 
   return (

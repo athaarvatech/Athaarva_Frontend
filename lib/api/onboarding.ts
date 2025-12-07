@@ -240,7 +240,16 @@ class OnboardingAPI {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-      throw new Error(error.detail || `HTTP ${response.status}`);
+      
+      // Provide clearer error messages
+      if (response.status === 401) {
+        throw new Error('Session expired or invalid. Please restart the onboarding process.');
+      }
+      if (response.status === 403) {
+        throw new Error('Access denied. You may not have permission for this action.');
+      }
+      
+      throw new Error(error.detail || error.message || `HTTP ${response.status}`);
     }
     return response.json();
   }

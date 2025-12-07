@@ -783,7 +783,28 @@ export const HospitalOnboardingProvider: React.FC<
 
       if (savedData) {
         const parsed = JSON.parse(savedData) as HospitalOnboardingData;
-        setData(parsed);
+        // Ensure arrays are properly initialized (for backward compatibility with old localStorage data)
+        setData({
+          ...initialData,
+          ...parsed,
+          locations: Array.isArray(parsed.locations) ? parsed.locations : [],
+          siteContent: {
+            ...initialData.siteContent,
+            ...parsed.siteContent,
+            testimonials: Array.isArray(parsed.siteContent?.testimonials) ? parsed.siteContent.testimonials : [],
+          },
+          leadershipTeam: {
+            ...initialData.leadershipTeam,
+            ...parsed.leadershipTeam,
+            leadership_cards: Array.isArray(parsed.leadershipTeam?.leadership_cards) ? parsed.leadershipTeam.leadership_cards : [],
+          },
+          compliance: {
+            ...initialData.compliance,
+            ...parsed.compliance,
+            documents: Array.isArray(parsed.compliance?.documents) ? parsed.compliance.documents : [],
+            consent_templates: Array.isArray(parsed.compliance?.consent_templates) ? parsed.compliance.consent_templates : [],
+          },
+        });
       }
       if (savedStep) {
         const parsedStep = parseInt(savedStep, 10);
@@ -825,6 +846,13 @@ export const HospitalOnboardingProvider: React.FC<
   // ============================================================================
 
   const buildSubmissionPayload = useCallback(() => {
+    // Ensure arrays are safely accessed
+    const locations = Array.isArray(data.locations) ? data.locations : [];
+    const testimonials = Array.isArray(data.siteContent?.testimonials) ? data.siteContent.testimonials : [];
+    const leadershipCards = Array.isArray(data.leadershipTeam?.leadership_cards) ? data.leadershipTeam.leadership_cards : [];
+    const complianceDocs = Array.isArray(data.compliance?.documents) ? data.compliance.documents : [];
+    const consentTemplates = Array.isArray(data.compliance?.consent_templates) ? data.compliance.consent_templates : [];
+
     return {
       invitation_token: data.invitation.token,
       template: {
