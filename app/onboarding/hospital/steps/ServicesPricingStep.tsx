@@ -12,19 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-interface ServiceData {
-  id: string;
-  name: string;
-  department: string;
-  description: string;
-  consultation_types: string[];
-  fee_range: {
-    min: number;
-    max: number;
-    currency: string;
-  };
-  location_ids: string[];
-}
+import type { ServiceData } from '@/contexts/HospitalOnboardingContextV2';
 
 export default function ServicesPricingStep() {
   const { data, updateData } = useHospitalOnboarding();
@@ -52,48 +40,43 @@ export default function ServicesPricingStep() {
   const addDepartment = () => {
     if (newDepartment.trim() && !departments.includes(newDepartment.trim())) {
       updateData('servicesPricing', {
-        ...servicesPricing,
         departments: [...departments, newDepartment.trim()],
-      } as any);
+      });
       setNewDepartment('');
     }
   };
 
   const removeDepartment = (dept: string) => {
     updateData('servicesPricing', {
-      ...servicesPricing,
       departments: departments.filter(d => d !== dept),
-    } as any);
+    });
   };
 
   // Procedure management
   const addProcedure = () => {
     if (newProcedure.trim() && !procedures.includes(newProcedure.trim())) {
       updateData('servicesPricing', {
-        ...servicesPricing,
         procedures: [...procedures, newProcedure.trim()],
-      } as any);
+      });
       setNewProcedure('');
     }
   };
 
   const removeProcedure = (proc: string) => {
     updateData('servicesPricing', {
-      ...servicesPricing,
       procedures: procedures.filter(p => p !== proc),
-    } as any);
+    });
   };
 
   // Consultation type toggle
   const toggleConsultationType = (type: string) => {
-    const updated = (consultationTypes as string[]).includes(type)
-      ? (consultationTypes as string[]).filter(t => t !== type)
-      : [...(consultationTypes as string[]), type];
+    const updated = consultationTypes.includes(type as any)
+      ? consultationTypes.filter(t => t !== type)
+      : [...consultationTypes, type as 'in-person' | 'telehealth' | 'home'];
     
     updateData('servicesPricing', {
-      ...servicesPricing,
       consultation_types: updated,
-    } as any);
+    });
   };
 
   // Service management
@@ -110,12 +93,12 @@ export default function ServicesPricingStep() {
         currency: 'INR',
       },
       location_ids: [],
+      specialty_ids: [],
     };
 
     updateData('servicesPricing', {
-      ...servicesPricing,
       services: [...services, newService],
-    } as any);
+    });
   };
 
   const updateService = (id: string, updates: Partial<ServiceData>) => {
@@ -123,40 +106,37 @@ export default function ServicesPricingStep() {
       s.id === id ? { ...s, ...updates } : s
     );
     updateData('servicesPricing', {
-      ...servicesPricing,
       services: updatedServices,
-    } as any);
+    });
   };
 
   const removeService = (id: string) => {
     updateData('servicesPricing', {
-      ...servicesPricing,
       services: services.filter(s => s.id !== id),
-    } as any);
+    });
   };
 
   // Insurance management
   const addInsurance = () => {
     if (newInsurance.trim() && !insurancePartnerships.includes(newInsurance.trim())) {
       updateData('servicesPricing', {
-        ...servicesPricing,
         insurance_partnerships: [...insurancePartnerships, newInsurance.trim()],
-      } as any);
+      });
       setNewInsurance('');
     }
   };
 
   const removeInsurance = (insurance: string) => {
     updateData('servicesPricing', {
-      ...servicesPricing,
       insurance_partnerships: insurancePartnerships.filter(i => i !== insurance),
-    } as any);
+    });
   };
 
-  const consultationTypeOptions = [
+  type ConsultationType = 'in-person' | 'telehealth' | 'home';
+  const consultationTypeOptions: { value: ConsultationType; label: string; icon: typeof Stethoscope }[] = [
     { value: 'in-person', label: 'In-Person', icon: Stethoscope },
     { value: 'telehealth', label: 'Telehealth', icon: MapPin },
-    { value: 'home-visit', label: 'Home Visit', icon: MapPin },
+    { value: 'home', label: 'Home Visit', icon: MapPin },
   ];
 
   return (
@@ -368,12 +348,18 @@ export default function ServicesPricingStep() {
 }
 
 // Service Card Component
+type ConsultationTypeOption = { 
+  value: 'in-person' | 'telehealth' | 'home'; 
+  label: string; 
+  icon: React.ComponentType<{ className?: string }>; 
+};
+
 interface ServiceCardProps {
   service: ServiceData;
   index: number;
   departments: string[];
-  locations: any[];
-  consultationTypeOptions: any[];
+  locations: { id: string; name: string }[];
+  consultationTypeOptions: ConsultationTypeOption[];
   onUpdate: (updates: Partial<ServiceData>) => void;
   onRemove: () => void;
 }
@@ -387,7 +373,9 @@ function ServiceCard({
   onUpdate,
   onRemove,
 }: ServiceCardProps) {
-  const toggleServiceConsultationType = (type: string) => {
+  type ConsultationType = 'in-person' | 'telehealth' | 'home';
+  
+  const toggleServiceConsultationType = (type: ConsultationType) => {
     const updated = service.consultation_types.includes(type)
       ? service.consultation_types.filter(t => t !== type)
       : [...service.consultation_types, type];

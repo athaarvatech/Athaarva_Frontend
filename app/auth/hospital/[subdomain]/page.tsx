@@ -199,13 +199,25 @@ export default function HospitalAuthPage() {
       localStorage.setItem("hospital_name", data.user.hospital_name || "");
       localStorage.setItem("user_name", data.user.full_name || data.user.email);
 
+      // For hospital admin, also store the admin token for dashboard access
+      if (data.user.user_type === "hospital_admin") {
+        localStorage.setItem("hospital_admin_token", data.access_token);
+        localStorage.setItem("hospital_admin_tenant_id", data.user.tenant_id || data.user.hospital_id || "");
+        localStorage.setItem("hospital_subdomain", subdomain);
+      }
+
       // Sync with auth context if it exists
       if (authLogin) {
         authLogin(data.access_token, data.user.user_type, data.user.id);
       }
 
       // Redirect to appropriate dashboard
-      router.push(data.redirect_to);
+      // Override redirect for hospital admin to go to new admin dashboard
+      if (data.user.user_type === "hospital_admin") {
+        router.push(`/hospital/${subdomain}/admin`);
+      } else {
+        router.push(data.redirect_to);
+      }
     } catch (err) {
       setError((err as Error).message || "Login failed. Please try again.");
     } finally {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,7 @@ import {
   ChevronRight,
   Filter,
   BarChart3,
+  Loader2,
 } from "lucide-react";
 import {
   LineChart,
@@ -43,79 +44,32 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import PatientPrescriptionService, { Medication as ApiMedication } from "@/lib/services/PatientPrescriptionService";
 
-// Mock data for medications
-const mockMedications = [
-  {
-    id: 1,
-    name: "Metformin",
-    dosage: "500mg",
-    frequency: "2x Daily",
-    timeSlots: ["☀️ Morning", "🌙 Evening"],
-    pillImage: "💊",
-    condition: "Diabetes",
-    startDate: "2024-01-15",
-    endDate: "Ongoing",
-    pillsLeft: 25,
-    totalPills: 60,
-    adherence: 92,
-    status: "active",
-    nextDose: "6:00 PM",
-    doctorNotes: "Take with food to avoid stomach upset",
-    refillDue: "2025-08-15",
-    taken: {
-      today: true,
-      yesterday: true,
-      streak: 15,
-    },
-  },
-  {
-    id: 2,
-    name: "Lisinopril",
-    dosage: "10mg",
-    frequency: "1x Daily",
-    timeSlots: ["☀️ Morning"],
-    pillImage: "💊",
-    condition: "Blood Pressure",
-    startDate: "2024-02-01",
-    endDate: "Ongoing",
-    pillsLeft: 8,
-    totalPills: 30,
-    adherence: 88,
-    status: "refill_needed",
-    nextDose: "8:00 AM",
-    doctorNotes: "Monitor blood pressure weekly",
-    refillDue: "2025-08-08",
-    taken: {
-      today: false,
-      yesterday: true,
-      streak: 12,
-    },
-  },
-  {
-    id: 3,
-    name: "Vitamin D",
-    dosage: "1000 IU",
-    frequency: "1x Daily",
-    timeSlots: ["☀️ Morning"],
-    pillImage: "🟡",
-    condition: "Vitamin Deficiency",
-    startDate: "2024-03-01",
-    endDate: "2025-03-01",
-    pillsLeft: 45,
-    totalPills: 60,
-    adherence: 75,
-    status: "active",
-    nextDose: "8:00 AM",
-    doctorNotes: "Take with breakfast for better absorption",
-    refillDue: "2025-09-01",
-    taken: {
-      today: true,
-      yesterday: false,
-      streak: 8,
-    },
-  },
-];
+// Types for the dashboard
+interface DashboardMedication {
+  id: string | number;
+  name: string;
+  dosage: string;
+  frequency: string;
+  timeSlots: string[];
+  pillImage: string;
+  condition: string;
+  startDate: string;
+  endDate: string;
+  pillsLeft: number;
+  totalPills: number;
+  adherence: number;
+  status: string;
+  nextDose: string;
+  doctorNotes: string;
+  refillDue: string;
+  taken: {
+    today: boolean;
+    yesterday: boolean;
+    streak: number;
+  };
+}
 
 // Weekly adherence data for charts
 const weeklyAdherence = [
@@ -128,12 +82,117 @@ const weeklyAdherence = [
   { day: "Sun", adherence: 95 },
 ];
 
+// Transform API medication to dashboard format
+const transformMedication = (med: ApiMedication): DashboardMedication => {
+  const getTimeSlots = (frequency: string): string[] => {
+    if (frequency.toLowerCase().includes('2x') || frequency.toLowerCase().includes('twice')) {
+      return ['☀️ Morning', '🌙 Evening'];
+    }
+    if (frequency.toLowerCase().includes('3x') || frequency.toLowerCase().includes('three')) {
+      return ['☀️ Morning', '☀️ Afternoon', '🌙 Evening'];
+    }
+    return ['☀️ Morning'];
+  };
+
+  const getPillEmoji = (name: string): string => {
+    const nameLower = name.toLowerCase();
+    if (nameLower.includes('vitamin')) return '🟡';
+    if (nameLower.includes('insulin')) return '💉';
+    return '💊';
+  };
+
+  // Calculate if refill is needed (less than 7 days)
+  const isRefillNeeded = med.next_refill_date 
+    ? new Date(med.next_refill_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    : (med.refills_remaining !== undefined && med.refills_remaining <= 0);
+
+  return {
+    id: med.id,
+    name: med.medication_name,
+    dosage: med.dosage,
+    frequency: med.frequency,
+    timeSlots: getTimeSlots(med.frequency),
+    pillImage: getPillEmoji(med.medication_name),
+    condition: med.notes || 'General Health',
+    startDate: med.start_date,
+    endDate: med.end_date || 'Ongoing',
+    pillsLeft: med.refills_remaining !== undefined ? med.refills_remaining * 30 : 30,
+    totalPills: 60,
+    adherence: med.adherence_rate || 85,
+    status: isRefillNeeded ? 'refill_needed' : 'active',
+    nextDose: (med.reminder_times && med.reminder_times[0]) || '8:00 AM',
+    doctorNotes: med.instructions || '',
+    refillDue: med.next_refill_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    taken: {
+      today: false,
+      yesterday: true,
+      streak: 7,
+    },
+  };
+};
+
 const MedicationDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("current");
-  const [medications, setMedications] = useState(mockMedications);
+  const [medications, setMedications] = useState<DashboardMedication[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [adherenceData, setAdherenceData] = useState(weeklyAdherence);
+
+  // Fetch medications from API
+  const fetchMedications = useCallback(async () => {
+    const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+    
+    if (!patientId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Calculate date range for last 7 days
+      const toDate = new Date().toISOString().split('T')[0];
+      const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const [medicationsResult, adherenceResult] = await Promise.all([
+        PatientPrescriptionService.getMedications(patientId).catch(() => null),
+        PatientPrescriptionService.getOverallAdherence(patientId, fromDate, toDate).catch(() => null),
+      ]);
+
+      if (medicationsResult) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const medList: ApiMedication[] = Array.isArray(medicationsResult) 
+          ? medicationsResult 
+          : (medicationsResult?.medications || []);
+        
+        const transformedMeds = medList.map(transformMedication);
+        setMedications(transformedMeds);
+      }
+
+      // Update adherence chart data if available
+      if (adherenceResult?.weekly_trend) {
+        const chartData = adherenceResult.weekly_trend.map((item) => ({
+          day: item.week,
+          adherence: item.rate,
+        }));
+        if (chartData.length > 0) {
+          setAdherenceData(chartData);
+        }
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch medications:", err);
+      setError("Failed to load medications. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMedications();
+  }, [fetchMedications]);
 
   // Filter medications based on search and filter
   const filteredMedications = medications.filter((med) => {
@@ -160,7 +219,10 @@ const MedicationDashboard = () => {
     (med) => med.status === "refill_needed" || med.pillsLeft <= 7
   );
 
-  const markAsTaken = (medicationId: number) => {
+  const markAsTaken = async (medicationId: string | number) => {
+    const patientId = sessionStorage.getItem("patientId") || localStorage.getItem("patientId");
+    
+    // Optimistically update UI
     setMedications((prev) =>
       prev.map((med) =>
         med.id === medicationId
@@ -175,6 +237,18 @@ const MedicationDashboard = () => {
           : med
       )
     );
+
+    // Call API if patient ID is available
+    if (patientId) {
+      try {
+        await PatientPrescriptionService.logMedicationTaken(String(medicationId), {
+          taken_time: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("Failed to log medication:", err);
+        // Optionally revert the optimistic update on error
+      }
+    }
   };
 
   return (
@@ -193,7 +267,58 @@ const MedicationDashboard = () => {
           </p>
         </div>
 
-        {/* Urgent Actions Banner */}
+        {/* Loading State */}
+        {loading && (
+          <Card className="p-8">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-[#007C7C]" />
+              <p className="text-gray-600">Loading your medications...</p>
+            </div>
+          </Card>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <Card className="border-l-4 border-l-red-500 bg-red-50 p-6">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div>
+                <h3 className="font-semibold text-red-800">{error}</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchMedications}
+                  className="mt-2"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && medications.length === 0 && (
+          <Card className="p-8">
+            <div className="text-center space-y-4">
+              <div className="text-4xl">💊</div>
+              <h3 className="text-lg font-semibold text-gray-700">No Medications Found</h3>
+              <p className="text-gray-600">
+                You don't have any medications recorded yet. Add your first medication to start tracking.
+              </p>
+              <Button className="bg-[#007C7C] hover:bg-[#006666]">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Medication
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Main Content - only show if not loading and has medications */}
+        {!loading && !error && medications.length > 0 && (
+          <>
+            {/* Urgent Actions Banner */}
         {urgentMedications.length > 0 && (
           <Card className="border-l-4 border-l-amber-500 bg-amber-50">
             <CardContent className="p-4">
@@ -679,6 +804,8 @@ const MedicationDashboard = () => {
             </div>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </div>
   );
