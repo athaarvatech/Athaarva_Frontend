@@ -1,6 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -16,6 +25,58 @@ export interface TemplateData {
   supported_modules: string[];
   recommended_for: string[];
   locked?: boolean;
+}
+
+// Extended interface to include customized blueprint data from the Canvas editor
+export interface CustomizedTemplateData extends TemplateData {
+  customizedBlueprint?: {
+    id: string;
+    hero: {
+      eyebrow: string;
+      title: string;
+      subtitle: string;
+      primaryCta: { label: string; href: string };
+      secondaryCta: { label: string; href: string };
+      stats: Array<{ label: string; value: string }>;
+      heroImageAlt: string;
+    };
+    palette: {
+      background: string;
+      surface: string;
+      accent: string;
+      accentMuted: string;
+      text: string;
+      textMuted: string;
+      gradient: string;
+    };
+    typography: {
+      heading: string;
+      body: string;
+    };
+    specialties: Array<{ icon: string; title: string; description: string }>;
+    differentiators: Array<{ title: string; description: string }>;
+    doctors: Array<{
+      name: string;
+      specialty: string;
+      description: string;
+      mediaLabel: string;
+    }>;
+    testimonials: Array<{
+      quote: string;
+      patient: string;
+      procedure: string;
+    }>;
+    facilityHighlights: Array<{ title: string; copy: string }>;
+    programs: Array<{ title: string; meta: string; description: string }>;
+    footer: {
+      contact: {
+        phone: string;
+        email: string;
+        location: string;
+      };
+      quickLinks: string[];
+    };
+  };
 }
 
 export interface LocationData {
@@ -38,7 +99,7 @@ export interface ServiceData {
   name: string;
   department: string;
   description: string;
-  consultation_types: ('in-person' | 'telehealth' | 'home')[];
+  consultation_types: ("in-person" | "telehealth" | "home")[];
   fee_range: { min: number; max: number; currency: string };
   location_ids: string[];
   specialty_ids: string[];
@@ -61,7 +122,7 @@ export interface TeamMemberData {
   role: string;
   email: string;
   phone: string;
-  status: 'pending' | 'invited' | 'active';
+  status: "pending" | "invited" | "active";
   scope_hint?: string;
   notes?: string;
 }
@@ -73,7 +134,7 @@ export interface DocumentData {
   filename: string;
   size: number;
   expires_at?: string;
-  status: 'uploaded' | 'pending' | 'expired';
+  status: "uploaded" | "pending" | "expired";
   uploaded_at: string;
   file?: File;
 }
@@ -102,7 +163,7 @@ export interface CollaboratorData {
   email: string;
   name: string;
   granted_steps: number[];
-  status: 'pending' | 'active';
+  status: "pending" | "active";
 }
 
 export interface HospitalOnboardingData {
@@ -114,7 +175,7 @@ export interface HospitalOnboardingData {
     invitation_id?: number;
   };
   template: {
-    selected_template: TemplateData | null;
+    selected_template: CustomizedTemplateData | null;
     version_locked: boolean;
   };
 
@@ -163,18 +224,35 @@ export interface HospitalOnboardingData {
       cta_text: string;
       cta_url: string;
     };
-    services_highlights: { id: string; icon: string; title: string; description: string }[];
+    services_highlights: {
+      id: string;
+      icon: string;
+      title: string;
+      description: string;
+    }[];
     specialty_blurbs: { id: string; specialty: string; description: string }[];
-    testimonials: { id: string; patient_name: string; testimonial: string; rating: number; date: string }[];
+    testimonials: {
+      id: string;
+      patient_name: string;
+      testimonial: string;
+      rating: number;
+      date: string;
+    }[];
     faq: { id: string; question: string; answer: string }[];
-    blog_teasers: { id: string; title: string; excerpt: string; publish_date: string; author: string }[];
+    blog_teasers: {
+      id: string;
+      title: string;
+      excerpt: string;
+      publish_date: string;
+      author: string;
+    }[];
   };
 
   // Step 5: Clinical Services & Pricing
   servicesPricing: {
     departments: string[];
     procedures: string[];
-    consultation_types: ('in-person' | 'telehealth' | 'home')[];
+    consultation_types: ("in-person" | "telehealth" | "home")[];
     services: ServiceData[];
     insurance_partnerships: string[];
   };
@@ -182,14 +260,19 @@ export interface HospitalOnboardingData {
   // Step 6: Leadership & Team
   leadershipTeam: {
     leadership_cards: LeadershipCardData[];
-    staffing_plan: { id: string; role: string; count: number; status: string }[];
+    staffing_plan: {
+      id: string;
+      role: string;
+      count: number;
+      status: string;
+    }[];
   };
 
   // Step 7: Operational Policies
   operationalPolicies: {
-    operating_hours: { 
-      location_id: string; 
-      hours: { id: string; day: string; open: string; close: string }[] 
+    operating_hours: {
+      location_id: string;
+      hours: { id: string; day: string; open: string; close: string }[];
     }[];
     appointment_lead_time_hours: number;
     cancellation_policy: string;
@@ -207,7 +290,7 @@ export interface HospitalOnboardingData {
 
   // Step 9: Integrations & Preferences
   integrations: {
-    messaging_channels: ('sms' | 'email' | 'whatsapp')[];
+    messaging_channels: ("sms" | "email" | "whatsapp")[];
     analytics_tags: { id: string; platform: string; tag_id: string }[];
     llm_opt_in: boolean;
     telehealth_provider: string;
@@ -221,7 +304,7 @@ export interface HospitalOnboardingData {
   review: {
     completion_status: { [step: string]: boolean };
     publication_plan: {
-      launch_mode: 'immediate' | 'scheduled' | 'site_only';
+      launch_mode: "immediate" | "scheduled" | "site_only";
       scheduled_at?: string;
     };
     acknowledgements: {
@@ -249,7 +332,11 @@ export interface HospitalOnboardingContextType {
   getStepCompletion: () => { [step: number]: boolean };
   updateData: <T extends keyof HospitalOnboardingData>(
     section: T,
-    updates: Partial<HospitalOnboardingData[T]> | HospitalOnboardingData[T] | ((prev: HospitalOnboardingData[T]) => HospitalOnboardingData[T])
+    updates:
+      | Partial<HospitalOnboardingData[T]>
+      | ((
+          prev: HospitalOnboardingData[T]
+        ) => Partial<HospitalOnboardingData[T]>)
   ) => void;
   setCurrentStep: (step: number) => void;
   nextStep: () => void;
@@ -257,8 +344,8 @@ export interface HospitalOnboardingContextType {
   resetData: () => void;
   saveToLocalStorage: () => void;
   loadFromLocalStorage: () => void;
-  addActivityLog: (entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>) => void;
-  addCollaborator: (collaborator: Omit<CollaboratorData, 'id'>) => void;
+  addActivityLog: (entry: Omit<ActivityLogEntry, "id" | "timestamp">) => void;
+  addCollaborator: (collaborator: Omit<CollaboratorData, "id">) => void;
   removeCollaborator: (id: string) => void;
   buildSubmissionPayload: () => any;
 }
@@ -269,51 +356,51 @@ export interface HospitalOnboardingContextType {
 
 const initialData: HospitalOnboardingData = {
   invitation: {
-    token: '',
-    email: '',
-    expires_at: '',
+    token: "",
+    email: "",
+    expires_at: "",
   },
   template: {
     selected_template: null,
     version_locked: false,
   },
   organizationProfile: {
-    legal_name: '',
-    parent_entity: '',
-    registration_number: '',
-    gst_number: '',
-    pan_number: '',
-    established_date: '',
-    ownership_model: '',
-    timezone: 'Asia/Kolkata',
-    locale: 'en-IN',
+    legal_name: "",
+    parent_entity: "",
+    registration_number: "",
+    gst_number: "",
+    pan_number: "",
+    established_date: "",
+    ownership_model: "",
+    timezone: "Asia/Kolkata",
+    locale: "en-IN",
   },
   locations: [],
   branding: {
-    logo_url: '',
+    logo_url: "",
     logo_file: null,
-    hero_asset_url: '',
+    hero_asset_url: "",
     hero_asset_file: null,
-    favicon_url: '',
+    favicon_url: "",
     favicon_file: null,
     colors: {
-      primary: '#007C7C',
-      secondary: '#20B2AA',
-      accent: '#10B981',
-      neutral: '#6B7280',
+      primary: "#007C7C",
+      secondary: "#20B2AA",
+      accent: "#10B981",
+      neutral: "#6B7280",
     },
     typography: {
-      heading_font: 'Inter',
-      body_font: 'Inter',
+      heading_font: "Inter",
+      body_font: "Inter",
     },
     accessibility_score: 0,
   },
   siteContent: {
     hero: {
-      headline: '',
-      subtext: '',
-      cta_text: 'Book Appointment',
-      cta_url: '/appointments',
+      headline: "",
+      subtext: "",
+      cta_text: "Book Appointment",
+      cta_url: "/appointments",
     },
     services_highlights: [],
     specialty_blurbs: [],
@@ -335,28 +422,28 @@ const initialData: HospitalOnboardingData = {
   operationalPolicies: {
     operating_hours: [],
     appointment_lead_time_hours: 24,
-    cancellation_policy: '',
-    no_show_policy: '',
-    telehealth_sop: '',
+    cancellation_policy: "",
+    no_show_policy: "",
+    telehealth_sop: "",
     patient_onboarding_steps: [],
   },
   compliance: {
     documents: [],
-    dpo_contact: { name: '', email: '', phone: '' },
+    dpo_contact: { name: "", email: "", phone: "" },
     consent_templates: [],
   },
   integrations: {
     messaging_channels: [],
     analytics_tags: [],
     llm_opt_in: false,
-    telehealth_provider: '',
+    telehealth_provider: "",
     patient_portal_modules: [],
   },
   adminTeam: [],
   review: {
     completion_status: {},
     publication_plan: {
-      launch_mode: 'immediate',
+      launch_mode: "immediate",
     },
     acknowledgements: {
       terms: false,
@@ -367,7 +454,7 @@ const initialData: HospitalOnboardingData = {
   },
   metadata: {
     autosave_version: 0,
-    collaboration_notes: '',
+    collaboration_notes: "",
   },
 };
 
@@ -402,12 +489,16 @@ const isValidHexColor = (color: string): boolean => {
 // CONTEXT
 // ============================================================================
 
-const HospitalOnboardingContext = createContext<HospitalOnboardingContextType | undefined>(undefined);
+const HospitalOnboardingContext = createContext<
+  HospitalOnboardingContextType | undefined
+>(undefined);
 
 export const useHospitalOnboarding = () => {
   const context = useContext(HospitalOnboardingContext);
   if (!context) {
-    throw new Error('useHospitalOnboarding must be used within a HospitalOnboardingProvider');
+    throw new Error(
+      "useHospitalOnboarding must be used within a HospitalOnboardingProvider"
+    );
   }
   return context;
 };
@@ -416,7 +507,9 @@ interface HospitalOnboardingProviderProps {
   children: ReactNode;
 }
 
-export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProps> = ({ children }) => {
+export const HospitalOnboardingProvider: React.FC<
+  HospitalOnboardingProviderProps
+> = ({ children }) => {
   const [data, setData] = useState<HospitalOnboardingData>(initialData);
   const [currentStep, setCurrentStep] = useState(0);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
@@ -427,140 +520,154 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   // UPDATE DATA
   // ============================================================================
 
-  const updateData = useCallback(<T extends keyof HospitalOnboardingData>(
-    section: T,
-    updates: Partial<HospitalOnboardingData[T]> | HospitalOnboardingData[T] | ((prev: HospitalOnboardingData[T]) => HospitalOnboardingData[T])
-  ) => {
-    setData((prev) => {
-      let updatedSection: HospitalOnboardingData[T];
-      
-      if (typeof updates === 'function') {
-        // Function update - call it with previous value
-        updatedSection = updates(prev[section]);
-      } else if (Array.isArray(prev[section])) {
-        // For array sections (locations, adminTeam), replace the whole array
-        updatedSection = updates as HospitalOnboardingData[T];
-      } else if (typeof prev[section] === 'object' && prev[section] !== null) {
-        // For object sections, merge updates
-        updatedSection = { ...prev[section], ...updates } as HospitalOnboardingData[T];
-      } else {
-        // Fallback: direct replacement
-        updatedSection = updates as HospitalOnboardingData[T];
-      }
+  const updateData = useCallback(
+    <T extends keyof HospitalOnboardingData>(
+      section: T,
+      updates:
+        | Partial<HospitalOnboardingData[T]>
+        | ((
+            prev: HospitalOnboardingData[T]
+          ) => Partial<HospitalOnboardingData[T]>)
+    ) => {
+      setData((prev) => {
+        const updatedSection =
+          typeof updates === "function"
+            ? { ...prev[section], ...updates(prev[section]) }
+            : { ...prev[section], ...updates };
 
-      return {
-        ...prev,
-        [section]: updatedSection,
-        metadata: {
-          ...prev.metadata,
-          autosave_version: prev.metadata.autosave_version + 1,
-          last_saved_at: new Date().toISOString(),
-        },
-      };
-    });
-  }, []);
+        return {
+          ...prev,
+          [section]: updatedSection,
+          metadata: {
+            ...prev.metadata,
+            autosave_version: prev.metadata.autosave_version + 1,
+            last_saved_at: new Date().toISOString(),
+          },
+        };
+      });
+    },
+    []
+  );
 
   // ============================================================================
   // STEP VALIDATION
   // ============================================================================
 
-  const isStepValid = useCallback((step: number): boolean => {
-    switch (step) {
-      case 0: // Template Selection
-        return !!data.template.selected_template;
+  const isStepValid = useCallback(
+    (step: number): boolean => {
+      switch (step) {
+        case 0: // Template Selection
+          return !!data.template.selected_template;
 
-      case 1: // Organization Profile
-        const org = data.organizationProfile;
-        return !!(
-          org.legal_name &&
-          org.registration_number &&
-          org.gst_number &&
-          org.pan_number &&
-          org.established_date &&
-          org.ownership_model &&
-          org.timezone &&
-          org.locale
-        );
+        case 1: // Organization Profile
+          const org = data.organizationProfile;
+          return !!(
+            org.legal_name &&
+            org.registration_number &&
+            org.gst_number &&
+            org.pan_number &&
+            org.established_date &&
+            org.ownership_model &&
+            org.timezone &&
+            org.locale
+          );
 
-      case 2: // Locations & Contacts
-        return data.locations.length > 0 && data.locations.every(loc =>
-          loc.name && loc.address && loc.city && loc.state && loc.pincode &&
-          isValidPhone(loc.contact_phone) && isValidEmail(loc.contact_email)
-        );
+        case 2: // Locations & Contacts
+          return (
+            data.locations.length > 0 &&
+            data.locations.every(
+              (loc) =>
+                loc.name &&
+                loc.address &&
+                loc.city &&
+                loc.state &&
+                loc.pincode &&
+                isValidPhone(loc.contact_phone) &&
+                isValidEmail(loc.contact_email)
+            )
+          );
 
-      case 3: // Branding & Theme Studio
-        const branding = data.branding;
-        return !!(
-          (branding.logo_url || branding.logo_file) &&
-          isValidHexColor(branding.colors.primary) &&
-          isValidHexColor(branding.colors.secondary) &&
-          isValidHexColor(branding.colors.accent) &&
-          isValidHexColor(branding.colors.neutral) &&
-          branding.typography.heading_font &&
-          branding.typography.body_font &&
-          branding.accessibility_score >= 4.5
-        );
+        case 3: // Branding & Theme Studio
+          const branding = data.branding;
+          return !!(
+            (branding.logo_url || branding.logo_file) &&
+            isValidHexColor(branding.colors.primary) &&
+            isValidHexColor(branding.colors.secondary) &&
+            isValidHexColor(branding.colors.accent) &&
+            isValidHexColor(branding.colors.neutral) &&
+            branding.typography.heading_font &&
+            branding.typography.body_font &&
+            branding.accessibility_score >= 4.5
+          );
 
-      case 4: // Site Content
-        const content = data.siteContent;
-        return !!(
-          content.hero.headline &&
-          content.hero.subtext &&
-          content.hero.cta_text &&
-          content.services_highlights.length >= 3 &&
-          content.specialty_blurbs.length >= 2
-        );
+        case 4: // Site Content
+          const content = data.siteContent;
+          return !!(
+            content.hero.headline &&
+            content.hero.subtext &&
+            content.hero.cta_text &&
+            content.services_highlights.length >= 3 &&
+            content.specialty_blurbs.length >= 2
+          );
 
-      case 5: // Services & Pricing
-        const services = data.servicesPricing;
-        return !!(
-          services.departments.length > 0 &&
-          services.consultation_types.length > 0 &&
-          services.services.length > 0
-        );
+        case 5: // Services & Pricing
+          const services = data.servicesPricing;
+          return !!(
+            services.departments.length > 0 &&
+            services.consultation_types.length > 0 &&
+            services.services.length > 0
+          );
 
-      case 6: // Leadership & Team
-        return data.leadershipTeam.leadership_cards.length >= 1;
+        case 6: // Leadership & Team
+          return data.leadershipTeam.leadership_cards.length >= 1;
 
-      case 7: // Operational Policies
-        const policies = data.operationalPolicies;
-        return !!(
-          policies.operating_hours.length > 0 &&
-          policies.appointment_lead_time_hours > 0 &&
-          policies.cancellation_policy &&
-          policies.patient_onboarding_steps.length > 0
-        );
+        case 7: // Operational Policies
+          const policies = data.operationalPolicies;
+          return !!(
+            policies.operating_hours.length > 0 &&
+            policies.appointment_lead_time_hours > 0 &&
+            policies.cancellation_policy &&
+            policies.patient_onboarding_steps.length > 0
+          );
 
-      case 8: // Compliance & Documentation
-        const compliance = data.compliance;
-        return !!(
-          compliance.documents.length > 0 &&
-          compliance.dpo_contact.name &&
-          isValidEmail(compliance.dpo_contact.email) &&
-          isValidPhone(compliance.dpo_contact.phone)
-        );
+        case 8: // Compliance & Documentation
+          const compliance = data.compliance;
+          return !!(
+            compliance.documents.length > 0 &&
+            compliance.dpo_contact.name &&
+            isValidEmail(compliance.dpo_contact.email) &&
+            isValidPhone(compliance.dpo_contact.phone)
+          );
 
-      case 9: // Integrations & Preferences
-        return data.integrations.messaging_channels.length > 0;
+        case 9: // Integrations & Preferences
+          return data.integrations.messaging_channels.length > 0;
 
-      case 10: // Admin Team
-        return data.adminTeam.length > 0 && data.adminTeam.every(member =>
-          member.full_name && isValidEmail(member.email) && isValidPhone(member.phone)
-        );
+        case 10: // Admin Team
+          return (
+            data.adminTeam.length > 0 &&
+            data.adminTeam.every(
+              (member) =>
+                member.full_name &&
+                isValidEmail(member.email) &&
+                isValidPhone(member.phone)
+            )
+          );
 
-      case 11: // Review & Submission
-        const review = data.review;
-        return !!(
-          review.acknowledgements.terms &&
-          review.acknowledgements.privacy &&
-          review.acknowledgements.dpa &&
-          review.publication_plan.launch_mode
-        );
+        case 11: // Review & Submission
+          const review = data.review;
+          return !!(
+            review.acknowledgements.terms &&
+            review.acknowledgements.privacy &&
+            review.acknowledgements.dpa &&
+            review.publication_plan.launch_mode
+          );
 
-      default:
-        return false;
-    }
-  }, [data]);
+        default:
+          return false;
+      }
+    },
+    [data]
+  );
 
   // ============================================================================
   // COMPLETION STATUS
@@ -594,29 +701,35 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   // ACTIVITY LOG
   // ============================================================================
 
-  const addActivityLog = useCallback((entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>) => {
-    const newEntry: ActivityLogEntry = {
-      ...entry,
-      id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date().toISOString(),
-    };
-    setActivityLog((prev) => [newEntry, ...prev]);
-  }, []);
+  const addActivityLog = useCallback(
+    (entry: Omit<ActivityLogEntry, "id" | "timestamp">) => {
+      const newEntry: ActivityLogEntry = {
+        ...entry,
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date().toISOString(),
+      };
+      setActivityLog((prev) => [newEntry, ...prev]);
+    },
+    []
+  );
 
   // ============================================================================
   // COLLABORATORS
   // ============================================================================
 
-  const addCollaborator = useCallback((collaborator: Omit<CollaboratorData, 'id'>) => {
-    const newCollaborator: CollaboratorData = {
-      ...collaborator,
-      id: `collab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    };
-    setCollaborators((prev) => [...prev, newCollaborator]);
-  }, []);
+  const addCollaborator = useCallback(
+    (collaborator: Omit<CollaboratorData, "id">) => {
+      const newCollaborator: CollaboratorData = {
+        ...collaborator,
+        id: `collab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+      setCollaborators((prev) => [...prev, newCollaborator]);
+    },
+    []
+  );
 
   const removeCollaborator = useCallback((id: string) => {
-    setCollaborators((prev) => prev.filter(c => c.id !== id));
+    setCollaborators((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
   // ============================================================================
@@ -625,38 +738,48 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
 
   const saveToLocalStorage = useCallback(() => {
     try {
-      const invitationId = data.invitation.invitation_id || 'default';
+      const invitationId = data.invitation.invitation_id || "default";
       const storageKey = `hospital-onboarding-${invitationId}`;
-      
+
       // Clone and remove files before serialization
-      const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
-        // Skip File objects
-        if (value instanceof File) return null;
-        return value;
-      }));
+      const dataToSave = JSON.parse(
+        JSON.stringify(data, (key, value) => {
+          // Skip File objects
+          if (value instanceof File) return null;
+          return value;
+        })
+      );
 
       localStorage.setItem(storageKey, JSON.stringify(dataToSave));
       localStorage.setItem(`${storageKey}-step`, currentStep.toString());
-      localStorage.setItem(`${storageKey}-activity`, JSON.stringify(activityLog.slice(0, 50))); // Keep last 50 entries
-      localStorage.setItem(`${storageKey}-collaborators`, JSON.stringify(collaborators));
+      localStorage.setItem(
+        `${storageKey}-activity`,
+        JSON.stringify(activityLog.slice(0, 50))
+      ); // Keep last 50 entries
+      localStorage.setItem(
+        `${storageKey}-collaborators`,
+        JSON.stringify(collaborators)
+      );
     } catch (error) {
-      console.error('Failed to save onboarding data:', error);
+      console.error("Failed to save onboarding data:", error);
     }
   }, [data, currentStep, activityLog, collaborators]);
 
   const loadFromLocalStorage = useCallback(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      
+      const token = urlParams.get("token");
+
       // Try to load based on token or use default
-      const invitationId = data.invitation.invitation_id || 'default';
+      const invitationId = data.invitation.invitation_id || "default";
       const storageKey = `hospital-onboarding-${invitationId}`;
 
       const savedData = localStorage.getItem(storageKey);
       const savedStep = localStorage.getItem(`${storageKey}-step`);
       const savedActivity = localStorage.getItem(`${storageKey}-activity`);
-      const savedCollaborators = localStorage.getItem(`${storageKey}-collaborators`);
+      const savedCollaborators = localStorage.getItem(
+        `${storageKey}-collaborators`
+      );
 
       if (savedData) {
         const parsed = JSON.parse(savedData) as HospitalOnboardingData;
@@ -685,7 +808,11 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       }
       if (savedStep) {
         const parsedStep = parseInt(savedStep, 10);
-        if (!Number.isNaN(parsedStep) && parsedStep >= 0 && parsedStep < TOTAL_STEPS) {
+        if (
+          !Number.isNaN(parsedStep) &&
+          parsedStep >= 0 &&
+          parsedStep < TOTAL_STEPS
+        ) {
           setCurrentStep(parsedStep);
         }
       }
@@ -696,7 +823,7 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
         setCollaborators(JSON.parse(savedCollaborators));
       }
     } catch (error) {
-      console.error('Failed to load onboarding data:', error);
+      console.error("Failed to load onboarding data:", error);
     }
   }, [data.invitation.invitation_id]);
 
@@ -705,8 +832,8 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
     setCurrentStep(0);
     setActivityLog([]);
     setCollaborators([]);
-    
-    const invitationId = data.invitation.invitation_id || 'default';
+
+    const invitationId = data.invitation.invitation_id || "default";
     const storageKey = `hospital-onboarding-${invitationId}`;
     localStorage.removeItem(storageKey);
     localStorage.removeItem(`${storageKey}-step`);
@@ -731,10 +858,11 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       template: {
         id: data.template.selected_template?.id,
         version: data.template.selected_template?.version,
-        preview_snapshot_url: data.template.selected_template?.preview_snapshot_url,
+        preview_snapshot_url:
+          data.template.selected_template?.preview_snapshot_url,
       },
       organization_profile: data.organizationProfile,
-      locations: locations.map(loc => ({
+      locations: data.locations.map((loc) => ({
         ...loc,
         profile_photo_file: undefined, // Remove file objects
       })),
@@ -748,14 +876,14 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       },
       site_content: {
         ...data.siteContent,
-        testimonials: testimonials.map(t => ({
+        testimonials: data.siteContent.testimonials.map((t) => ({
           ...t,
           consent_file: undefined,
         })),
       },
       services_pricing: data.servicesPricing,
       leadership_team: {
-        leadership_cards: leadershipCards.map(card => ({
+        leadership_cards: data.leadershipTeam.leadership_cards.map((card) => ({
           ...card,
           profile_photo_file: undefined,
         })),
@@ -764,11 +892,11 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
       operational_policies: data.operationalPolicies,
       compliance: {
         ...data.compliance,
-        documents: complianceDocs.map(doc => ({
+        documents: data.compliance.documents.map((doc) => ({
           ...doc,
           file: undefined,
         })),
-        consent_templates: consentTemplates.map(t => ({
+        consent_templates: data.compliance.consent_templates.map((t) => ({
           ...t,
           file: undefined,
         })),
@@ -816,42 +944,45 @@ export const HospitalOnboardingProvider: React.FC<HospitalOnboardingProviderProp
   // CONTEXT VALUE
   // ============================================================================
 
-  const value: HospitalOnboardingContextType = useMemo(() => ({
-    data,
-    currentStep,
-    activityLog,
-    collaborators,
-    isStepValid,
-    getStepCompletion,
-    updateData,
-    setCurrentStep,
-    nextStep,
-    previousStep,
-    resetData,
-    saveToLocalStorage,
-    loadFromLocalStorage,
-    addActivityLog,
-    addCollaborator,
-    removeCollaborator,
-    buildSubmissionPayload,
-  }), [
-    data,
-    currentStep,
-    activityLog,
-    collaborators,
-    isStepValid,
-    getStepCompletion,
-    updateData,
-    nextStep,
-    previousStep,
-    resetData,
-    saveToLocalStorage,
-    loadFromLocalStorage,
-    addActivityLog,
-    addCollaborator,
-    removeCollaborator,
-    buildSubmissionPayload,
-  ]);
+  const value: HospitalOnboardingContextType = useMemo(
+    () => ({
+      data,
+      currentStep,
+      activityLog,
+      collaborators,
+      isStepValid,
+      getStepCompletion,
+      updateData,
+      setCurrentStep,
+      nextStep,
+      previousStep,
+      resetData,
+      saveToLocalStorage,
+      loadFromLocalStorage,
+      addActivityLog,
+      addCollaborator,
+      removeCollaborator,
+      buildSubmissionPayload,
+    }),
+    [
+      data,
+      currentStep,
+      activityLog,
+      collaborators,
+      isStepValid,
+      getStepCompletion,
+      updateData,
+      nextStep,
+      previousStep,
+      resetData,
+      saveToLocalStorage,
+      loadFromLocalStorage,
+      addActivityLog,
+      addCollaborator,
+      removeCollaborator,
+      buildSubmissionPayload,
+    ]
+  );
 
   return (
     <HospitalOnboardingContext.Provider value={value}>
