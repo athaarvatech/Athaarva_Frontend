@@ -7,24 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { 
-  User, 
-  Phone, 
-  Stethoscope, 
+import {
+  User,
+  Phone,
+  Stethoscope,
   Upload,
   X,
   CheckCircle,
   AlertCircle,
   Camera,
   FileText,
-  Shield,
   Building2,
-  Briefcase,
-  GraduationCap
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OnboardingData } from "../page";
@@ -42,7 +44,7 @@ interface PersonalInformationStepProps {
 
 const specializations = [
   "General Medicine",
-  "Internal Medicine", 
+  "Internal Medicine",
   "Pediatrics",
   "Cardiology",
   "Dermatology",
@@ -65,7 +67,7 @@ const specializations = [
   "Ophthalmology",
   "ENT (Otolaryngology)",
   "Urology",
-  "Plastic Surgery"
+  "Plastic Surgery",
 ];
 
 const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
@@ -75,10 +77,12 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isValid, setIsValid] = useState(false);
-  const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>(
-    data.personalInfo.specialization || []
+  const [selectedSpecializations, setSelectedSpecializations] = useState<
+    string[]
+  >(data.personalInfo.specialization || []);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
+    null
   );
-  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
   // Validation
   const validateForm = useCallback(() => {
@@ -96,7 +100,8 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
     if (!personalInfo.registrationNumber.trim()) {
       newErrors.registrationNumber = "Medical registration number is required";
     } else if (personalInfo.registrationNumber.length < 8) {
-      newErrors.registrationNumber = "Registration number must be at least 8 characters";
+      newErrors.registrationNumber =
+        "Registration number must be at least 8 characters";
     }
 
     if (selectedSpecializations.length === 0) {
@@ -135,7 +140,7 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
     setErrors(newErrors);
     const valid = Object.keys(newErrors).length === 0;
     setIsValid(valid);
-    
+
     return valid;
   }, [data, selectedSpecializations]);
 
@@ -147,23 +152,32 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
         onStepComplete();
       }
     }, 100); // Debounce validation
-    
+
     return () => clearTimeout(timeoutId);
-  }, [data.personalInfo, data.credentials, selectedSpecializations, validateForm, onStepComplete]);
+  }, [
+    data.personalInfo,
+    data.credentials,
+    selectedSpecializations,
+    validateForm,
+    onStepComplete,
+  ]);
 
   // Update specialization in parent data when selectedSpecializations changes
   useEffect(() => {
     updateData("personalInfo", { specialization: selectedSpecializations });
   }, [selectedSpecializations, updateData]);
 
-  const handleInputChange = (field: keyof typeof data.personalInfo, value: string | number) => {
+  const handleInputChange = (
+    field: keyof typeof data.personalInfo,
+    value: string | number
+  ) => {
     updateData("personalInfo", { [field]: value });
   };
 
   const handleSpecializationToggle = (specialization: string) => {
-    setSelectedSpecializations(prev => 
+    setSelectedSpecializations((prev) =>
       prev.includes(specialization)
-        ? prev.filter(s => s !== specialization)
+        ? prev.filter((s) => s !== specialization)
         : [...prev, specialization]
     );
   };
@@ -172,28 +186,34 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setErrors(prev => ({ ...prev, profileImage: 'Please select a valid image file' }));
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          profileImage: "Please select a valid image file",
+        }));
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, profileImage: 'Image size must be less than 5MB' }));
+        setErrors((prev) => ({
+          ...prev,
+          profileImage: "Image size must be less than 5MB",
+        }));
         return;
       }
 
       updateData("personalInfo", { profileImage: file });
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfileImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-      
+
       // Clear any previous errors
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.profileImage;
         return newErrors;
@@ -226,9 +246,15 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
-                  {profileImagePreview || (data.personalInfo.profileImage && profileImagePreview) ? (
+                  {profileImagePreview ||
+                  (data.personalInfo.profileImage && profileImagePreview) ? (
                     <Image
-                      src={profileImagePreview || (data.personalInfo.profileImage ? URL.createObjectURL(data.personalInfo.profileImage) : '')}
+                      src={
+                        profileImagePreview ||
+                        (data.personalInfo.profileImage
+                          ? URL.createObjectURL(data.personalInfo.profileImage)
+                          : "")
+                      }
                       alt="Profile preview"
                       width={96}
                       height={96}
@@ -266,7 +292,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                   JPG, PNG up to 5MB (Optional)
                 </p>
                 {errors.profileImage && (
-                  <p className="text-red-500 text-sm mt-1">{errors.profileImage}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.profileImage}
+                  </p>
                 )}
               </div>
             </div>
@@ -290,7 +318,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                 <Input
                   id="firstName"
                   value={data.personalInfo.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("firstName", e.target.value)
+                  }
                   placeholder="Enter your first name"
                   className={cn(errors.firstName && "border-red-500")}
                   suppressHydrationWarning
@@ -307,7 +337,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                 <Input
                   id="lastName"
                   value={data.personalInfo.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lastName", e.target.value)
+                  }
                   placeholder="Enter your last name"
                   className={cn(errors.lastName && "border-red-500")}
                   suppressHydrationWarning
@@ -319,19 +351,29 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="registrationNumber" className="text-sm font-medium">
+              <Label
+                htmlFor="registrationNumber"
+                className="text-sm font-medium"
+              >
                 Medical Registration Number *
               </Label>
               <Input
                 id="registrationNumber"
                 value={data.personalInfo.registrationNumber}
-                onChange={(e) => handleInputChange("registrationNumber", e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  handleInputChange(
+                    "registrationNumber",
+                    e.target.value.toUpperCase()
+                  )
+                }
                 placeholder="e.g., MH12345678"
                 className={cn(errors.registrationNumber && "border-red-500")}
                 suppressHydrationWarning
               />
               {errors.registrationNumber && (
-                <p className="text-red-500 text-sm">{errors.registrationNumber}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.registrationNumber}
+                </p>
               )}
               <p className="text-xs text-gray-500">
                 Enter your medical council registration number
@@ -339,7 +381,10 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="yearsOfExperience" className="text-sm font-medium">
+              <Label
+                htmlFor="yearsOfExperience"
+                className="text-sm font-medium"
+              >
                 Years of Experience *
               </Label>
               <Input
@@ -348,13 +393,20 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                 min="0"
                 max="50"
                 value={data.personalInfo.yearsOfExperience || ""}
-                onChange={(e) => handleInputChange("yearsOfExperience", parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleInputChange(
+                    "yearsOfExperience",
+                    parseInt(e.target.value) || 0
+                  )
+                }
                 placeholder="0"
                 className={cn(errors.yearsOfExperience && "border-red-500")}
                 suppressHydrationWarning
               />
               {errors.yearsOfExperience && (
-                <p className="text-red-500 text-sm">{errors.yearsOfExperience}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.yearsOfExperience}
+                </p>
               )}
             </div>
           </CardContent>
@@ -373,7 +425,7 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
               <p className="text-sm text-gray-600">
                 Select all specializations that apply to your practice
               </p>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                 {specializations.map((specialization) => (
                   <label
@@ -383,19 +435,23 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                     <input
                       type="checkbox"
                       checked={selectedSpecializations.includes(specialization)}
-                      onChange={() => handleSpecializationToggle(specialization)}
+                      onChange={() =>
+                        handleSpecializationToggle(specialization)
+                      }
                       className="w-4 h-4 text-healthcare-primary border-gray-300 rounded focus:ring-healthcare-primary"
                       suppressHydrationWarning
                     />
-                    <span className="text-sm text-gray-700">{specialization}</span>
+                    <span className="text-sm text-gray-700">
+                      {specialization}
+                    </span>
                   </label>
                 ))}
               </div>
-              
+
               {errors.specialization && (
                 <p className="text-red-500 text-sm">{errors.specialization}</p>
               )}
-              
+
               {/* Selected specializations display */}
               {selectedSpecializations.length > 0 && (
                 <div className="mt-3">
@@ -411,7 +467,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                       >
                         {specialization}
                         <button
-                          onClick={() => handleSpecializationToggle(specialization)}
+                          onClick={() =>
+                            handleSpecializationToggle(specialization)
+                          }
                           className="ml-2 text-healthcare-primary hover:text-healthcare-teal"
                         >
                           <X className="w-3 h-3" />
@@ -435,19 +493,26 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="registration-number" className="text-sm font-medium">
+              <Label
+                htmlFor="registration-number"
+                className="text-sm font-medium"
+              >
                 Medical Registration Number *
               </Label>
               <Input
                 id="registration-number"
                 value={data.personalInfo.registrationNumber}
-                onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("registrationNumber", e.target.value)
+                }
                 placeholder="Enter your medical registration number"
                 className={cn(errors.registrationNumber && "border-red-500")}
                 suppressHydrationWarning
               />
               {errors.registrationNumber && (
-                <p className="text-red-500 text-sm">{errors.registrationNumber}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.registrationNumber}
+                </p>
               )}
             </div>
 
@@ -458,7 +523,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
               <Input
                 id="medical-license"
                 value={data.credentials.medicalLicense}
-                onChange={(e) => updateData("credentials", { medicalLicense: e.target.value })}
+                onChange={(e) =>
+                  updateData("credentials", { medicalLicense: e.target.value })
+                }
                 placeholder="Enter your medical license number"
                 className={cn(errors.medicalLicense && "border-red-500")}
                 suppressHydrationWarning
@@ -474,21 +541,29 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
               </Label>
               <Select
                 value={data.credentials.licenseState}
-                onValueChange={(value) => updateData("credentials", { licenseState: value })}
+                onValueChange={(value) =>
+                  updateData("credentials", { licenseState: value })
+                }
               >
-                <SelectTrigger className={cn(errors.licenseState && "border-red-500")}>
+                <SelectTrigger
+                  className={cn(errors.licenseState && "border-red-500")}
+                >
                   <SelectValue placeholder="Select your license state" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
-                  <SelectItem value="arunachal-pradesh">Arunachal Pradesh</SelectItem>
+                  <SelectItem value="arunachal-pradesh">
+                    Arunachal Pradesh
+                  </SelectItem>
                   <SelectItem value="assam">Assam</SelectItem>
                   <SelectItem value="bihar">Bihar</SelectItem>
                   <SelectItem value="chhattisgarh">Chhattisgarh</SelectItem>
                   <SelectItem value="goa">Goa</SelectItem>
                   <SelectItem value="gujarat">Gujarat</SelectItem>
                   <SelectItem value="haryana">Haryana</SelectItem>
-                  <SelectItem value="himachal-pradesh">Himachal Pradesh</SelectItem>
+                  <SelectItem value="himachal-pradesh">
+                    Himachal Pradesh
+                  </SelectItem>
                   <SelectItem value="jharkhand">Jharkhand</SelectItem>
                   <SelectItem value="karnataka">Karnataka</SelectItem>
                   <SelectItem value="kerala">Kerala</SelectItem>
@@ -520,10 +595,14 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
               <Label htmlFor="degree-upload" className="text-sm font-medium">
                 Upload Medical Degree(s) *
               </Label>
-              <div className={cn(
-                "border-2 border-dashed rounded-lg p-6 text-center hover:border-healthcare-primary transition-colors",
-                errors.degrees ? "border-red-300 bg-red-50" : "border-gray-300"
-              )}>
+              <div
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-6 text-center hover:border-healthcare-primary transition-colors",
+                  errors.degrees
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-300"
+                )}
+              >
                 <input
                   id="degree-upload"
                   type="file"
@@ -532,7 +611,9 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                   onChange={(e) => {
                     if (e.target.files) {
                       const files = Array.from(e.target.files);
-                      updateData("credentials", { degrees: [...data.credentials.degrees, ...files] });
+                      updateData("credentials", {
+                        degrees: [...data.credentials.degrees, ...files],
+                      });
                     }
                   }}
                   className="hidden"
@@ -550,13 +631,16 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
               {errors.degrees && (
                 <p className="text-red-500 text-sm">{errors.degrees}</p>
               )}
-              
+
               {data.credentials.degrees.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Uploaded Files:</Label>
                   <div className="space-y-2">
                     {data.credentials.degrees.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      >
                         <div className="flex items-center space-x-2">
                           <FileText className="w-4 h-4 text-healthcare-primary" />
                           <span className="text-sm">{file.name}</span>
@@ -589,36 +673,49 @@ const PersonalInformationStep: React.FC<PersonalInformationStepProps> = ({
                 <Input
                   placeholder="Enter hospital name where you have privileges"
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       const input = e.target as HTMLInputElement;
                       if (input.value.trim()) {
                         updateData("credentials", {
-                          hospitalPrivileges: [...data.credentials.hospitalPrivileges, input.value.trim()]
+                          hospitalPrivileges: [
+                            ...data.credentials.hospitalPrivileges,
+                            input.value.trim(),
+                          ],
                         });
-                        input.value = '';
+                        input.value = "";
                       }
                     }
                   }}
                 />
                 {data.credentials.hospitalPrivileges.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {data.credentials.hospitalPrivileges.map((hospital, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        <Building2 className="w-3 h-3 mr-1" />
-                        {hospital}
-                        <button
-                          onClick={() => {
-                            const newHospitals = [...data.credentials.hospitalPrivileges];
-                            newHospitals.splice(index, 1);
-                            updateData("credentials", { hospitalPrivileges: newHospitals });
-                          }}
-                          className="ml-2 text-healthcare-primary hover:text-healthcare-teal"
+                    {data.credentials.hospitalPrivileges.map(
+                      (hospital, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs"
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
+                          <Building2 className="w-3 h-3 mr-1" />
+                          {hospital}
+                          <button
+                            onClick={() => {
+                              const newHospitals = [
+                                ...data.credentials.hospitalPrivileges,
+                              ];
+                              newHospitals.splice(index, 1);
+                              updateData("credentials", {
+                                hospitalPrivileges: newHospitals,
+                              });
+                            }}
+                            className="ml-2 text-healthcare-primary hover:text-healthcare-teal"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      )
+                    )}
                   </div>
                 )}
               </div>

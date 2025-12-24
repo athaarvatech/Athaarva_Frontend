@@ -14,7 +14,9 @@ interface FileAttachment {
 export default function NewMessagePage() {
   const [selectedRecipient, setSelectedRecipient] = useState<string>("");
   const [messageBody, setMessageBody] = useState<string>("");
-  const [aiSymptomSuggestions, setAiSymptomSuggestions] = useState<string[]>([]);
+  const [aiSymptomSuggestions, setAiSymptomSuggestions] = useState<string[]>(
+    []
+  );
   const [selectedFiles, setSelectedFiles] = useState<FileAttachment[]>([]);
 
   const checkForSymptoms = (text: string) => {
@@ -26,11 +28,13 @@ export default function NewMessagePage() {
 
   const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
-    const files: FileAttachment[] = Array.from(event.target.files).map((file) => ({
-      name: file.name,
-      size: file.size,
-      previewUrl: URL.createObjectURL(file),
-    }));
+    const files: FileAttachment[] = Array.from(event.target.files).map(
+      (file) => ({
+        name: file.name,
+        size: file.size,
+        previewUrl: URL.createObjectURL(file),
+      })
+    );
     setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
@@ -40,7 +44,11 @@ export default function NewMessagePage() {
 
   const handleSendMessage = () => {
     // Handle sending the message
-    console.log("Message sent:", { selectedRecipient, messageBody, selectedFiles });
+    console.log("Message sent:", {
+      selectedRecipient,
+      messageBody,
+      selectedFiles,
+    });
   };
 
   return (
@@ -94,7 +102,9 @@ export default function NewMessagePage() {
                   <div
                     key={index}
                     className="text-sm cursor-pointer hover:bg-blue-100 p-1 rounded"
-                    onClick={() => setMessageBody(messageBody + "\n\n" + suggestion + ": ")}
+                    onClick={() =>
+                      setMessageBody(messageBody + "\n\n" + suggestion + ": ")
+                    }
                   >
                     • {suggestion}
                   </div>
@@ -133,8 +143,12 @@ export default function NewMessagePage() {
             {selectedFiles.length > 0 && (
               <div className="mt-2 space-y-2">
                 {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center p-2 bg-gray-50 rounded"
+                  >
                     {file.previewUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={file.previewUrl}
                         alt={file.name}

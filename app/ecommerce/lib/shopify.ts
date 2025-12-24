@@ -139,12 +139,12 @@ class ShopifyStorefront {
   private apiVersion: string;
 
   constructor() {
-    this.domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || '';
-    this.storefrontToken = process.env.NEXT_PUBLIC_STOREFRONT_TOKEN || '';
-    this.apiVersion = '2025-07';
+    this.domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || "";
+    this.storefrontToken = process.env.NEXT_PUBLIC_STOREFRONT_TOKEN || "";
+    this.apiVersion = "2025-07";
 
     if (!this.domain || !this.storefrontToken) {
-      console.warn('Shopify domain or storefront token not configured');
+      console.warn("Shopify domain or storefront token not configured");
     }
   }
 
@@ -153,20 +153,20 @@ class ShopifyStorefront {
    */
   async sfFetch<T>(
     query: string,
-    variables: Record<string, any> = {}
+    variables: Record<string, unknown> = {}
   ): Promise<T> {
     if (!this.domain || !this.storefrontToken) {
-      throw new Error('Shopify domain and storefront token must be configured');
+      throw new Error("Shopify domain and storefront token must be configured");
     }
 
     const url = `https://${this.domain}/api/${this.apiVersion}/graphql.json`;
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Shopify-Storefront-Access-Token': this.storefrontToken,
+          "Content-Type": "application/json",
+          "X-Shopify-Storefront-Access-Token": this.storefrontToken,
         },
         body: JSON.stringify({
           query,
@@ -181,17 +181,17 @@ class ShopifyStorefront {
       const result: ShopifyGraphQLResponse<T> = await response.json();
 
       if (result.errors) {
-        console.error('GraphQL errors:', result.errors);
+        console.error("GraphQL errors:", result.errors);
         throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
       }
 
       if (!result.data) {
-        throw new Error('No data returned from GraphQL query');
+        throw new Error("No data returned from GraphQL query");
       }
 
       return result.data;
     } catch (error) {
-      console.error('Shopify API request failed:', error);
+      console.error("Shopify API request failed:", error);
       throw error;
     }
   }
@@ -215,5 +215,7 @@ class ShopifyStorefront {
 export const shopify = new ShopifyStorefront();
 
 // Helper function for easier imports
-export const sfFetch = <T>(query: string, variables?: Record<string, any>) =>
-  shopify.sfFetch<T>(query, variables);
+export const sfFetch = <T>(
+  query: string,
+  variables?: Record<string, unknown>
+) => shopify.sfFetch<T>(query, variables);

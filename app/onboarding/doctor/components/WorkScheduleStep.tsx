@@ -5,24 +5,19 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { 
-  Clock, 
-  AlertCircle, 
+import {
+  Clock,
+  AlertCircle,
   X,
   Calendar as CalendarIcon,
   Plus,
   Trash2,
-  Timer as TimerIcon,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { OnboardingData } from "../page";
 
 interface WorkScheduleStepProps {
@@ -43,7 +38,7 @@ const daysOfWeek = [
   { id: "thursday", label: "Thursday", short: "Thu" },
   { id: "friday", label: "Friday", short: "Fri" },
   { id: "saturday", label: "Saturday", short: "Sat" },
-  { id: "sunday", label: "Sunday", short: "Sun" }
+  { id: "sunday", label: "Sunday", short: "Sun" },
 ];
 
 interface WorkingHour {
@@ -59,7 +54,11 @@ interface LeaveEntry {
   reason: string;
 }
 
-function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStepProps) {
+function WorkScheduleStep({
+  data,
+  updateData,
+  onStepComplete,
+}: WorkScheduleStepProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [availableDays, setAvailableDays] = useState<string[]>([]);
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
@@ -72,66 +71,88 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
   // Initialize state from data
   useEffect(() => {
     if (schedule.workingHours.length > 0) {
-      setWorkingHours(schedule.workingHours.map((wh, index) => ({
-        id: `wh-${index}`,
-        start: wh.start,
-        end: wh.end
-      })));
+      setWorkingHours(
+        schedule.workingHours.map((wh, index) => ({
+          id: `wh-${index}`,
+          start: wh.start,
+          end: wh.end,
+        }))
+      );
     }
-    
+
     if (schedule.availableDays.length > 0) {
       setAvailableDays(schedule.availableDays);
     }
-    
+
     if (schedule.blockedDates.length > 0) {
       setBlockedDates(schedule.blockedDates);
     }
 
     if (schedule.leavePreferences.length > 0) {
-      setLeaveEntries(schedule.leavePreferences.map((leave, index) => ({
-        id: `leave-${index}`,
-        date: leave.date,
-        reason: leave.reason || ""
-      })));
+      setLeaveEntries(
+        schedule.leavePreferences.map((leave, index) => ({
+          id: `leave-${index}`,
+          date: leave.date,
+          reason: leave.reason || "",
+        }))
+      );
     }
-  }, [schedule.workingHours, schedule.availableDays, schedule.blockedDates, schedule.leavePreferences]);
+  }, [
+    schedule.workingHours,
+    schedule.availableDays,
+    schedule.blockedDates,
+    schedule.leavePreferences,
+  ]);
 
   // Add working hour slot
   const addWorkingHour = () => {
     const newHour: WorkingHour = {
       id: `wh-${Date.now()}`,
       start: "09:00",
-      end: "17:00"
+      end: "17:00",
     };
-    
+
     const updatedHours = [...workingHours, newHour];
     setWorkingHours(updatedHours);
-    
+
     updateData("schedule", {
-      workingHours: updatedHours.map(wh => ({ start: wh.start, end: wh.end }))
+      workingHours: updatedHours.map((wh) => ({
+        start: wh.start,
+        end: wh.end,
+      })),
     });
   };
 
   // Update working hour
-  const updateWorkingHour = (id: string, field: "start" | "end", value: string) => {
-    const updatedHours = workingHours.map(wh => 
+  const updateWorkingHour = (
+    id: string,
+    field: "start" | "end",
+    value: string
+  ) => {
+    const updatedHours = workingHours.map((wh) =>
       wh.id === id ? { ...wh, [field]: value } : wh
     );
-    
+
     setWorkingHours(updatedHours);
-    
+
     updateData("schedule", {
-      workingHours: updatedHours.map(wh => ({ start: wh.start, end: wh.end }))
+      workingHours: updatedHours.map((wh) => ({
+        start: wh.start,
+        end: wh.end,
+      })),
     });
   };
 
   // Remove working hour
   const removeWorkingHour = (id: string) => {
-    const updatedHours = workingHours.filter(wh => wh.id !== id);
+    const updatedHours = workingHours.filter((wh) => wh.id !== id);
     setWorkingHours(updatedHours);
-    
+
     updateData("schedule", {
-      workingHours: updatedHours.map(wh => ({ start: wh.start, end: wh.end }))
+      workingHours: updatedHours.map((wh) => ({
+        start: wh.start,
+        end: wh.end,
+      })),
     });
   };
 
@@ -139,11 +160,11 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
   const toggleDay = (dayId: string) => {
     let updatedDays;
     if (availableDays.includes(dayId)) {
-      updatedDays = availableDays.filter(d => d !== dayId);
+      updatedDays = availableDays.filter((d) => d !== dayId);
     } else {
       updatedDays = [...availableDays, dayId];
     }
-    
+
     setAvailableDays(updatedDays);
     updateData("schedule", { availableDays: updatedDays });
   };
@@ -154,58 +175,58 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
       const updatedBlockedDates = [...blockedDates, date];
       setBlockedDates(updatedBlockedDates);
       updateData("schedule", { blockedDates: updatedBlockedDates });
-      
+
       // Add to leave entries with empty reason initially
       const newLeave: LeaveEntry = {
         id: `leave-${Date.now()}`,
         date,
-        reason: newLeaveReason || "Personal Leave"
+        reason: newLeaveReason || "Personal Leave",
       };
-      
+
       const updatedLeaves = [...leaveEntries, newLeave];
       setLeaveEntries(updatedLeaves);
-      
+
       updateData("schedule", {
-        leavePreferences: updatedLeaves.map(leave => ({
+        leavePreferences: updatedLeaves.map((leave) => ({
           date: leave.date,
-          reason: leave.reason
-        }))
+          reason: leave.reason,
+        })),
       });
-      
+
       setNewLeaveReason("");
     }
   };
 
   // Remove blocked date
   const removeBlockedDate = (dateToRemove: Date, leaveId: string) => {
-    const updatedBlockedDates = blockedDates.filter(date => 
-      date.getTime() !== dateToRemove.getTime()
+    const updatedBlockedDates = blockedDates.filter(
+      (date) => date.getTime() !== dateToRemove.getTime()
     );
     setBlockedDates(updatedBlockedDates);
     updateData("schedule", { blockedDates: updatedBlockedDates });
 
-    const updatedLeaves = leaveEntries.filter(leave => leave.id !== leaveId);
+    const updatedLeaves = leaveEntries.filter((leave) => leave.id !== leaveId);
     setLeaveEntries(updatedLeaves);
     updateData("schedule", {
-      leavePreferences: updatedLeaves.map(leave => ({
+      leavePreferences: updatedLeaves.map((leave) => ({
         date: leave.date,
-        reason: leave.reason
-      }))
+        reason: leave.reason,
+      })),
     });
   };
 
   // Update leave reason
   const updateLeaveReason = (id: string, reason: string) => {
-    const updatedLeaves = leaveEntries.map(leave => 
+    const updatedLeaves = leaveEntries.map((leave) =>
       leave.id === id ? { ...leave, reason } : leave
     );
-    
+
     setLeaveEntries(updatedLeaves);
     updateData("schedule", {
-      leavePreferences: updatedLeaves.map(leave => ({
+      leavePreferences: updatedLeaves.map((leave) => ({
         date: leave.date,
-        reason: leave.reason
-      }))
+        reason: leave.reason,
+      })),
     });
   };
 
@@ -218,7 +239,7 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
   const isStepComplete = useCallback(() => {
     return (
       workingHours.length > 0 &&
-      workingHours.every(wh => isValidTimeSlot(wh.start, wh.end)) &&
+      workingHours.every((wh) => isValidTimeSlot(wh.start, wh.end)) &&
       availableDays.length > 0
     );
   }, [workingHours, availableDays]);
@@ -245,7 +266,9 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                 <div className="w-8 h-8 bg-healthcare-primary/10 rounded-lg flex items-center justify-center">
                   <Clock className="w-5 h-5 text-healthcare-primary" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Working Hours</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Working Hours
+                </h3>
               </div>
               <Button
                 onClick={addWorkingHour}
@@ -262,7 +285,9 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
               <div className="text-center py-8 text-gray-500">
                 <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p>No working hours configured yet.</p>
-                <p className="text-sm">Click &quot;Add Time Slot&quot; to get started.</p>
+                <p className="text-sm">
+                  Click &quot;Add Time Slot&quot; to get started.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -286,14 +311,26 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                       <Input
                         type="time"
                         value={workingHour.start}
-                        onChange={(e) => updateWorkingHour(workingHour.id, "start", e.target.value)}
+                        onChange={(e) =>
+                          updateWorkingHour(
+                            workingHour.id,
+                            "start",
+                            e.target.value
+                          )
+                        }
                         className="w-32"
                       />
                       <span className="text-gray-400">to</span>
                       <Input
                         type="time"
                         value={workingHour.end}
-                        onChange={(e) => updateWorkingHour(workingHour.id, "end", e.target.value)}
+                        onChange={(e) =>
+                          updateWorkingHour(
+                            workingHour.id,
+                            "end",
+                            e.target.value
+                          )
+                        }
                         className="w-32"
                       />
                       {isValidTimeSlot(workingHour.start, workingHour.end) && (
@@ -328,14 +365,16 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
               <div className="w-8 h-8 bg-healthcare-emerald/10 rounded-lg flex items-center justify-center">
                 <CalendarIcon className="w-5 h-5 text-healthcare-emerald" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Available Days</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Available Days
+              </h3>
             </div>
 
             <div className="space-y-4">
               <Label className="text-sm font-medium text-gray-700">
                 Select the days you are available for consultations:
               </Label>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {daysOfWeek.map((day) => (
                   <button
@@ -356,10 +395,14 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
 
               {availableDays.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {availableDays.map(dayId => {
-                    const day = daysOfWeek.find(d => d.id === dayId);
+                  {availableDays.map((dayId) => {
+                    const day = daysOfWeek.find((d) => d.id === dayId);
                     return (
-                      <Badge key={dayId} variant="secondary" className="bg-healthcare-emerald/10 text-healthcare-emerald">
+                      <Badge
+                        key={dayId}
+                        variant="secondary"
+                        className="bg-healthcare-emerald/10 text-healthcare-emerald"
+                      >
                         {day?.label}
                       </Badge>
                     );
@@ -384,7 +427,9 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                 <div className="w-8 h-8 bg-healthcare-teal/10 rounded-lg flex items-center justify-center">
                   <CalendarIcon className="w-5 h-5 text-healthcare-teal" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Leave Preferences</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Leave Preferences
+                </h3>
               </div>
               <Button
                 onClick={() => setShowCalendar(!showCalendar)}
@@ -405,7 +450,10 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="leaveReason" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="leaveReason"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Leave Reason (Optional)
                   </Label>
                   <Input
@@ -415,16 +463,17 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                     onChange={(e) => setNewLeaveReason(e.target.value)}
                   />
                 </div>
-                
+
                 <div className="flex justify-center">
                   <Calendar
                     mode="single"
                     selected={undefined}
                     onSelect={handleDateSelect}
-                    disabled={(date) => 
-                      date < new Date() || 
-                      blockedDates.some(blockedDate => 
-                        blockedDate.toDateString() === date.toDateString()
+                    disabled={(date) =>
+                      date < new Date() ||
+                      blockedDates.some(
+                        (blockedDate) =>
+                          blockedDate.toDateString() === date.toDateString()
                       )
                     }
                     className="rounded-md border"
@@ -455,19 +504,23 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
                                 weekday: "long",
                                 year: "numeric",
                                 month: "long",
-                                day: "numeric"
+                                day: "numeric",
                               })}
                             </span>
                           </div>
                           <Input
                             placeholder="Leave reason (optional)"
                             value={leave.reason}
-                            onChange={(e) => updateLeaveReason(leave.id, e.target.value)}
+                            onChange={(e) =>
+                              updateLeaveReason(leave.id, e.target.value)
+                            }
                             className="text-sm"
                           />
                         </div>
                         <Button
-                          onClick={() => removeBlockedDate(leave.date, leave.id)}
+                          onClick={() =>
+                            removeBlockedDate(leave.date, leave.id)
+                          }
                           size="sm"
                           variant="ghost"
                           className="text-red-600 hover:text-red-800 hover:bg-red-50 ml-2"
@@ -484,7 +537,9 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
               <div className="text-center py-6 text-gray-500">
                 <CalendarIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm">No blocked dates yet.</p>
-                <p className="text-xs">Click &quot;Block Dates&quot; to add leave periods.</p>
+                <p className="text-xs">
+                  Click &quot;Block Dates&quot; to add leave periods.
+                </p>
               </div>
             )}
           </CardContent>
@@ -499,7 +554,9 @@ function WorkScheduleStep({ data, updateData, onStepComplete }: WorkScheduleStep
       >
         <Card className="border border-gray-100 bg-gradient-to-br from-healthcare-cool-white to-white">
           <CardContent className="p-6">
-            <h4 className="font-semibold text-gray-900 mb-4">Schedule Summary</h4>
+            <h4 className="font-semibold text-gray-900 mb-4">
+              Schedule Summary
+            </h4>
             <div className="grid md:grid-cols-3 gap-6 text-sm">
               <div>
                 <p className="font-medium text-gray-700 mb-2">Working Hours</p>

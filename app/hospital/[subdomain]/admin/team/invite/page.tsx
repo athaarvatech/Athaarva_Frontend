@@ -5,12 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
-  UserPlus,
   Mail,
   User,
   Phone,
-  Shield,
-  Building2,
   Plus,
   X,
   Send,
@@ -22,7 +19,13 @@ import {
   Users,
   ClipboardList,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,7 +80,6 @@ interface RoleCardProps {
 }
 
 function RoleCard({
-  role,
   title,
   description,
   icon,
@@ -135,7 +137,11 @@ interface SingleInviteFormProps {
   loading: boolean;
 }
 
-function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormProps) {
+function SingleInviteForm({
+  primaryColor,
+  onSubmit,
+  loading,
+}: SingleInviteFormProps) {
   const [formData, setFormData] = useState<InviteFormData>({
     email: "",
     full_name: "",
@@ -246,7 +252,9 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
               id="full_name"
               placeholder="Dr. John Smith"
               value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, full_name: e.target.value })
+              }
               className={`pl-10 ${errors.full_name ? "border-red-500" : ""}`}
             />
           </div>
@@ -264,7 +272,9 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
               type="email"
               placeholder="doctor@email.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
             />
           </div>
@@ -281,7 +291,9 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
               id="phone"
               placeholder="+91 9876543210"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               className="pl-10"
             />
           </div>
@@ -291,7 +303,9 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
           <Label htmlFor="department">Department (Optional)</Label>
           <Select
             value={formData.department}
-            onValueChange={(value) => setFormData({ ...formData, department: value })}
+            onValueChange={(value) =>
+              setFormData({ ...formData, department: value })
+            }
           >
             <SelectTrigger id="department">
               <SelectValue placeholder="Select department" />
@@ -314,7 +328,9 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
           id="message"
           placeholder="Add a personal welcome message that will be included in the invitation email..."
           value={formData.personal_message}
-          onChange={(e) => setFormData({ ...formData, personal_message: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, personal_message: e.target.value })
+          }
           rows={3}
         />
       </div>
@@ -328,7 +344,10 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
             setFormData({ ...formData, send_welcome_email: checked as boolean })
           }
         />
-        <Label htmlFor="send_welcome" className="text-sm font-normal cursor-pointer">
+        <Label
+          htmlFor="send_welcome"
+          className="text-sm font-normal cursor-pointer"
+        >
           Send welcome email with onboarding instructions
         </Label>
       </div>
@@ -339,16 +358,21 @@ function SingleInviteForm({ primaryColor, onSubmit, loading }: SingleInviteFormP
         <div className="text-sm text-blue-700">
           <p className="font-medium">What happens next?</p>
           <p className="mt-1">
-            The invitee will receive an email with a unique link to complete their profile setup.
-            For doctors, this includes verification of their medical license. Staff members will be
-            guided through a simplified onboarding process.
+            The invitee will receive an email with a unique link to complete
+            their profile setup. For doctors, this includes verification of
+            their medical license. Staff members will be guided through a
+            simplified onboarding process.
           </p>
         </div>
       </div>
 
       {/* Submit Button */}
       <div className="flex justify-end gap-3">
-        <Link href={`/hospital/${window.location.pathname.split("/")[2]}/admin/team`}>
+        <Link
+          href={`/hospital/${
+            window.location.pathname.split("/")[2]
+          }/admin/team`}
+        >
           <Button type="button" variant="outline">
             Cancel
           </Button>
@@ -387,9 +411,16 @@ interface BulkInviteSectionProps {
   onBulkInvite: (invites: BulkInvite[]) => Promise<void>;
 }
 
-function BulkInviteSection({ primaryColor, onBulkInvite }: BulkInviteSectionProps) {
+function BulkInviteSection({
+  primaryColor,
+  onBulkInvite,
+}: BulkInviteSectionProps) {
   const [invites, setInvites] = useState<BulkInvite[]>([]);
-  const [newInvite, setNewInvite] = useState({ email: "", name: "", role: "staff" });
+  const [newInvite, setNewInvite] = useState({
+    email: "",
+    name: "",
+    role: "staff",
+  });
 
   const addInvite = () => {
     if (newInvite.email && newInvite.name) {
@@ -416,7 +447,9 @@ function BulkInviteSection({ primaryColor, onBulkInvite }: BulkInviteSectionProp
         <Input
           placeholder="Email"
           value={newInvite.email}
-          onChange={(e) => setNewInvite({ ...newInvite, email: e.target.value })}
+          onChange={(e) =>
+            setNewInvite({ ...newInvite, email: e.target.value })
+          }
         />
         <Input
           placeholder="Full Name"
@@ -466,7 +499,9 @@ function BulkInviteSection({ primaryColor, onBulkInvite }: BulkInviteSectionProp
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
                     <span className="font-medium text-sm">{invite.name}</span>
-                    <span className="text-xs text-gray-500">{invite.email}</span>
+                    <span className="text-xs text-gray-500">
+                      {invite.email}
+                    </span>
                   </div>
                   <Badge variant="outline" className="capitalize">
                     {invite.role}
@@ -522,7 +557,8 @@ export default function InviteTeamMemberPage() {
     setLoading(true);
     try {
       // API call to send invitation
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const token = localStorage.getItem("hospital_admin_token");
 
       const response = await fetch(`${API_BASE}/api/v1/team/invitations`, {
@@ -586,9 +622,14 @@ export default function InviteTeamMemberPage() {
             className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
             style={{ backgroundColor: `${primaryColor}15` }}
           >
-            <CheckCircle className="w-10 h-10" style={{ color: primaryColor }} />
+            <CheckCircle
+              className="w-10 h-10"
+              style={{ color: primaryColor }}
+            />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Invitation Sent!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Invitation Sent!
+          </h2>
           <p className="text-gray-600">
             The invitation email has been sent successfully. Redirecting...
           </p>
@@ -607,7 +648,9 @@ export default function InviteTeamMemberPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Invite Team Member</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Invite Team Member
+          </h1>
           <p className="text-gray-500 mt-1">
             Send invitations to doctors and staff to join your hospital
           </p>
@@ -652,7 +695,9 @@ export default function InviteTeamMemberPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {inviteMode === "single" ? "Invite Team Member" : "Bulk Invitations"}
+            {inviteMode === "single"
+              ? "Invite Team Member"
+              : "Bulk Invitations"}
           </CardTitle>
           <CardDescription>
             {inviteMode === "single"
@@ -668,7 +713,10 @@ export default function InviteTeamMemberPage() {
               loading={loading}
             />
           ) : (
-            <BulkInviteSection primaryColor={primaryColor} onBulkInvite={handleBulkInvite} />
+            <BulkInviteSection
+              primaryColor={primaryColor}
+              onBulkInvite={handleBulkInvite}
+            />
           )}
         </CardContent>
       </Card>

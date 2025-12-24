@@ -17,7 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -55,7 +61,9 @@ export default function ContactPage() {
   useEffect(() => {
     async function fetchHospital() {
       try {
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
         setHospital(hospitalData);
       } catch (error) {
         console.error("Error fetching hospital:", error);
@@ -112,7 +120,8 @@ export default function ContactPage() {
           >
             <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
             <p className="text-lg text-white/90 max-w-2xl mx-auto">
-              We're here to help. Reach out to us for appointments, inquiries, or feedback.
+              We&apos;re here to help. Reach out to us for appointments,
+              inquiries, or feedback.
             </p>
           </motion.div>
         </div>
@@ -137,8 +146,12 @@ export default function ContactPage() {
                       <Ambulance className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-red-900">Emergency Services</h3>
-                      <p className="text-2xl font-bold text-red-600">{hospital.phone}</p>
+                      <h3 className="font-semibold text-red-900">
+                        Emergency Services
+                      </h3>
+                      <p className="text-2xl font-bold text-red-600">
+                        {hospital.phone}
+                      </p>
                       <p className="text-sm text-red-700">Available 24/7</p>
                     </div>
                   </div>
@@ -149,7 +162,9 @@ export default function ContactPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Contact Information</CardTitle>
-                  <CardDescription>Reach us through any of these channels</CardDescription>
+                  <CardDescription>
+                    Reach us through any of these channels
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-start gap-4">
@@ -157,11 +172,16 @@ export default function ContactPage() {
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${theme.primaryColor}15` }}
                     >
-                      <Building2 className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                      <Building2
+                        className="w-5 h-5"
+                        style={{ color: theme.primaryColor }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">{hospital.hospital_name}</p>
-                      <p className="text-sm text-gray-600">License: {hospital.license_number}</p>
+                      <p className="text-sm text-gray-600">
+                        License: {hospital.license_number}
+                      </p>
                     </div>
                   </div>
 
@@ -170,7 +190,10 @@ export default function ContactPage() {
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${theme.primaryColor}15` }}
                     >
-                      <MapPin className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                      <MapPin
+                        className="w-5 h-5"
+                        style={{ color: theme.primaryColor }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">Address</p>
@@ -187,7 +210,10 @@ export default function ContactPage() {
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${theme.primaryColor}15` }}
                     >
-                      <Phone className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                      <Phone
+                        className="w-5 h-5"
+                        style={{ color: theme.primaryColor }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">Phone</p>
@@ -205,7 +231,10 @@ export default function ContactPage() {
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${theme.primaryColor}15` }}
                     >
-                      <Mail className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                      <Mail
+                        className="w-5 h-5"
+                        style={{ color: theme.primaryColor }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">Email</p>
@@ -223,7 +252,10 @@ export default function ContactPage() {
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${theme.primaryColor}15` }}
                     >
-                      <Clock className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                      <Clock
+                        className="w-5 h-5"
+                        style={{ color: theme.primaryColor }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">Working Hours</p>
@@ -263,7 +295,8 @@ export default function ContactPage() {
                     Send us a Message
                   </CardTitle>
                   <CardDescription>
-                    Fill out the form below and we'll get back to you shortly.
+                    Fill out the form below and we&apos;ll get back to you
+                    shortly.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -277,13 +310,17 @@ export default function ContactPage() {
                         className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
                         style={{ backgroundColor: `${theme.primaryColor}15` }}
                       >
-                        <Send className="w-8 h-8" style={{ color: theme.primaryColor }} />
+                        <Send
+                          className="w-8 h-8"
+                          style={{ color: theme.primaryColor }}
+                        />
                       </div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">
                         Message Sent Successfully!
                       </h3>
                       <p className="text-gray-600 mb-6">
-                        Thank you for reaching out. We'll get back to you within 24 hours.
+                        Thank you for reaching out. We&apos;ll get back to you
+                        within 24 hours.
                       </p>
                       <Button
                         variant="outline"
@@ -314,7 +351,10 @@ export default function ContactPage() {
                             type="tel"
                             value={formData.phone}
                             onChange={(e) =>
-                              setFormData({ ...formData, phone: e.target.value })
+                              setFormData({
+                                ...formData,
+                                phone: e.target.value,
+                              })
                             }
                             placeholder="+91 98765 43210"
                             required
@@ -348,11 +388,19 @@ export default function ContactPage() {
                             <SelectValue placeholder="Select a subject" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="appointment">Appointment Inquiry</SelectItem>
+                            <SelectItem value="appointment">
+                              Appointment Inquiry
+                            </SelectItem>
                             <SelectItem value="feedback">Feedback</SelectItem>
-                            <SelectItem value="billing">Billing Query</SelectItem>
-                            <SelectItem value="medical">Medical Records</SelectItem>
-                            <SelectItem value="general">General Inquiry</SelectItem>
+                            <SelectItem value="billing">
+                              Billing Query
+                            </SelectItem>
+                            <SelectItem value="medical">
+                              Medical Records
+                            </SelectItem>
+                            <SelectItem value="general">
+                              General Inquiry
+                            </SelectItem>
                             <SelectItem value="complaint">Complaint</SelectItem>
                           </SelectContent>
                         </Select>
@@ -364,7 +412,10 @@ export default function ContactPage() {
                           id="message"
                           value={formData.message}
                           onChange={(e) =>
-                            setFormData({ ...formData, message: e.target.value })
+                            setFormData({
+                              ...formData,
+                              message: e.target.value,
+                            })
                           }
                           placeholder="How can we help you?"
                           rows={5}

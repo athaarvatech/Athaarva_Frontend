@@ -12,8 +12,6 @@ import {
   Calendar,
   GraduationCap,
   Award,
-  MapPin,
-  Phone,
   Languages,
   CheckCircle,
   Building2,
@@ -83,12 +81,17 @@ export default function DoctorProfilePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
         setHospital(hospitalData);
 
         // Fetch doctor details
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-        const response = await fetch(`${API_BASE_URL}/api/v1/doctors/${doctorId}`);
+        const API_BASE_URL =
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/doctors/${doctorId}`
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -109,6 +112,7 @@ export default function DoctorProfilePage() {
     }
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain, doctorId]);
 
   function getMockDoctor(): Doctor {
@@ -138,7 +142,11 @@ export default function DoctorProfilePage() {
       ],
       education: [
         { degree: "MBBS", institution: "AIIMS Delhi", year: 2005 },
-        { degree: "MD (Internal Medicine)", institution: "PGI Chandigarh", year: 2009 },
+        {
+          degree: "MD (Internal Medicine)",
+          institution: "PGI Chandigarh",
+          year: 2009,
+        },
         { degree: "DM (Cardiology)", institution: "AIIMS Delhi", year: 2012 },
       ],
       working_hours: [
@@ -158,21 +166,24 @@ export default function DoctorProfilePage() {
         id: "1",
         patient_name: "Rahul M.",
         rating: 5,
-        comment: "Excellent doctor! Very thorough in diagnosis and explained everything clearly. Highly recommended.",
+        comment:
+          "Excellent doctor! Very thorough in diagnosis and explained everything clearly. Highly recommended.",
         date: "2024-11-15",
       },
       {
         id: "2",
         patient_name: "Sneha K.",
         rating: 4,
-        comment: "Very professional and caring. The treatment was effective and I felt much better after following her advice.",
+        comment:
+          "Very professional and caring. The treatment was effective and I felt much better after following her advice.",
         date: "2024-11-10",
       },
       {
         id: "3",
         patient_name: "Amit S.",
         rating: 5,
-        comment: "Dr. Sharma is extremely knowledgeable and patient. She took time to understand my concerns and provided the best treatment.",
+        comment:
+          "Dr. Sharma is extremely knowledgeable and patient. She took time to understand my concerns and provided the best treatment.",
         date: "2024-11-05",
       },
     ];
@@ -238,7 +249,11 @@ export default function DoctorProfilePage() {
                         className="w-32 h-32 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-4xl font-bold"
                         style={{ backgroundColor: theme.primaryColor }}
                       >
-                        {doctor.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        {doctor.full_name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
                       </div>
                     )}
                   </div>
@@ -250,7 +265,10 @@ export default function DoctorProfilePage() {
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                           {doctor.full_name}
                         </h1>
-                        <p className="text-lg" style={{ color: theme.primaryColor }}>
+                        <p
+                          className="text-lg"
+                          style={{ color: theme.primaryColor }}
+                        >
                           {doctor.specialization}
                         </p>
                         <p className="text-gray-600">{doctor.qualification}</p>
@@ -259,8 +277,12 @@ export default function DoctorProfilePage() {
                           {doctor.rating && (
                             <div className="flex items-center gap-1">
                               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                              <span className="font-semibold">{doctor.rating}</span>
-                              <span className="text-gray-500">({doctor.total_reviews} reviews)</span>
+                              <span className="font-semibold">
+                                {doctor.rating}
+                              </span>
+                              <span className="text-gray-500">
+                                ({doctor.total_reviews} reviews)
+                              </span>
                             </div>
                           )}
                           <div className="flex items-center gap-1 text-gray-600">
@@ -278,8 +300,13 @@ export default function DoctorProfilePage() {
 
                       <div className="flex flex-col gap-2">
                         <div className="text-right">
-                          <p className="text-sm text-gray-500">Consultation Fee</p>
-                          <p className="text-2xl font-bold" style={{ color: theme.primaryColor }}>
+                          <p className="text-sm text-gray-500">
+                            Consultation Fee
+                          </p>
+                          <p
+                            className="text-2xl font-bold"
+                            style={{ color: theme.primaryColor }}
+                          >
                             ₹{doctor.consultation_fee}
                           </p>
                         </div>
@@ -323,7 +350,9 @@ export default function DoctorProfilePage() {
                       <CardTitle>About Doctor</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-600 leading-relaxed">{doctor.bio}</p>
+                      <p className="text-gray-600 leading-relaxed">
+                        {doctor.bio}
+                      </p>
                     </CardContent>
                   </Card>
 
@@ -369,8 +398,12 @@ export default function DoctorProfilePage() {
                         <div className="flex items-center gap-3">
                           <Building2 className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-xs text-gray-500">Registration No.</p>
-                            <p className="text-sm">{doctor.registration_number}</p>
+                            <p className="text-xs text-gray-500">
+                              Registration No.
+                            </p>
+                            <p className="text-sm">
+                              {doctor.registration_number}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -413,7 +446,10 @@ export default function DoctorProfilePage() {
                           key={index}
                           className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
                         >
-                          <CheckCircle className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                          <CheckCircle
+                            className="w-5 h-5"
+                            style={{ color: theme.primaryColor }}
+                          />
                           <span>{service}</span>
                         </div>
                       ))}
@@ -464,9 +500,14 @@ export default function DoctorProfilePage() {
                   {reviews.length > 0 ? (
                     <div className="space-y-4">
                       {reviews.map((review) => (
-                        <div key={review.id} className="p-4 rounded-lg bg-gray-50">
+                        <div
+                          key={review.id}
+                          className="p-4 rounded-lg bg-gray-50"
+                        >
                           <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium">{review.patient_name}</span>
+                            <span className="font-medium">
+                              {review.patient_name}
+                            </span>
                             <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
                                 <Star
@@ -480,7 +521,9 @@ export default function DoctorProfilePage() {
                               ))}
                             </div>
                           </div>
-                          <p className="text-gray-600 text-sm">{review.comment}</p>
+                          <p className="text-gray-600 text-sm">
+                            {review.comment}
+                          </p>
                           <p className="text-xs text-gray-400 mt-2">
                             {new Date(review.date).toLocaleDateString()}
                           </p>

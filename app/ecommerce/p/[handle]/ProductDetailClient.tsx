@@ -1,22 +1,34 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, Share2, ShoppingCart, Star, Plus, Minus, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { useRouter } from 'next/navigation';
-import { useCart } from '../../contexts/CartContext';
-import { ProductService } from '../../lib/products';
-import type { ShopifyProduct } from '../../lib/shopify';
+import React, { useState } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  ShoppingCart,
+  Star,
+  Plus,
+  Minus,
+  Check,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
+import { useCart } from "../../contexts/CartContext";
+import { ProductService } from "../../lib/products";
+import type { ShopifyProduct } from "../../lib/shopify";
 
 interface ProductDetailClientProps {
   product: ShopifyProduct;
 }
 
-export default function ProductDetailClient({ product }: ProductDetailClientProps) {
+export default function ProductDetailClient({
+  product,
+}: ProductDetailClientProps) {
   const router = useRouter();
   const { addToCart } = useCart();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -35,7 +47,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       setIsAddingToCart(true);
       await addToCart(currentVariant.id, quantity);
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error("Error adding to cart:", error);
     } finally {
       setIsAddingToCart(false);
     }
@@ -54,12 +66,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Error sharing:', error);
+        console.log("Error sharing:", error);
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
-      alert('Product link copied to clipboard!');
+      alert("Product link copied to clipboard!");
     }
   };
 
@@ -80,7 +92,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </Button>
             <Separator orientation="vertical" className="h-6" />
             <div className="flex-1">
-              <h1 className="font-semibold text-gray-900 truncate">{product.title}</h1>
+              <h1 className="font-semibold text-gray-900 truncate">
+                {product.title}
+              </h1>
             </div>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={handleShare}>
@@ -102,13 +116,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="aspect-square bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg"
+              className="aspect-square bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg relative"
             >
               {images.length > 0 ? (
-                <img
-                  src={images[selectedImageIndex]?.url || product.featuredImage?.url}
+                <Image
+                  src={
+                    images[selectedImageIndex]?.url ||
+                    product.featuredImage?.url ||
+                    ""
+                  }
                   alt={images[selectedImageIndex]?.altText || product.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -124,16 +143,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square bg-white rounded-lg border-2 overflow-hidden transition-all ${
+                    className={`aspect-square bg-white rounded-lg border-2 overflow-hidden transition-all relative ${
                       selectedImageIndex === index
-                        ? 'border-blue-500 ring-2 ring-blue-200'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? "border-blue-500 ring-2 ring-blue-200"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    <img
+                    <Image
                       src={image.url}
                       alt={image.altText || `${product.title} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </button>
                 ))}
@@ -146,31 +166,46 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Product Info */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  {product.productType || 'Medical Equipment'}
+                <Badge
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-800"
+                >
+                  {product.productType || "Medical Equipment"}
                 </Badge>
                 {currentVariant?.availableForSale && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800"
+                  >
                     <Check className="w-3 h-3 mr-1" />
                     In Stock
                   </Badge>
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                {product.title}
+              </h1>
 
               <div className="flex items-center gap-4 mb-6">
                 <div className="text-3xl font-bold text-blue-600">
                   {ProductService.formatPrice(
-                    currentVariant?.price || product.priceRange.minVariantPrice.amount,
-                    currentVariant?.currencyCode || product.priceRange.minVariantPrice.currencyCode
+                    currentVariant?.price ||
+                      product.priceRange.minVariantPrice.amount,
+                    currentVariant?.currencyCode ||
+                      product.priceRange.minVariantPrice.currencyCode
                   )}
                 </div>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
-                  <span className="text-sm text-gray-600 ml-2">(4.8) • 24 reviews</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    (4.8) • 24 reviews
+                  </span>
                 </div>
               </div>
 
@@ -194,23 +229,36 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         disabled={!variant.availableForSale}
                         className={`p-4 rounded-lg border-2 text-left transition-all ${
                           selectedVariant === index
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        } ${!variant.availableForSale ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        } ${
+                          !variant.availableForSale
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                       >
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium">{variant.title}</p>
                             <p className="text-sm text-gray-600">
-                              {variant.selectedOptions.map(option => `${option.name}: ${option.value}`).join(', ')}
+                              {variant.selectedOptions
+                                .map(
+                                  (option) => `${option.name}: ${option.value}`
+                                )
+                                .join(", ")}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold">
-                              {ProductService.formatPrice(variant.price, variant.currencyCode)}
+                              {ProductService.formatPrice(
+                                variant.price,
+                                variant.currencyCode
+                              )}
                             </p>
                             {!variant.availableForSale && (
-                              <p className="text-sm text-red-600">Out of Stock</p>
+                              <p className="text-sm text-red-600">
+                                Out of Stock
+                              </p>
                             )}
                           </div>
                         </div>
@@ -227,7 +275,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="space-y-6">
                   {/* Quantity Selector */}
                   <div>
-                    <label className="block text-sm font-medium mb-3">Quantity</label>
+                    <label className="block text-sm font-medium mb-3">
+                      Quantity
+                    </label>
                     <div className="flex items-center gap-3">
                       <Button
                         variant="outline"
@@ -237,7 +287,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
-                      <span className="w-12 text-center font-medium text-lg">{quantity}</span>
+                      <span className="w-12 text-center font-medium text-lg">
+                        {quantity}
+                      </span>
                       <Button
                         variant="outline"
                         size="sm"
@@ -251,18 +303,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   {/* Add to Cart Button */}
                   <Button
                     onClick={handleAddToCart}
-                    disabled={!currentVariant?.availableForSale || isAddingToCart}
+                    disabled={
+                      !currentVariant?.availableForSale || isAddingToCart
+                    }
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-semibold"
                     size="lg"
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
                     {isAddingToCart
-                      ? 'Adding to Cart...'
+                      ? "Adding to Cart..."
                       : !currentVariant?.availableForSale
-                      ? 'Out of Stock'
+                      ? "Out of Stock"
                       : `Add to Cart • ${ProductService.formatPrice(
-                          (currentVariant?.price || parseFloat(product.priceRange.minVariantPrice.amount)) * quantity,
-                          currentVariant?.currencyCode || product.priceRange.minVariantPrice.currencyCode
+                          (currentVariant?.price ||
+                            parseFloat(
+                              product.priceRange.minVariantPrice.amount
+                            )) * quantity,
+                          currentVariant?.currencyCode ||
+                            product.priceRange.minVariantPrice.currencyCode
                         )}`}
                   </Button>
 
@@ -272,7 +330,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       <h4 className="text-sm font-medium mb-2">Tags</h4>
                       <div className="flex flex-wrap gap-2">
                         {product.tags.slice(0, 6).map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}

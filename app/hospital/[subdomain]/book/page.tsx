@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,15 +14,18 @@ import {
   Building2,
   CreditCard,
   Stethoscope,
-  Phone,
-  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import HospitalHeader from "../components/HospitalHeader";
 import HospitalFooter from "../components/HospitalFooter";
 import { HospitalService, HospitalProfile } from "@/lib/hospital-service";
@@ -107,7 +109,9 @@ export default function BookAppointmentPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
         setHospital(hospitalData);
         setDoctors(getMockDoctors());
       } catch (error) {
@@ -199,7 +203,9 @@ export default function BookAppointmentPage() {
   const selectedDoctor = doctors.find((d) => d.id === bookingData.doctorId);
   const filteredDoctors = bookingData.specialization
     ? doctors.filter(
-        (d) => d.specialization.toLowerCase() === bookingData.specialization.toLowerCase()
+        (d) =>
+          d.specialization.toLowerCase() ===
+          bookingData.specialization.toLowerCase()
       )
     : doctors;
 
@@ -331,7 +337,10 @@ export default function BookAppointmentPage() {
                         <button
                           key={spec.id}
                           onClick={() =>
-                            setBookingData({ ...bookingData, specialization: spec.name })
+                            setBookingData({
+                              ...bookingData,
+                              specialization: spec.name,
+                            })
                           }
                           className={`p-4 rounded-lg border-2 text-center transition-colors ${
                             bookingData.specialization === spec.name
@@ -340,12 +349,17 @@ export default function BookAppointmentPage() {
                           }`}
                           style={
                             bookingData.specialization === spec.name
-                              ? { borderColor: theme.primaryColor, color: theme.primaryColor }
+                              ? {
+                                  borderColor: theme.primaryColor,
+                                  color: theme.primaryColor,
+                                }
                               : {}
                           }
                         >
                           <spec.icon className="w-8 h-8 mx-auto mb-2" />
-                          <span className="text-sm font-medium">{spec.name}</span>
+                          <span className="text-sm font-medium">
+                            {spec.name}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -366,7 +380,8 @@ export default function BookAppointmentPage() {
                   <CardHeader>
                     <CardTitle>Select Doctor</CardTitle>
                     <CardDescription>
-                      Choose from our available doctors for {bookingData.specialization}
+                      Choose from our available doctors for{" "}
+                      {bookingData.specialization}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -380,7 +395,10 @@ export default function BookAppointmentPage() {
                           <button
                             key={doctor.id}
                             onClick={() =>
-                              setBookingData({ ...bookingData, doctorId: doctor.id })
+                              setBookingData({
+                                ...bookingData,
+                                doctorId: doctor.id,
+                              })
                             }
                             className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
                               bookingData.doctorId === doctor.id
@@ -398,20 +416,33 @@ export default function BookAppointmentPage() {
                                 className="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold"
                                 style={{ backgroundColor: theme.primaryColor }}
                               >
-                                {doctor.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                                {doctor.full_name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .slice(0, 2)}
                               </div>
                               <div className="flex-1">
-                                <h3 className="font-semibold">{doctor.full_name}</h3>
+                                <h3 className="font-semibold">
+                                  {doctor.full_name}
+                                </h3>
                                 <p className="text-sm text-gray-600">
-                                  {doctor.specialization} • {doctor.qualification}
+                                  {doctor.specialization} •{" "}
+                                  {doctor.qualification}
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="font-semibold" style={{ color: theme.primaryColor }}>
+                                <p
+                                  className="font-semibold"
+                                  style={{ color: theme.primaryColor }}
+                                >
                                   ₹{doctor.consultation_fee}
                                 </p>
                                 {doctor.available_today && (
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
                                     Available Today
                                   </Badge>
                                 )}
@@ -451,7 +482,11 @@ export default function BookAppointmentPage() {
                         max={getMaxDate()}
                         value={bookingData.date}
                         onChange={(e) =>
-                          setBookingData({ ...bookingData, date: e.target.value, timeSlot: "" })
+                          setBookingData({
+                            ...bookingData,
+                            date: e.target.value,
+                            timeSlot: "",
+                          })
                         }
                         className="max-w-xs"
                       />
@@ -460,14 +495,19 @@ export default function BookAppointmentPage() {
                     {/* Time Slots */}
                     {bookingData.date && (
                       <div>
-                        <Label className="mb-3 block">Available Time Slots</Label>
+                        <Label className="mb-3 block">
+                          Available Time Slots
+                        </Label>
                         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                           {timeSlots.map((slot) => (
                             <button
                               key={slot.id}
                               disabled={!slot.available}
                               onClick={() =>
-                                setBookingData({ ...bookingData, timeSlot: slot.time })
+                                setBookingData({
+                                  ...bookingData,
+                                  timeSlot: slot.time,
+                                })
                               }
                               className={`py-2 px-3 rounded text-sm font-medium transition-colors ${
                                 !slot.available
@@ -477,7 +517,8 @@ export default function BookAppointmentPage() {
                                   : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                               }`}
                               style={
-                                slot.available && bookingData.timeSlot === slot.time
+                                slot.available &&
+                                bookingData.timeSlot === slot.time
                                   ? { backgroundColor: theme.primaryColor }
                                   : {}
                               }
@@ -516,7 +557,10 @@ export default function BookAppointmentPage() {
                           id="patientName"
                           value={bookingData.patientName}
                           onChange={(e) =>
-                            setBookingData({ ...bookingData, patientName: e.target.value })
+                            setBookingData({
+                              ...bookingData,
+                              patientName: e.target.value,
+                            })
                           }
                           placeholder="Enter patient name"
                         />
@@ -528,7 +572,10 @@ export default function BookAppointmentPage() {
                           type="tel"
                           value={bookingData.patientPhone}
                           onChange={(e) =>
-                            setBookingData({ ...bookingData, patientPhone: e.target.value })
+                            setBookingData({
+                              ...bookingData,
+                              patientPhone: e.target.value,
+                            })
                           }
                           placeholder="+91 98765 43210"
                         />
@@ -541,18 +588,26 @@ export default function BookAppointmentPage() {
                         type="email"
                         value={bookingData.patientEmail}
                         onChange={(e) =>
-                          setBookingData({ ...bookingData, patientEmail: e.target.value })
+                          setBookingData({
+                            ...bookingData,
+                            patientEmail: e.target.value,
+                          })
                         }
                         placeholder="your@email.com"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="reason">Reason for Visit (Optional)</Label>
+                      <Label htmlFor="reason">
+                        Reason for Visit (Optional)
+                      </Label>
                       <Input
                         id="reason"
                         value={bookingData.reason}
                         onChange={(e) =>
-                          setBookingData({ ...bookingData, reason: e.target.value })
+                          setBookingData({
+                            ...bookingData,
+                            reason: e.target.value,
+                          })
                         }
                         placeholder="Brief description of your concern"
                       />
@@ -585,11 +640,19 @@ export default function BookAppointmentPage() {
                           className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold"
                           style={{ backgroundColor: theme.primaryColor }}
                         >
-                          {selectedDoctor.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                          {selectedDoctor.full_name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg">{selectedDoctor.full_name}</h3>
-                          <p className="text-gray-600">{selectedDoctor.specialization}</p>
+                          <h3 className="font-semibold text-lg">
+                            {selectedDoctor.full_name}
+                          </h3>
+                          <p className="text-gray-600">
+                            {selectedDoctor.specialization}
+                          </p>
                         </div>
                       </div>
 
@@ -599,12 +662,15 @@ export default function BookAppointmentPage() {
                           <div>
                             <p className="text-xs text-gray-500">Date</p>
                             <p className="font-medium">
-                              {new Date(bookingData.date).toLocaleDateString("en-IN", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
+                              {new Date(bookingData.date).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </p>
                           </div>
                         </div>
@@ -612,7 +678,9 @@ export default function BookAppointmentPage() {
                           <Clock className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500">Time</p>
-                            <p className="font-medium">{bookingData.timeSlot}</p>
+                            <p className="font-medium">
+                              {bookingData.timeSlot}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -640,7 +708,9 @@ export default function BookAppointmentPage() {
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Consultation Fee</span>
-                        <span className="font-semibold">₹{selectedDoctor.consultation_fee}</span>
+                        <span className="font-semibold">
+                          ₹{selectedDoctor.consultation_fee}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t">
                         <span className="font-semibold">Total Amount</span>

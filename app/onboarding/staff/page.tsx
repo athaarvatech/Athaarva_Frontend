@@ -17,19 +17,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Loader2,
-  Shield,
   Calendar,
-  MapPin,
   Briefcase,
   X,
-  FileText,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -89,10 +85,13 @@ interface AccountSetupStepProps {
   data: StaffOnboardingData;
   invitationData: InvitationData;
   onChange: (updates: Partial<StaffOnboardingData>) => void;
-  primaryColor: string;
 }
 
-function AccountSetupStep({ data, invitationData, onChange, primaryColor }: AccountSetupStepProps) {
+function AccountSetupStep({
+  data,
+  invitationData,
+  onChange,
+}: AccountSetupStepProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -107,7 +106,12 @@ function AccountSetupStep({ data, invitationData, onChange, primaryColor }: Acco
   }, [data.password]);
 
   const strengthLabels = ["Very Weak", "Weak", "Fair", "Strong"];
-  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+  const strengthColors = [
+    "bg-red-500",
+    "bg-orange-500",
+    "bg-yellow-500",
+    "bg-green-500",
+  ];
 
   return (
     <div className="space-y-6">
@@ -166,7 +170,11 @@ function AccountSetupStep({ data, invitationData, onChange, primaryColor }: Acco
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
           </button>
         </div>
         {data.password && (
@@ -176,13 +184,16 @@ function AccountSetupStep({ data, invitationData, onChange, primaryColor }: Acco
                 <div
                   key={index}
                   className={`h-1 flex-1 rounded-full ${
-                    index < passwordStrength ? strengthColors[passwordStrength - 1] : "bg-gray-200"
+                    index < passwordStrength
+                      ? strengthColors[passwordStrength - 1]
+                      : "bg-gray-200"
                   }`}
                 />
               ))}
             </div>
             <p className="text-xs text-gray-500">
-              Password strength: {strengthLabels[Math.max(0, passwordStrength - 1)] || "Very Weak"}
+              Password strength:{" "}
+              {strengthLabels[Math.max(0, passwordStrength - 1)] || "Very Weak"}
             </p>
           </div>
         )}
@@ -205,7 +216,11 @@ function AccountSetupStep({ data, invitationData, onChange, primaryColor }: Acco
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showConfirmPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
           </button>
         </div>
         {data.confirm_password && data.password !== data.confirm_password && (
@@ -226,10 +241,12 @@ function AccountSetupStep({ data, invitationData, onChange, primaryColor }: Acco
 interface ProfessionalDetailsStepProps {
   data: StaffOnboardingData;
   onChange: (updates: Partial<StaffOnboardingData>) => void;
-  role: string;
 }
 
-function ProfessionalDetailsStep({ data, onChange, role }: ProfessionalDetailsStepProps) {
+function ProfessionalDetailsStep({
+  data,
+  onChange,
+}: ProfessionalDetailsStepProps) {
   const departments = [
     "Administration",
     "Front Desk",
@@ -399,7 +416,9 @@ function ContactAddressStep({ data, onChange }: ContactAddressStepProps) {
               id="emergency_contact_name"
               placeholder="Emergency contact name"
               value={data.emergency_contact_name}
-              onChange={(e) => onChange({ emergency_contact_name: e.target.value })}
+              onChange={(e) =>
+                onChange({ emergency_contact_name: e.target.value })
+              }
             />
           </div>
 
@@ -411,7 +430,9 @@ function ContactAddressStep({ data, onChange }: ContactAddressStepProps) {
                 id="emergency_contact_phone"
                 placeholder="+91 9876543210"
                 value={data.emergency_contact_phone}
-                onChange={(e) => onChange({ emergency_contact_phone: e.target.value })}
+                onChange={(e) =>
+                  onChange({ emergency_contact_phone: e.target.value })
+                }
                 className="pl-10"
               />
             </div>
@@ -437,8 +458,8 @@ function AgreementsStep({ data, onChange, hospitalName }: AgreementsStepProps) {
     <div className="space-y-6">
       <div className="bg-blue-50 rounded-xl p-4">
         <p className="text-sm text-blue-700">
-          Please review and accept the following agreements to complete your onboarding at{" "}
-          <strong>{hospitalName}</strong>.
+          Please review and accept the following agreements to complete your
+          onboarding at <strong>{hospitalName}</strong>.
         </p>
       </div>
 
@@ -448,14 +469,17 @@ function AgreementsStep({ data, onChange, hospitalName }: AgreementsStepProps) {
             <Checkbox
               id="terms"
               checked={data.terms_accepted}
-              onCheckedChange={(checked) => onChange({ terms_accepted: checked as boolean })}
+              onCheckedChange={(checked) =>
+                onChange({ terms_accepted: checked as boolean })
+              }
             />
             <div className="flex-1">
               <Label htmlFor="terms" className="cursor-pointer font-medium">
                 Terms of Service *
               </Label>
               <p className="text-sm text-gray-500 mt-1">
-                I agree to the terms of service and employment conditions of {hospitalName}.
+                I agree to the terms of service and employment conditions of{" "}
+                {hospitalName}.
               </p>
               <Button variant="link" className="p-0 h-auto text-sm mt-1">
                 Read Terms of Service
@@ -469,15 +493,17 @@ function AgreementsStep({ data, onChange, hospitalName }: AgreementsStepProps) {
             <Checkbox
               id="privacy"
               checked={data.privacy_accepted}
-              onCheckedChange={(checked) => onChange({ privacy_accepted: checked as boolean })}
+              onCheckedChange={(checked) =>
+                onChange({ privacy_accepted: checked as boolean })
+              }
             />
             <div className="flex-1">
               <Label htmlFor="privacy" className="cursor-pointer font-medium">
                 Privacy Policy *
               </Label>
               <p className="text-sm text-gray-500 mt-1">
-                I have read and understood the privacy policy regarding the collection and use of
-                my personal information.
+                I have read and understood the privacy policy regarding the
+                collection and use of my personal information.
               </p>
               <Button variant="link" className="p-0 h-auto text-sm mt-1">
                 Read Privacy Policy
@@ -496,12 +522,15 @@ function AgreementsStep({ data, onChange, hospitalName }: AgreementsStepProps) {
               }
             />
             <div className="flex-1">
-              <Label htmlFor="code_of_conduct" className="cursor-pointer font-medium">
+              <Label
+                htmlFor="code_of_conduct"
+                className="cursor-pointer font-medium"
+              >
                 Code of Conduct *
               </Label>
               <p className="text-sm text-gray-500 mt-1">
-                I agree to adhere to the professional code of conduct and maintain patient
-                confidentiality as per HIPAA guidelines.
+                I agree to adhere to the professional code of conduct and
+                maintain patient confidentiality as per HIPAA guidelines.
               </p>
               <Button variant="link" className="p-0 h-auto text-sm mt-1">
                 Read Code of Conduct
@@ -579,12 +608,16 @@ export default function StaffOnboardingPage() {
 
       try {
         // Validate token and get invitation data
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API_BASE}/api/v1/team/invitations/validate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+        const API_BASE =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(
+          `${API_BASE}/api/v1/team/invitations/validate`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Invalid or expired invitation");
@@ -605,7 +638,7 @@ export default function StaffOnboardingPage() {
           ...prev,
           department: data.department || "",
         }));
-      } catch (err) {
+      } catch {
         // For development, use mock data
         setInvitationData({
           email: "staff@example.com",
@@ -639,7 +672,9 @@ export default function StaffOnboardingPage() {
           formData.password === formData.confirm_password
         );
       case 1:
-        return formData.department.length > 0 && formData.designation.length > 0;
+        return (
+          formData.department.length > 0 && formData.designation.length > 0
+        );
       case 2:
         return (
           formData.address.length > 0 &&
@@ -675,7 +710,8 @@ export default function StaffOnboardingPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const response = await fetch(`${API_BASE}/api/v1/team/staff/onboarding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -691,9 +727,13 @@ export default function StaffOnboardingPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push(`/auth/hospital/${invitationData.hospital_name.toLowerCase().replace(/\s+/g, "-")}`);
+        router.push(
+          `/auth/hospital/${invitationData.hospital_name
+            .toLowerCase()
+            .replace(/\s+/g, "-")}`
+        );
       }, 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to complete onboarding. Please try again.");
     } finally {
       setSubmitting(false);
@@ -704,7 +744,10 @@ export default function StaffOnboardingPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: primaryColor }} />
+          <Loader2
+            className="w-8 h-8 animate-spin mx-auto mb-4"
+            style={{ color: primaryColor }}
+          />
           <p className="text-gray-600">Validating your invitation...</p>
         </div>
       </div>
@@ -719,7 +762,9 @@ export default function StaffOnboardingPage() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Invalid Invitation</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Invalid Invitation
+            </h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <Button onClick={() => router.push("/")} variant="outline">
               Return to Home
@@ -744,14 +789,21 @@ export default function StaffOnboardingPage() {
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
                 style={{ backgroundColor: `${primaryColor}15` }}
               >
-                <CheckCircle className="w-10 h-10" style={{ color: primaryColor }} />
+                <CheckCircle
+                  className="w-10 h-10"
+                  style={{ color: primaryColor }}
+                />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Aboard!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Welcome Aboard!
+              </h2>
               <p className="text-gray-600 mb-4">
-                Your account has been created successfully. You can now log in to the{" "}
-                {invitationData.hospital_name} portal.
+                Your account has been created successfully. You can now log in
+                to the {invitationData.hospital_name} portal.
               </p>
-              <p className="text-sm text-gray-500">Redirecting to login page...</p>
+              <p className="text-sm text-gray-500">
+                Redirecting to login page...
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -785,7 +837,9 @@ export default function StaffOnboardingPage() {
               <Building2 className="w-8 h-8 text-white" />
             </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900">Join {invitationData.hospital_name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Join {invitationData.hospital_name}
+          </h1>
           <p className="text-gray-600 mt-1">Complete your staff onboarding</p>
         </div>
 
@@ -830,8 +884,12 @@ export default function StaffOnboardingPage() {
             ))}
           </div>
           <div className="text-center">
-            <p className="font-medium text-gray-900">{steps[currentStep].title}</p>
-            <p className="text-sm text-gray-500">{steps[currentStep].description}</p>
+            <p className="font-medium text-gray-900">
+              {steps[currentStep].title}
+            </p>
+            <p className="text-sm text-gray-500">
+              {steps[currentStep].description}
+            </p>
           </div>
         </div>
 
@@ -851,14 +909,12 @@ export default function StaffOnboardingPage() {
                     data={formData}
                     invitationData={invitationData}
                     onChange={handleChange}
-                    primaryColor={primaryColor}
                   />
                 )}
                 {currentStep === 1 && (
                   <ProfessionalDetailsStep
                     data={formData}
                     onChange={handleChange}
-                    role={invitationData.role}
                   />
                 )}
                 {currentStep === 2 && (

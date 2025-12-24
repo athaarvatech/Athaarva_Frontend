@@ -1,7 +1,7 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import ProductDetailClient from './ProductDetailClient';
-import { ProductService } from '../../lib/products';
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ProductDetailClient from "./ProductDetailClient";
+import { ProductService } from "../../lib/products";
 
 interface ProductPageProps {
   params: Promise<{
@@ -9,14 +9,18 @@ interface ProductPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
   try {
     const resolvedParams = await params;
-    const product = await ProductService.getProductByHandle(resolvedParams.handle);
-    
+    const product = await ProductService.getProductByHandle(
+      resolvedParams.handle
+    );
+
     if (!product) {
       return {
-        title: 'Product Not Found | Athaarva Medical',
+        title: "Product Not Found | Athaarva Medical",
       };
     }
 
@@ -29,9 +33,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         images: product.featuredImage ? [product.featuredImage.url] : [],
       },
     };
-  } catch (error) {
+  } catch {
     return {
-      title: 'Product | Athaarva Medical',
+      title: "Product | Athaarva Medical",
     };
   }
 }
@@ -39,7 +43,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params }: ProductPageProps) {
   try {
     const resolvedParams = await params;
-    const product = await ProductService.getProductByHandle(resolvedParams.handle);
+    const product = await ProductService.getProductByHandle(
+      resolvedParams.handle
+    );
 
     if (!product) {
       notFound();
@@ -47,7 +53,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     return <ProductDetailClient product={product} />;
   } catch (error) {
-    console.error('Error loading product:', error);
+    console.error("Error loading product:", error);
     notFound();
   }
 }

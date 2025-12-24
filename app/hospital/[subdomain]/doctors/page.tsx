@@ -10,11 +10,9 @@ import {
   Filter,
   Star,
   Clock,
-  Calendar,
   GraduationCap,
   Award,
   User,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +68,9 @@ export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("All Specializations");
+  const [selectedSpecialization, setSelectedSpecialization] = useState(
+    "All Specializations"
+  );
 
   const theme = {
     primaryColor: hospital?.primary_color || "#007C7C",
@@ -81,13 +81,18 @@ export default function DoctorsPage() {
     async function fetchData() {
       try {
         // Fetch hospital
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
         setHospital(hospitalData);
 
         // Fetch doctors (mock for now, will connect to API)
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-        const response = await fetch(`${API_BASE_URL}/api/v1/hospitals/${subdomain}/doctors`);
-        
+        const API_BASE_URL =
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/hospitals/${subdomain}/doctors`
+        );
+
         if (response.ok) {
           const data = await response.json();
           setDoctors(data.data || data || []);
@@ -191,9 +196,11 @@ export default function DoctorsPage() {
   }
 
   const filteredDoctors = doctors.filter((doctor) => {
-    const matchesSearch = doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.specialization.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSpecialization = selectedSpecialization === "All Specializations" ||
+    const matchesSpecialization =
+      selectedSpecialization === "All Specializations" ||
       doctor.specialization === selectedSpecialization;
     return matchesSearch && matchesSpecialization;
   });
@@ -243,7 +250,8 @@ export default function DoctorsPage() {
           >
             <h1 className="text-4xl font-bold mb-4">Our Medical Experts</h1>
             <p className="text-lg text-white/90 max-w-2xl mx-auto">
-              Meet our team of experienced doctors dedicated to providing you with the best healthcare services.
+              Meet our team of experienced doctors dedicated to providing you
+              with the best healthcare services.
             </p>
           </motion.div>
         </div>
@@ -262,7 +270,10 @@ export default function DoctorsPage() {
                 className="pl-10"
               />
             </div>
-            <Select value={selectedSpecialization} onValueChange={setSelectedSpecialization}>
+            <Select
+              value={selectedSpecialization}
+              onValueChange={setSelectedSpecialization}
+            >
               <SelectTrigger className="w-full sm:w-64">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Filter by specialization" />
@@ -285,8 +296,12 @@ export default function DoctorsPage() {
           {filteredDoctors.length === 0 ? (
             <div className="text-center py-16">
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No doctors found</h3>
-              <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No doctors found
+              </h3>
+              <p className="text-gray-600">
+                Try adjusting your search or filter criteria.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -313,19 +328,30 @@ export default function DoctorsPage() {
                             className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
                             style={{ backgroundColor: theme.primaryColor }}
                           >
-                            {doctor.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                            {doctor.full_name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg text-gray-900">{doctor.full_name}</h3>
-                          <p className="text-sm" style={{ color: theme.primaryColor }}>
+                          <h3 className="font-semibold text-lg text-gray-900">
+                            {doctor.full_name}
+                          </h3>
+                          <p
+                            className="text-sm"
+                            style={{ color: theme.primaryColor }}
+                          >
                             {doctor.specialization}
                           </p>
                           <div className="flex items-center gap-1 mt-1">
                             {doctor.rating && (
                               <>
                                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                <span className="text-sm font-medium">{doctor.rating}</span>
+                                <span className="text-sm font-medium">
+                                  {doctor.rating}
+                                </span>
                                 <span className="text-xs text-gray-500">
                                   ({doctor.total_reviews} reviews)
                                 </span>
@@ -342,12 +368,18 @@ export default function DoctorsPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Award className="w-4 h-4" />
-                          <span>{doctor.experience_years}+ years experience</span>
+                          <span>
+                            {doctor.experience_years}+ years experience
+                          </span>
                         </div>
                         {doctor.languages && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {doctor.languages.map((lang) => (
-                              <Badge key={lang} variant="secondary" className="text-xs">
+                              <Badge
+                                key={lang}
+                                variant="secondary"
+                                className="text-xs"
+                              >
                                 {lang}
                               </Badge>
                             ))}
@@ -357,8 +389,13 @@ export default function DoctorsPage() {
 
                       <div className="flex items-center justify-between pt-4 border-t">
                         <div>
-                          <p className="text-xs text-gray-500">Consultation Fee</p>
-                          <p className="font-semibold" style={{ color: theme.primaryColor }}>
+                          <p className="text-xs text-gray-500">
+                            Consultation Fee
+                          </p>
+                          <p
+                            className="font-semibold"
+                            style={{ color: theme.primaryColor }}
+                          >
                             ₹{doctor.consultation_fee}
                           </p>
                         </div>

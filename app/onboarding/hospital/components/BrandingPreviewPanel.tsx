@@ -1,21 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  X,
-  Sun,
-  Moon,
-  Eye,
-  Building2,
-  Lock,
-  ExternalLink
-} from "lucide-react";
+import { X, Sun, Moon, Eye, Building2, Lock, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContext";
 
@@ -24,32 +15,36 @@ interface BrandingPreviewPanelProps {
   currentStep: number;
 }
 
-function LoginPagePreview({ 
-  isDark = false 
-}: { 
-  isDark?: boolean;
-}) {
+function LoginPagePreview({ isDark = false }: { isDark?: boolean }) {
   const { data } = useHospitalOnboarding();
-  const [demoEmail, setDemoEmail] = useState('');
-  const [demoPassword, setDemoPassword] = useState('');
+  const [demoEmail, setDemoEmail] = useState("");
+  const [demoPassword, setDemoPassword] = useState("");
 
-  const bgColor = isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-white';
-  const cardBg = isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
-  const textColor = isDark ? 'text-white' : 'text-gray-900';
-  const mutedColor = isDark ? 'text-gray-300' : 'text-gray-600';
-  const inputBg = isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300';
+  const bgColor = isDark
+    ? "bg-gray-900"
+    : "bg-gradient-to-br from-gray-50 to-white";
+  const cardBg = isDark
+    ? "bg-gray-800 border-gray-700"
+    : "bg-white border-gray-200";
+  const textColor = isDark ? "text-white" : "text-gray-900";
+  const mutedColor = isDark ? "text-gray-300" : "text-gray-600";
+  const inputBg = isDark
+    ? "bg-gray-700 border-gray-600 text-white"
+    : "bg-white border-gray-300";
 
   return (
-    <div className={cn("min-h-full p-6 flex items-center justify-center", bgColor)}>
+    <div
+      className={cn("min-h-full p-6 flex items-center justify-center", bgColor)}
+    >
       <div className="w-full max-w-md">
         {/* Logo & Header */}
         <div className="text-center mb-8">
           {data.branding.logoUrl ? (
             <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-lg shadow-sm flex items-center justify-center overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={data.branding.logoUrl} 
-                alt="Hospital Logo" 
+              <img
+                src={data.branding.logoUrl}
+                alt="Hospital Logo"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -58,11 +53,13 @@ function LoginPagePreview({
               <Building2 className="h-8 w-8 text-gray-400" />
             </div>
           )}
-          
+
           <h1 className={cn("text-2xl font-bold mb-2", textColor)}>
-            {`Welcome to ${data.hospitalBasics.hospitalName || 'Your Hospital'}`}
+            {`Welcome to ${
+              data.hospitalBasics.hospitalName || "Your Hospital"
+            }`}
           </h1>
-          
+
           <p className={cn("text-sm", mutedColor)}>
             Secure access to your healthcare services
           </p>
@@ -73,7 +70,10 @@ function LoginPagePreview({
           <CardContent className="p-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="demo-email" className={cn("text-sm font-medium", textColor)}>
+                <Label
+                  htmlFor="demo-email"
+                  className={cn("text-sm font-medium", textColor)}
+                >
                   Email
                 </Label>
                 <Input
@@ -87,7 +87,10 @@ function LoginPagePreview({
               </div>
 
               <div>
-                <Label htmlFor="demo-password" className={cn("text-sm font-medium", textColor)}>
+                <Label
+                  htmlFor="demo-password"
+                  className={cn("text-sm font-medium", textColor)}
+                >
                   Password
                 </Label>
                 <Input
@@ -105,7 +108,7 @@ function LoginPagePreview({
                 style={{
                   backgroundColor: data.branding.primaryColor,
                   borderColor: data.branding.primaryColor,
-                  color: 'white',
+                  color: "white",
                 }}
                 disabled
               >
@@ -114,15 +117,15 @@ function LoginPagePreview({
               </Button>
 
               <div className="text-center space-y-2">
-                <button 
+                <button
                   className={cn("text-sm hover:underline", mutedColor)}
                   style={{ color: data.branding.secondaryColor }}
                 >
                   Forgot your password?
                 </button>
                 <div className={cn("text-xs", mutedColor)}>
-                  Don&apos;t have an account?{' '}
-                  <button 
+                  Don&apos;t have an account?{" "}
+                  <button
                     className="hover:underline"
                     style={{ color: data.branding.primaryColor }}
                   >
@@ -137,7 +140,8 @@ function LoginPagePreview({
         {/* Footer */}
         <div className="mt-6 text-center space-y-2">
           <div className={cn("text-xs", mutedColor)}>
-            © 2024 {data.hospitalBasics.hospitalName || 'Hospital Name'}. All rights reserved.
+            © 2024 {data.hospitalBasics.hospitalName || "Hospital Name"}. All
+            rights reserved.
           </div>
         </div>
       </div>
@@ -165,9 +169,9 @@ function BrandingPreview() {
             {data.branding.logoUrl ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={data.branding.logoUrl} 
-                  alt="Logo on light" 
+                <img
+                  src={data.branding.logoUrl}
+                  alt="Logo on light"
                   className="w-12 h-12 mx-auto object-contain"
                 />
               </>
@@ -182,9 +186,9 @@ function BrandingPreview() {
             {data.branding.logoUrl ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={data.branding.logoUrl} 
-                  alt="Logo on dark" 
+                <img
+                  src={data.branding.logoUrl}
+                  alt="Logo on dark"
                   className="w-12 h-12 mx-auto object-contain"
                 />
               </>
@@ -203,20 +207,24 @@ function BrandingPreview() {
         <h4 className="font-medium text-sm">Color Palette</h4>
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center">
-            <div 
+            <div
               className="w-16 h-16 mx-auto rounded-lg border shadow-sm"
               style={{ backgroundColor: data.branding.primaryColor }}
             />
             <div className="text-xs font-medium mt-2">Primary</div>
-            <div className="text-xs text-gray-500 font-mono">{data.branding.primaryColor}</div>
+            <div className="text-xs text-gray-500 font-mono">
+              {data.branding.primaryColor}
+            </div>
           </div>
           <div className="text-center">
-            <div 
+            <div
               className="w-16 h-16 mx-auto rounded-lg border shadow-sm"
               style={{ backgroundColor: data.branding.secondaryColor }}
             />
             <div className="text-xs font-medium mt-2">Secondary</div>
-            <div className="text-xs text-gray-500 font-mono">{data.branding.secondaryColor}</div>
+            <div className="text-xs text-gray-500 font-mono">
+              {data.branding.secondaryColor}
+            </div>
           </div>
         </div>
       </div>
@@ -231,7 +239,7 @@ function BrandingPreview() {
             style={{
               backgroundColor: data.branding.primaryColor,
               borderColor: data.branding.primaryColor,
-              color: 'white',
+              color: "white",
             }}
             disabled
           >
@@ -255,7 +263,10 @@ function BrandingPreview() {
   );
 }
 
-export default function BrandingPreviewPanel({ onClose, currentStep }: BrandingPreviewPanelProps) {
+export default function BrandingPreviewPanel({
+  onClose,
+  currentStep,
+}: BrandingPreviewPanelProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { data } = useHospitalOnboarding();
 
@@ -267,11 +278,9 @@ export default function BrandingPreviewPanel({ onClose, currentStep }: BrandingP
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <Eye className="h-5 w-5 text-healthcare-primary" />
-          <h3 className="font-semibold text-gray-900">
-            Live Preview
-          </h3>
+          <h3 className="font-semibold text-gray-900">Live Preview</h3>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {showLoginPreview && (
             <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
@@ -293,7 +302,7 @@ export default function BrandingPreviewPanel({ onClose, currentStep }: BrandingP
               </Button>
             </div>
           )}
-          
+
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -308,13 +317,13 @@ export default function BrandingPreviewPanel({ onClose, currentStep }: BrandingP
               <TabsTrigger value="light">Light</TabsTrigger>
               <TabsTrigger value="dark">Dark</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="light" className="h-full m-0">
               <div className="bg-gray-50 h-full">
                 <LoginPagePreview isDark={false} />
               </div>
             </TabsContent>
-            
+
             <TabsContent value="dark" className="h-full m-0">
               <div className="bg-gray-900 h-full">
                 <LoginPagePreview isDark={true} />
@@ -330,7 +339,7 @@ export default function BrandingPreviewPanel({ onClose, currentStep }: BrandingP
       <div className="border-t border-gray-200 p-4">
         <div className="text-center">
           <div className="text-xs text-gray-500 mb-2">
-            {showLoginPreview ? 'Login Page Preview' : 'Brand Identity Preview'}
+            {showLoginPreview ? "Login Page Preview" : "Brand Identity Preview"}
           </div>
           {showLoginPreview && data.loginPage.subdomain && (
             <Button

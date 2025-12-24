@@ -4,13 +4,10 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
   Building2,
-  User,
   Bell,
   Shield,
   CreditCard,
   Palette,
-  Globe,
-  Mail,
   Clock,
   Save,
   Upload,
@@ -41,7 +38,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
-  const params = useParams();
+  useParams();
   const [activeTab, setActiveTab] = useState("general");
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
@@ -52,7 +49,8 @@ export default function SettingsPage() {
     hospitalName: "Prashanth Hospital",
     hospitalCode: "prashanthospital",
     tagline: "Excellence in Healthcare",
-    description: "A leading multi-specialty hospital providing world-class healthcare services.",
+    description:
+      "A leading multi-specialty hospital providing world-class healthcare services.",
     email: "info@prashanthospital.com",
     phone: "+91 1234567890",
     website: "https://prashanthospital.athaarva.com",
@@ -61,23 +59,30 @@ export default function SettingsPage() {
     state: "Maharashtra",
     zipCode: "400001",
     country: "India",
-    
+
     // Branding
     primaryColor: "#0d9488",
     secondaryColor: "#0891b2",
     accentColor: "#f59e0b",
-    
+
     // Notifications
     emailNotifications: true,
     smsNotifications: true,
     appointmentReminders: true,
     marketingEmails: false,
-    
+
     // Working Hours
-    workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    workingDays: [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ],
     openingTime: "08:00",
     closingTime: "20:00",
-    
+
     // Integrations
     googleCalendarSync: false,
     paymentGateway: "razorpay",
@@ -109,7 +114,9 @@ export default function SettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600">Manage your hospital settings and preferences</p>
+          <p className="text-gray-600">
+            Manage your hospital settings and preferences
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {savedMessage && (
@@ -118,7 +125,11 @@ export default function SettingsPage() {
               {savedMessage}
             </span>
           )}
-          <Button onClick={handleSave} disabled={isSaving} className="bg-teal-600 hover:bg-teal-700">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
             {isSaving ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -134,7 +145,11 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="flex-wrap">
           <TabsTrigger value="general" className="gap-2">
             <Building2 className="h-4 w-4" />
@@ -167,14 +182,18 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Hospital Information</CardTitle>
-              <CardDescription>Update your hospital&apos;s basic information</CardDescription>
+              <CardDescription>
+                Update your hospital&apos;s basic information
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Logo Upload */}
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24">
                   <AvatarImage src="/hospital-logo.png" />
-                  <AvatarFallback className="bg-teal-100 text-teal-700 text-2xl">PH</AvatarFallback>
+                  <AvatarFallback className="bg-teal-100 text-teal-700 text-2xl">
+                    PH
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <Button variant="outline">
@@ -195,11 +214,15 @@ export default function SettingsPage() {
                   <Input
                     id="hospitalName"
                     value={settings.hospitalName}
-                    onChange={(e) => setSettings({ ...settings, hospitalName: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, hospitalName: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="hospitalCode">Hospital Code (Subdomain)</Label>
+                  <Label htmlFor="hospitalCode">
+                    Hospital Code (Subdomain)
+                  </Label>
                   <Input
                     id="hospitalCode"
                     value={settings.hospitalCode}
@@ -215,7 +238,9 @@ export default function SettingsPage() {
                   <Input
                     id="tagline"
                     value={settings.tagline}
-                    onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, tagline: e.target.value })
+                    }
                     placeholder="A short tagline for your hospital"
                   />
                 </div>
@@ -224,7 +249,9 @@ export default function SettingsPage() {
                   <Textarea
                     id="description"
                     value={settings.description}
-                    onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, description: e.target.value })
+                    }
                     rows={3}
                   />
                 </div>
@@ -235,7 +262,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Contact Information</CardTitle>
-              <CardDescription>Update your hospital&apos;s contact details</CardDescription>
+              <CardDescription>
+                Update your hospital&apos;s contact details
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,7 +274,9 @@ export default function SettingsPage() {
                     id="email"
                     type="email"
                     value={settings.email}
-                    onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, email: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -253,7 +284,9 @@ export default function SettingsPage() {
                   <Input
                     id="phone"
                     value={settings.phone}
-                    onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, phone: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -261,7 +294,9 @@ export default function SettingsPage() {
                   <Input
                     id="address"
                     value={settings.address}
-                    onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, address: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -269,7 +304,9 @@ export default function SettingsPage() {
                   <Input
                     id="city"
                     value={settings.city}
-                    onChange={(e) => setSettings({ ...settings, city: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, city: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -277,7 +314,9 @@ export default function SettingsPage() {
                   <Input
                     id="state"
                     value={settings.state}
-                    onChange={(e) => setSettings({ ...settings, state: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, state: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -285,22 +324,30 @@ export default function SettingsPage() {
                   <Input
                     id="zipCode"
                     value={settings.zipCode}
-                    onChange={(e) => setSettings({ ...settings, zipCode: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, zipCode: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>
                   <Select
                     value={settings.country}
-                    onValueChange={(value) => setSettings({ ...settings, country: value })}
+                    onValueChange={(value) =>
+                      setSettings({ ...settings, country: value })
+                    }
                   >
                     <SelectTrigger id="country">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="India">India</SelectItem>
-                      <SelectItem value="United States">United States</SelectItem>
-                      <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                      <SelectItem value="United States">
+                        United States
+                      </SelectItem>
+                      <SelectItem value="United Kingdom">
+                        United Kingdom
+                      </SelectItem>
                       <SelectItem value="Canada">Canada</SelectItem>
                       <SelectItem value="Australia">Australia</SelectItem>
                     </SelectContent>
@@ -316,7 +363,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Brand Colors</CardTitle>
-              <CardDescription>Customize your hospital&apos;s brand colors</CardDescription>
+              <CardDescription>
+                Customize your hospital&apos;s brand colors
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -327,12 +376,22 @@ export default function SettingsPage() {
                       type="color"
                       id="primaryColor"
                       value={settings.primaryColor}
-                      onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          primaryColor: e.target.value,
+                        })
+                      }
                       className="h-10 w-20 rounded cursor-pointer"
                     />
                     <Input
                       value={settings.primaryColor}
-                      onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          primaryColor: e.target.value,
+                        })
+                      }
                       className="flex-1"
                     />
                   </div>
@@ -344,12 +403,22 @@ export default function SettingsPage() {
                       type="color"
                       id="secondaryColor"
                       value={settings.secondaryColor}
-                      onChange={(e) => setSettings({ ...settings, secondaryColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          secondaryColor: e.target.value,
+                        })
+                      }
                       className="h-10 w-20 rounded cursor-pointer"
                     />
                     <Input
                       value={settings.secondaryColor}
-                      onChange={(e) => setSettings({ ...settings, secondaryColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          secondaryColor: e.target.value,
+                        })
+                      }
                       className="flex-1"
                     />
                   </div>
@@ -361,12 +430,22 @@ export default function SettingsPage() {
                       type="color"
                       id="accentColor"
                       value={settings.accentColor}
-                      onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          accentColor: e.target.value,
+                        })
+                      }
                       className="h-10 w-20 rounded cursor-pointer"
                     />
                     <Input
                       value={settings.accentColor}
-                      onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          accentColor: e.target.value,
+                        })
+                      }
                       className="flex-1"
                     />
                   </div>
@@ -403,7 +482,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Manage how you receive notifications</CardDescription>
+              <CardDescription>
+                Manage how you receive notifications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -447,7 +528,10 @@ export default function SettingsPage() {
                   <Switch
                     checked={settings.appointmentReminders}
                     onCheckedChange={(checked) =>
-                      setSettings({ ...settings, appointmentReminders: checked })
+                      setSettings({
+                        ...settings,
+                        appointmentReminders: checked,
+                      })
                     }
                   />
                 </div>
@@ -476,7 +560,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Working Hours</CardTitle>
-              <CardDescription>Set your hospital&apos;s operating hours</CardDescription>
+              <CardDescription>
+                Set your hospital&apos;s operating hours
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -486,7 +572,9 @@ export default function SettingsPage() {
                     id="openingTime"
                     type="time"
                     value={settings.openingTime}
-                    onChange={(e) => setSettings({ ...settings, openingTime: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, openingTime: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -495,7 +583,9 @@ export default function SettingsPage() {
                     id="closingTime"
                     type="time"
                     value={settings.closingTime}
-                    onChange={(e) => setSettings({ ...settings, closingTime: e.target.value })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, closingTime: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -506,13 +596,19 @@ export default function SettingsPage() {
                   {workDays.map((day) => (
                     <Button
                       key={day.value}
-                      variant={settings.workingDays.includes(day.value) ? "default" : "outline"}
+                      variant={
+                        settings.workingDays.includes(day.value)
+                          ? "default"
+                          : "outline"
+                      }
                       size="sm"
                       onClick={() => {
                         if (settings.workingDays.includes(day.value)) {
                           setSettings({
                             ...settings,
-                            workingDays: settings.workingDays.filter((d) => d !== day.value),
+                            workingDays: settings.workingDays.filter(
+                              (d) => d !== day.value
+                            ),
                           });
                         } else {
                           setSettings({
@@ -541,14 +637,18 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Payment Gateway</CardTitle>
-              <CardDescription>Configure your payment processing</CardDescription>
+              <CardDescription>
+                Configure your payment processing
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="paymentGateway">Payment Provider</Label>
                 <Select
                   value={settings.paymentGateway}
-                  onValueChange={(value) => setSettings({ ...settings, paymentGateway: value })}
+                  onValueChange={(value) =>
+                    setSettings({ ...settings, paymentGateway: value })
+                  }
                 >
                   <SelectTrigger id="paymentGateway">
                     <SelectValue />
@@ -562,11 +662,19 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="apiKey">API Key</Label>
-                <Input id="apiKey" type="password" placeholder="Enter your API key" />
+                <Input
+                  id="apiKey"
+                  type="password"
+                  placeholder="Enter your API key"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="secretKey">Secret Key</Label>
-                <Input id="secretKey" type="password" placeholder="Enter your secret key" />
+                <Input
+                  id="secretKey"
+                  type="password"
+                  placeholder="Enter your secret key"
+                />
               </div>
             </CardContent>
           </Card>
@@ -577,7 +685,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage your security preferences</CardDescription>
+              <CardDescription>
+                Manage your security preferences
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">

@@ -1,14 +1,13 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { HelpCircle, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 
 interface HelpPopoverProps {
   title: string;
@@ -18,7 +17,12 @@ interface HelpPopoverProps {
   className?: string;
 }
 
-export function HelpPopover({ title, content, examples, tips, className }: HelpPopoverProps) {
+export function HelpPopover({
+  title,
+  content,
+  examples,
+  tips,
+}: HelpPopoverProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -39,7 +43,7 @@ export function HelpPopover({ title, content, examples, tips, className }: HelpP
 
           {/* Content */}
           <div className="text-sm text-gray-600">
-            {typeof content === 'string' ? <p>{content}</p> : content}
+            {typeof content === "string" ? <p>{content}</p> : content}
           </div>
 
           {/* Examples */}
@@ -48,7 +52,10 @@ export function HelpPopover({ title, content, examples, tips, className }: HelpP
               <p className="text-xs font-medium text-gray-700">Examples:</p>
               <ul className="space-y-1">
                 {examples.map((example, index) => (
-                  <li key={index} className="text-xs text-gray-600 flex items-start">
+                  <li
+                    key={index}
+                    className="text-xs text-gray-600 flex items-start"
+                  >
                     <span className="text-healthcare-primary mr-2">•</span>
                     <span>{example}</span>
                   </li>
@@ -60,7 +67,9 @@ export function HelpPopover({ title, content, examples, tips, className }: HelpP
           {/* Tips */}
           {tips && tips.length > 0 && (
             <div className="space-y-2 p-3 bg-healthcare-primary/5 rounded-lg">
-              <p className="text-xs font-medium text-healthcare-primary">💡 Tips:</p>
+              <p className="text-xs font-medium text-healthcare-primary">
+                💡 Tips:
+              </p>
               <ul className="space-y-1">
                 {tips.map((tip, index) => (
                   <li key={index} className="text-xs text-gray-700">

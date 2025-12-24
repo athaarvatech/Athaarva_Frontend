@@ -4,8 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { Building2, Menu, X, Phone, Mail } from "lucide-react";
+import { Building2, Menu, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { HospitalProfile } from "@/lib/hospital-service";
@@ -46,11 +45,17 @@ export default function HospitalHeader({ hospital }: HospitalHeaderProps) {
         {/* Top Bar */}
         <div className="hidden md:flex items-center justify-between py-2 border-b text-sm">
           <div className="flex items-center gap-6 text-gray-600">
-            <a href={`tel:${hospital.phone}`} className="flex items-center gap-1 hover:text-gray-900">
+            <a
+              href={`tel:${hospital.phone}`}
+              className="flex items-center gap-1 hover:text-gray-900"
+            >
               <Phone className="w-4 h-4" />
               {hospital.phone}
             </a>
-            <a href={`mailto:${hospital.official_email}`} className="flex items-center gap-1 hover:text-gray-900">
+            <a
+              href={`mailto:${hospital.official_email}`}
+              className="flex items-center gap-1 hover:text-gray-900"
+            >
               <Mail className="w-4 h-4" />
               {hospital.official_email}
             </a>
@@ -83,7 +88,9 @@ export default function HospitalHeader({ hospital }: HospitalHeaderProps) {
               </div>
             )}
             <div className="hidden sm:block">
-              <h1 className="font-bold text-gray-900">{hospital.hospital_name}</h1>
+              <h1 className="font-bold text-gray-900">
+                {hospital.hospital_name}
+              </h1>
               <p className="text-xs text-gray-500">Healthcare Excellence</p>
             </div>
           </Link>
@@ -99,7 +106,11 @@ export default function HospitalHeader({ hospital }: HospitalHeaderProps) {
                     ? "text-white"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
-                style={isActive(link.href) ? { backgroundColor: theme.primaryColor } : {}}
+                style={
+                  isActive(link.href)
+                    ? { backgroundColor: theme.primaryColor }
+                    : {}
+                }
               >
                 {link.label}
               </Link>
@@ -167,7 +178,11 @@ export default function HospitalHeader({ hospital }: HospitalHeaderProps) {
                           ? "text-white"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
-                      style={isActive(link.href) ? { backgroundColor: theme.primaryColor } : {}}
+                      style={
+                        isActive(link.href)
+                          ? { backgroundColor: theme.primaryColor }
+                          : {}
+                      }
                     >
                       {link.label}
                     </Link>

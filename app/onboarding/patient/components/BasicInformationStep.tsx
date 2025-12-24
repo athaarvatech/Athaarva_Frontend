@@ -6,14 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  User, 
-  Phone, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  User,
+  Phone,
   MapPin,
   CheckCircle,
   AlertCircle,
-  UserPlus
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PatientOnboardingData } from "../page";
@@ -30,12 +36,12 @@ interface BasicInformationStepProps {
 const relations = [
   "Spouse",
   "Parent",
-  "Child", 
+  "Child",
   "Sibling",
   "Relative",
   "Friend",
   "Guardian",
-  "Other"
+  "Other",
 ];
 
 const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
@@ -57,7 +63,10 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -110,10 +119,14 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     } else if (basicInfo.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(basicInfo.password)) {
-      newErrors.password = "Password must include uppercase, lowercase, and numbers";
+      newErrors.password =
+        "Password must include uppercase, lowercase, and numbers";
     }
 
-    if (!basicInfo.confirmPassword || basicInfo.confirmPassword.trim().length === 0) {
+    if (
+      !basicInfo.confirmPassword ||
+      basicInfo.confirmPassword.trim().length === 0
+    ) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (basicInfo.password !== basicInfo.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
@@ -124,12 +137,15 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     }
 
     if (!basicInfo.emergencyContact.relation.trim()) {
-      newErrors.emergencyContactRelation = "Emergency contact relation is required";
+      newErrors.emergencyContactRelation =
+        "Emergency contact relation is required";
     }
 
     if (!basicInfo.emergencyContact.phone.trim()) {
       newErrors.emergencyContactPhone = "Emergency contact phone is required";
-    } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(basicInfo.emergencyContact.phone)) {
+    } else if (
+      !/^\+?[\d\s\-\(\)]{10,}$/.test(basicInfo.emergencyContact.phone)
+    ) {
       newErrors.emergencyContactPhone = "Please enter a valid phone number";
     }
 
@@ -140,13 +156,13 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     setErrors(newErrors);
     const valid = Object.keys(newErrors).length === 0;
     setIsValid(valid);
-    
+
     if (valid) {
       onStepComplete();
     }
-    
+
     return valid;
-  }, [data, otpVerified, onStepComplete]);
+  }, [data, onStepComplete]);
 
   // Auto-validate on data change
   useEffect(() => {
@@ -161,16 +177,22 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     }
   }, [countdown]);
 
-  const handleInputChange = (field: keyof typeof data.basicInfo, value: string) => {
+  const handleInputChange = (
+    field: keyof typeof data.basicInfo,
+    value: string
+  ) => {
     updateData("basicInfo", { [field]: value });
   };
 
-  const handleEmergencyContactChange = (field: keyof typeof data.basicInfo.emergencyContact, value: string) => {
-    updateData("basicInfo", { 
-      emergencyContact: { 
-        ...data.basicInfo.emergencyContact, 
-        [field]: value 
-      } 
+  const handleEmergencyContactChange = (
+    field: keyof typeof data.basicInfo.emergencyContact,
+    value: string
+  ) => {
+    updateData("basicInfo", {
+      emergencyContact: {
+        ...data.basicInfo.emergencyContact,
+        [field]: value,
+      },
     });
   };
 
@@ -187,13 +209,16 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
     // Simulate OTP verification (accept any 6-digit code for demo)
     if (otp.length === 6) {
       setOtpVerified(true);
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.phone;
         return newErrors;
       });
     } else {
-      setErrors(prev => ({ ...prev, otp: "Please enter a valid 6-digit OTP" }));
+      setErrors((prev) => ({
+        ...prev,
+        otp: "Please enter a valid 6-digit OTP",
+      }));
     }
   };
 
@@ -224,7 +249,9 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                 <Input
                   id="firstName"
                   value={data.basicInfo.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("firstName", e.target.value)
+                  }
                   placeholder="Enter your first name"
                   className={cn(errors.firstName && "border-red-500")}
                 />
@@ -240,7 +267,9 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                 <Input
                   id="lastName"
                   value={data.basicInfo.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lastName", e.target.value)
+                  }
                   placeholder="Enter your last name"
                   className={cn(errors.lastName && "border-red-500")}
                 />
@@ -259,8 +288,10 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                   id="dateOfBirth"
                   type="date"
                   value={data.basicInfo.dateOfBirth}
-                  onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) =>
+                    handleInputChange("dateOfBirth", e.target.value)
+                  }
+                  max={new Date().toISOString().split("T")[0]}
                   className={cn(errors.dateOfBirth && "border-red-500")}
                 />
                 {age > 0 && (
@@ -275,8 +306,13 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                 <Label htmlFor="gender" className="text-sm font-medium">
                   Gender *
                 </Label>
-                <Select value={data.basicInfo.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                  <SelectTrigger className={cn(errors.gender && "border-red-500")}>
+                <Select
+                  value={data.basicInfo.gender}
+                  onValueChange={(value) => handleInputChange("gender", value)}
+                >
+                  <SelectTrigger
+                    className={cn(errors.gender && "border-red-500")}
+                  >
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -298,7 +334,12 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
               <Input
                 id="abhaId"
                 value={data.basicInfo.abhaId}
-                onChange={(e) => handleInputChange("abhaId", e.target.value.replace(/\D/g, '').slice(0, 14))}
+                onChange={(e) =>
+                  handleInputChange(
+                    "abhaId",
+                    e.target.value.replace(/\D/g, "").slice(0, 14)
+                  )
+                }
                 placeholder="Enter your 14-digit ABHA ID"
                 maxLength={14}
               />
@@ -361,7 +402,9 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                     <Input
                       id="otp"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onChange={(e) =>
+                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                      }
                       placeholder="6-digit OTP"
                       maxLength={6}
                       className="flex-1"
@@ -408,7 +451,9 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                   id="password"
                   type="password"
                   value={data.basicInfo.password || ""}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="Create a strong password"
                   className={cn(errors.password && "border-red-500")}
                   required
@@ -417,25 +462,33 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                   <p className="text-red-500 text-sm">{errors.password}</p>
                 )}
                 <p className="text-xs text-gray-500">
-                  Minimum 8 characters, include uppercase, lowercase, and numbers
+                  Minimum 8 characters, include uppercase, lowercase, and
+                  numbers
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
                   Confirm Password *
                 </Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={data.basicInfo.confirmPassword || ""}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("confirmPassword", e.target.value)
+                  }
                   placeholder="Re-enter your password"
                   className={cn(errors.confirmPassword && "border-red-500")}
                   required
                 />
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.confirmPassword}
+                  </p>
                 )}
               </div>
             </div>
@@ -453,30 +506,48 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="emergencyContactName" className="text-sm font-medium">
+                <Label
+                  htmlFor="emergencyContactName"
+                  className="text-sm font-medium"
+                >
                   Full Name *
                 </Label>
                 <Input
                   id="emergencyContactName"
                   value={data.basicInfo.emergencyContact.name}
-                  onChange={(e) => handleEmergencyContactChange("name", e.target.value)}
+                  onChange={(e) =>
+                    handleEmergencyContactChange("name", e.target.value)
+                  }
                   placeholder="Emergency contact name"
-                  className={cn(errors.emergencyContactName && "border-red-500")}
+                  className={cn(
+                    errors.emergencyContactName && "border-red-500"
+                  )}
                 />
                 {errors.emergencyContactName && (
-                  <p className="text-red-500 text-sm">{errors.emergencyContactName}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.emergencyContactName}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="emergencyContactRelation" className="text-sm font-medium">
+                <Label
+                  htmlFor="emergencyContactRelation"
+                  className="text-sm font-medium"
+                >
                   Relation *
                 </Label>
-                <Select 
-                  value={data.basicInfo.emergencyContact.relation} 
-                  onValueChange={(value) => handleEmergencyContactChange("relation", value)}
+                <Select
+                  value={data.basicInfo.emergencyContact.relation}
+                  onValueChange={(value) =>
+                    handleEmergencyContactChange("relation", value)
+                  }
                 >
-                  <SelectTrigger className={cn(errors.emergencyContactRelation && "border-red-500")}>
+                  <SelectTrigger
+                    className={cn(
+                      errors.emergencyContactRelation && "border-red-500"
+                    )}
+                  >
                     <SelectValue placeholder="Select relation" />
                   </SelectTrigger>
                   <SelectContent>
@@ -488,25 +559,34 @@ const BasicInformationStep: React.FC<BasicInformationStepProps> = ({
                   </SelectContent>
                 </Select>
                 {errors.emergencyContactRelation && (
-                  <p className="text-red-500 text-sm">{errors.emergencyContactRelation}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.emergencyContactRelation}
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="emergencyContactPhone" className="text-sm font-medium">
+              <Label
+                htmlFor="emergencyContactPhone"
+                className="text-sm font-medium"
+              >
                 Phone Number *
               </Label>
               <Input
                 id="emergencyContactPhone"
                 type="tel"
                 value={data.basicInfo.emergencyContact.phone}
-                onChange={(e) => handleEmergencyContactChange("phone", e.target.value)}
+                onChange={(e) =>
+                  handleEmergencyContactChange("phone", e.target.value)
+                }
                 placeholder="+91 12345 67890"
                 className={cn(errors.emergencyContactPhone && "border-red-500")}
               />
               {errors.emergencyContactPhone && (
-                <p className="text-red-500 text-sm">{errors.emergencyContactPhone}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.emergencyContactPhone}
+                </p>
               )}
             </div>
           </CardContent>

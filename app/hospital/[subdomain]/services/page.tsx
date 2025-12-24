@@ -12,7 +12,6 @@ import {
   Baby,
   Eye,
   Ear,
-  Activity,
   Syringe,
   Microscope,
   Ambulance,
@@ -21,7 +20,13 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import HospitalHeader from "../components/HospitalHeader";
 import HospitalFooter from "../components/HospitalFooter";
 import { HospitalService, HospitalProfile } from "@/lib/hospital-service";
@@ -40,64 +45,112 @@ const defaultServices: Service[] = [
   {
     id: "general-medicine",
     name: "General Medicine",
-    description: "Comprehensive primary healthcare for adults covering a wide range of conditions and preventive care.",
+    description:
+      "Comprehensive primary healthcare for adults covering a wide range of conditions and preventive care.",
     icon: Stethoscope,
-    features: ["Health Checkups", "Chronic Disease Management", "Preventive Care", "Vaccination"],
+    features: [
+      "Health Checkups",
+      "Chronic Disease Management",
+      "Preventive Care",
+      "Vaccination",
+    ],
   },
   {
     id: "cardiology",
     name: "Cardiology",
-    description: "Expert cardiac care with state-of-the-art diagnostic and treatment facilities.",
+    description:
+      "Expert cardiac care with state-of-the-art diagnostic and treatment facilities.",
     icon: Heart,
-    features: ["ECG & Echo", "Angiography", "Angioplasty", "Pacemaker Implantation"],
+    features: [
+      "ECG & Echo",
+      "Angiography",
+      "Angioplasty",
+      "Pacemaker Implantation",
+    ],
   },
   {
     id: "neurology",
     name: "Neurology",
-    description: "Specialized treatment for disorders of the brain, spinal cord, and nervous system.",
+    description:
+      "Specialized treatment for disorders of the brain, spinal cord, and nervous system.",
     icon: Brain,
-    features: ["Stroke Management", "Epilepsy Treatment", "Headache Clinic", "EEG & EMG"],
+    features: [
+      "Stroke Management",
+      "Epilepsy Treatment",
+      "Headache Clinic",
+      "EEG & EMG",
+    ],
   },
   {
     id: "orthopedics",
     name: "Orthopedics",
-    description: "Complete bone and joint care including sports medicine and rehabilitation.",
+    description:
+      "Complete bone and joint care including sports medicine and rehabilitation.",
     icon: Bone,
-    features: ["Joint Replacement", "Spine Surgery", "Sports Medicine", "Fracture Care"],
+    features: [
+      "Joint Replacement",
+      "Spine Surgery",
+      "Sports Medicine",
+      "Fracture Care",
+    ],
   },
   {
     id: "pediatrics",
     name: "Pediatrics",
     description: "Dedicated healthcare for infants, children, and adolescents.",
     icon: Baby,
-    features: ["Well-baby Care", "Immunization", "Growth Monitoring", "Pediatric Emergency"],
+    features: [
+      "Well-baby Care",
+      "Immunization",
+      "Growth Monitoring",
+      "Pediatric Emergency",
+    ],
   },
   {
     id: "ophthalmology",
     name: "Ophthalmology",
-    description: "Advanced eye care services including cataract surgery and laser treatments.",
+    description:
+      "Advanced eye care services including cataract surgery and laser treatments.",
     icon: Eye,
-    features: ["Cataract Surgery", "LASIK", "Glaucoma Treatment", "Retina Care"],
+    features: [
+      "Cataract Surgery",
+      "LASIK",
+      "Glaucoma Treatment",
+      "Retina Care",
+    ],
   },
   {
     id: "ent",
     name: "ENT",
-    description: "Expert care for ear, nose, throat, and related structures of head and neck.",
+    description:
+      "Expert care for ear, nose, throat, and related structures of head and neck.",
     icon: Ear,
-    features: ["Hearing Tests", "Sinus Treatment", "Tonsillectomy", "Speech Therapy"],
+    features: [
+      "Hearing Tests",
+      "Sinus Treatment",
+      "Tonsillectomy",
+      "Speech Therapy",
+    ],
   },
   {
     id: "emergency",
     name: "Emergency Care",
-    description: "Round-the-clock emergency services with rapid response teams.",
+    description:
+      "Round-the-clock emergency services with rapid response teams.",
     icon: Ambulance,
-    features: ["24/7 Emergency", "Trauma Care", "Critical Care", "Ambulance Service"],
+    features: [
+      "24/7 Emergency",
+      "Trauma Care",
+      "Critical Care",
+      "Ambulance Service",
+    ],
     available_24x7: true,
   },
   {
     id: "diagnostics",
     name: "Diagnostic Services",
-    description: "Comprehensive laboratory and imaging services for accurate diagnosis.",
+    description:
+      "Comprehensive laboratory and imaging services for accurate diagnosis.",
     icon: Microscope,
     features: ["Pathology Lab", "X-Ray & CT", "MRI Scan", "Ultrasound"],
   },
@@ -106,7 +159,12 @@ const defaultServices: Service[] = [
     name: "Vaccination Center",
     description: "Complete immunization services for all age groups.",
     icon: Syringe,
-    features: ["Child Vaccination", "Adult Vaccination", "Travel Vaccines", "Flu Shots"],
+    features: [
+      "Child Vaccination",
+      "Adult Vaccination",
+      "Travel Vaccines",
+      "Flu Shots",
+    ],
   },
 ];
 
@@ -126,7 +184,9 @@ export default function ServicesPage() {
   useEffect(() => {
     async function fetchHospital() {
       try {
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
         setHospital(hospitalData);
       } catch (error) {
         console.error("Error fetching hospital:", error);
@@ -172,8 +232,8 @@ export default function ServicesPage() {
           >
             <h1 className="text-4xl font-bold mb-4">Our Services</h1>
             <p className="text-lg text-white/90 max-w-2xl mx-auto">
-              Comprehensive healthcare services delivered by our team of experienced specialists
-              using state-of-the-art technology.
+              Comprehensive healthcare services delivered by our team of
+              experienced specialists using state-of-the-art technology.
             </p>
           </motion.div>
         </div>
@@ -215,7 +275,10 @@ export default function ServicesPage() {
                   <CardContent>
                     <ul className="space-y-2 mb-4">
                       {service.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                        <li
+                          key={i}
+                          className="flex items-center gap-2 text-sm text-gray-600"
+                        >
                           <CheckCircle
                             className="w-4 h-4 flex-shrink-0"
                             style={{ color: theme.primaryColor }}
@@ -248,7 +311,8 @@ export default function ServicesPage() {
             Need Help Choosing the Right Service?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Our team is here to guide you to the right specialist. Contact us today.
+            Our team is here to guide you to the right specialist. Contact us
+            today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={`${basePath}/contact`}>

@@ -1,34 +1,43 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, AlertCircle, Eye, FileText, Image as ImageIcon, Shield } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { PhasedPublishSelector } from '../widgets/PhasedPublishSelector';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  FileText,
+  Image as ImageIcon,
+  Shield,
+} from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { PhasedPublishSelector } from "../widgets/PhasedPublishSelector";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const STEP_NAMES = [
-  'Template Selection',
-  'Organization Profile',
-  'Locations & Contacts',
-  'Branding Studio',
-  'Site Content',
-  'Services & Pricing',
-  'Leadership & Team',
-  'Operational Policies',
-  'Compliance & Documentation',
-  'Integrations',
-  'Admin Invitations',
-  'Review & Submission',
+  "Template Selection",
+  "Organization Profile",
+  "Locations & Contacts",
+  "Branding Studio",
+  "Site Content",
+  "Services & Pricing",
+  "Leadership & Team",
+  "Operational Policies",
+  "Compliance & Documentation",
+  "Integrations",
+  "Admin Invitations",
+  "Review & Submission",
 ];
 
 export default function ReviewSubmissionStep() {
-  const { data, updateData, getStepCompletion, isStepValid } = useHospitalOnboarding();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data, updateData, getStepCompletion, isStepValid } =
+    useHospitalOnboarding();
   const review = data.review;
   const stepCompletion = getStepCompletion();
 
@@ -47,14 +56,14 @@ export default function ReviewSubmissionStep() {
 
   // Collect all uploaded media
   const mediaAssets = [
-    { type: 'Logo', url: data.branding.logo_url },
-    { type: 'Hero Background', url: data.branding.hero_asset_url },
-    { type: 'Favicon', url: data.branding.favicon_url },
-    ...data.leadershipTeam.leadership_cards.map(card => ({
+    { type: "Logo", url: data.branding.logo_url },
+    { type: "Hero Background", url: data.branding.hero_asset_url },
+    { type: "Favicon", url: data.branding.favicon_url },
+    ...data.leadershipTeam.leadership_cards.map((card) => ({
       type: `Profile: ${card.full_name}`,
       url: card.profile_photo_url,
     })),
-  ].filter(asset => asset.url);
+  ].filter((asset) => asset.url);
 
   return (
     <div className="space-y-6">
@@ -66,7 +75,9 @@ export default function ReviewSubmissionStep() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Onboarding Progress</h3>
+            <h3 className="text-xl font-bold text-gray-900">
+              Onboarding Progress
+            </h3>
             <p className="text-sm text-gray-600 mt-1">
               Review your information before going live
             </p>
@@ -94,7 +105,9 @@ export default function ReviewSubmissionStep() {
             transition={{ delay: 0.1 }}
             className="bg-white border border-gray-200 rounded-lg p-6"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Step Completion</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Step Completion
+            </h3>
             <div className="space-y-2">
               {Object.entries(stepCompletion).map(([stepId, completed]) => {
                 const stepNum = parseInt(stepId);
@@ -122,8 +135,12 @@ export default function ReviewSubmissionStep() {
                 <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Legal Acknowledgements</h3>
-                <p className="text-xs text-gray-600">Please review and accept to continue</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Legal Acknowledgements
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Please review and accept to continue
+                </p>
               </div>
             </div>
 
@@ -132,8 +149,11 @@ export default function ReviewSubmissionStep() {
                 id="terms"
                 checked={review.acknowledgements.terms}
                 onChange={(checked) =>
-                  updateData('review', {
-                    acknowledgements: { ...review.acknowledgements, terms: checked },
+                  updateData("review", {
+                    acknowledgements: {
+                      ...review.acknowledgements,
+                      terms: checked,
+                    },
                   })
                 }
                 title="Terms & Conditions"
@@ -145,8 +165,11 @@ export default function ReviewSubmissionStep() {
                 id="privacy"
                 checked={review.acknowledgements.privacy}
                 onChange={(checked) =>
-                  updateData('review', {
-                    acknowledgements: { ...review.acknowledgements, privacy: checked },
+                  updateData("review", {
+                    acknowledgements: {
+                      ...review.acknowledgements,
+                      privacy: checked,
+                    },
                   })
                 }
                 title="Privacy Policy"
@@ -158,8 +181,11 @@ export default function ReviewSubmissionStep() {
                 id="dpa"
                 checked={review.acknowledgements.dpa}
                 onChange={(checked) =>
-                  updateData('review', {
-                    acknowledgements: { ...review.acknowledgements, dpa: checked },
+                  updateData("review", {
+                    acknowledgements: {
+                      ...review.acknowledgements,
+                      dpa: checked,
+                    },
                   })
                 }
                 title="Data Processing Agreement"
@@ -171,8 +197,11 @@ export default function ReviewSubmissionStep() {
                 id="ai"
                 checked={review.acknowledgements.ai_usage}
                 onChange={(checked) =>
-                  updateData('review', {
-                    acknowledgements: { ...review.acknowledgements, ai_usage: checked },
+                  updateData("review", {
+                    acknowledgements: {
+                      ...review.acknowledgements,
+                      ai_usage: checked,
+                    },
                   })
                 }
                 title="AI Usage Policy"
@@ -204,8 +233,12 @@ export default function ReviewSubmissionStep() {
                 <ImageIcon className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Media Gallery</h3>
-                <p className="text-xs text-gray-600">{mediaAssets.length} assets uploaded</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Media Gallery
+                </h3>
+                <p className="text-xs text-gray-600">
+                  {mediaAssets.length} assets uploaded
+                </p>
               </div>
             </div>
 
@@ -255,7 +288,9 @@ export default function ReviewSubmissionStep() {
                 <FileText className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Documents
+                </h3>
                 <p className="text-xs text-gray-600">
                   {data.compliance.documents.length} documents uploaded
                 </p>
@@ -271,10 +306,14 @@ export default function ReviewSubmissionStep() {
                   >
                     <div className="flex items-center space-x-2 flex-1 min-w-0">
                       <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 truncate">{doc.type}</span>
+                      <span className="text-sm text-gray-700 truncate">
+                        {doc.type}
+                      </span>
                     </div>
                     <Badge
-                      variant={doc.status === 'uploaded' ? 'default' : 'outline'}
+                      variant={
+                        doc.status === "uploaded" ? "default" : "outline"
+                      }
                       className="text-xs"
                     >
                       {doc.status}
@@ -301,8 +340,11 @@ export default function ReviewSubmissionStep() {
               value={review.publication_plan.launch_mode}
               scheduledAt={review.publication_plan.scheduled_at}
               onChange={(mode, scheduledAt) =>
-                updateData('review', {
-                  publication_plan: { launch_mode: mode, scheduled_at: scheduledAt },
+                updateData("review", {
+                  publication_plan: {
+                    launch_mode: mode,
+                    scheduled_at: scheduledAt,
+                  },
                 })
               }
             />
@@ -324,7 +366,8 @@ export default function ReviewSubmissionStep() {
                 Ready to Launch!
               </h3>
               <p className="text-sm text-gray-700">
-                All requirements met. Click the "Submit & Go Live" button to complete your onboarding.
+                All requirements met. Click the &quot;Submit &amp; Go Live&quot;
+                button to complete your onboarding.
               </p>
             </div>
           </div>
@@ -342,8 +385,8 @@ export default function ReviewSubmissionStep() {
                 Action Required
               </h3>
               <p className="text-sm text-gray-700">
-                {completionPercentage < 100 && 'Complete all required steps. '}
-                {!allAcknowledged && 'Accept all legal acknowledgements.'}
+                {completionPercentage < 100 && "Complete all required steps. "}
+                {!allAcknowledged && "Accept all legal acknowledgements."}
               </p>
             </div>
           </div>
@@ -363,24 +406,29 @@ function StepStatusItem({ stepNumber, title, completed }: StepStatusItemProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-between p-3 rounded-lg border transition-all',
+        "flex items-center justify-between p-3 rounded-lg border transition-all",
         completed
-          ? 'bg-green-50 border-green-200'
-          : 'bg-gray-50 border-gray-200'
+          ? "bg-green-50 border-green-200"
+          : "bg-gray-50 border-gray-200"
       )}
     >
       <div className="flex items-center space-x-3">
         <div
           className={cn(
-            'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold',
+            "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold",
             completed
-              ? 'bg-healthcare-emerald text-white'
-              : 'bg-gray-200 text-gray-600'
+              ? "bg-healthcare-emerald text-white"
+              : "bg-gray-200 text-gray-600"
           )}
         >
           {completed ? <CheckCircle2 className="w-5 h-5" /> : stepNumber}
         </div>
-        <span className={cn('text-sm font-medium', completed ? 'text-gray-900' : 'text-gray-600')}>
+        <span
+          className={cn(
+            "text-sm font-medium",
+            completed ? "text-gray-900" : "text-gray-600"
+          )}
+        >
           {title}
         </span>
       </div>
@@ -419,7 +467,10 @@ function AcknowledgementItem({
         className="mt-1"
       />
       <div className="flex-1">
-        <Label htmlFor={id} className="font-medium text-gray-900 cursor-pointer">
+        <Label
+          htmlFor={id}
+          className="font-medium text-gray-900 cursor-pointer"
+        >
           {title}
         </Label>
         <p className="text-xs text-gray-600 mt-0.5">{description}</p>

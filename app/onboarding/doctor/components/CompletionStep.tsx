@@ -10,16 +10,13 @@ import {
   CheckCircle,
   Calendar,
   User,
-  GraduationCap,
   Clock,
-  CreditCard,
   Users,
   FileText,
   Download,
   ExternalLink,
   ChevronRight,
   Star,
-  Award,
   Shield,
   Clock4,
   CalendarCheck,
@@ -75,29 +72,29 @@ const quickActions = [
     title: "View Schedule",
     description: "Manage your availability and appointments",
     action: "schedule",
-    color: "healthcare-primary"
+    color: "healthcare-primary",
   },
   {
     icon: User,
     title: "Complete Profile",
     description: "Add bio, photos, and additional details",
     action: "profile",
-    color: "healthcare-emerald"
+    color: "healthcare-emerald",
   },
   {
     icon: Download,
     title: "Download App",
     description: "Get the mobile app for better experience",
     action: "download",
-    color: "healthcare-teal"
+    color: "healthcare-teal",
   },
   {
     icon: ExternalLink,
     title: "Practice Dashboard",
     description: "Access your doctor dashboard",
     action: "dashboard",
-    color: "healthcare-indigo"
-  }
+    color: "healthcare-indigo",
+  },
 ];
 
 function CompletionStep({ data, onStepComplete }: CompletionStepProps) {
@@ -121,7 +118,7 @@ function CompletionStep({ data, onStepComplete }: CompletionStepProps) {
   // Calculate profile completion percentage
   const calculateCompletion = useCallback(() => {
     let completed = 0;
-    let total = 3; // Reduced from 5 to 3 since we removed payment and mentorship
+    const total = 3; // Reduced from 5 to 3 since we removed payment and mentorship
 
     // Personal Info (required)
     if (personalInfo.firstName && personalInfo.lastName && personalInfo.email) {
@@ -220,7 +217,10 @@ function CompletionStep({ data, onStepComplete }: CompletionStepProps) {
             <CheckCircle className="w-3 h-3 mr-1" />
             Profile {completionPercentage}% Complete
           </Badge>
-          <Badge variant="outline" className="border-healthcare-primary text-healthcare-primary">
+          <Badge
+            variant="outline"
+            className="border-healthcare-primary text-healthcare-primary"
+          >
             <Clock4 className="w-3 h-3 mr-1" />
             Ready for Review
           </Badge>
@@ -329,8 +329,13 @@ function CompletionStep({ data, onStepComplete }: CompletionStepProps) {
                   </h4>
                   <div className="text-sm text-gray-600 space-y-1 pl-6">
                     <div>Available for {mentorship.mentorSlots} mentee(s)</div>
-                    <div>{mentorship.expertiseAreas.length} expertise areas</div>
-                    <Badge variant="secondary" className="bg-healthcare-primary/10 text-healthcare-primary">
+                    <div>
+                      {mentorship.expertiseAreas.length} expertise areas
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="bg-healthcare-primary/10 text-healthcare-primary"
+                    >
                       Mentor Badge
                     </Badge>
                   </div>
@@ -477,7 +482,10 @@ function CompletionStep({ data, onStepComplete }: CompletionStepProps) {
             Our support team is here to help you get started. Reach out anytime!
           </p>
           <div className="flex justify-center space-x-4 text-sm">
-            <a href="mailto:support@healthcare.com" className="text-healthcare-primary hover:text-healthcare-teal transition-colors">
+            <a
+              href="mailto:support@healthcare.com"
+              className="text-healthcare-primary hover:text-healthcare-teal transition-colors"
+            >
               support@healthcare.com
             </a>
             <span className="text-gray-300">|</span>

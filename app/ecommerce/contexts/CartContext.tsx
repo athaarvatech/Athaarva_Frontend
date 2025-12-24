@@ -1,7 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
-import { sfFetch, ShopifyCart, ShopifyCartLine } from "../lib/shopify";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from "react";
+import { sfFetch, ShopifyCart } from "../lib/shopify";
 import {
   CART_CREATE,
   CART_LINES_ADD,
@@ -52,17 +58,17 @@ interface CartState {
   // Shopify cart data
   shopifyCart: ShopifyCart | null;
   cartId: string | null;
-  
+
   // Legacy compatibility
   items: CartItem[];
   isOpen: boolean;
   total: number;
   itemCount: number;
-  
+
   // Loading states
   isLoading: boolean;
   isUpdating: boolean;
-  
+
   // Error handling
   error: string | null;
 }
@@ -95,16 +101,18 @@ const initialState: CartState = {
 };
 
 // Helper functions
-function convertShopifyCartToLegacy(shopifyCart: ShopifyCart | null): CartItem[] {
+function convertShopifyCartToLegacy(
+  shopifyCart: ShopifyCart | null
+): CartItem[] {
   if (!shopifyCart) return [];
-  
+
   return shopifyCart.lines.edges.map(({ node: line }) => ({
     id: line.merchandise.id, // Use variant ID as product ID for legacy compatibility
     name: `${line.merchandise.product.title} - ${line.merchandise.title}`,
-    image: line.merchandise.product.featuredImage?.url || '',
+    image: line.merchandise.product.featuredImage?.url || "",
     specs: [], // Not available in Shopify data
     price: parseFloat(line.merchandise.price.amount),
-    category: '', // Not available in Shopify data
+    category: "", // Not available in Shopify data
     inStock: true, // Assume in stock if in cart
     quantity: line.quantity,
   }));
@@ -126,7 +134,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         shopifyCart: action.payload,
         items: legacyItems,
-        total: action.payload ? parseFloat(action.payload.cost.totalAmount.amount) : 0,
+        total: action.payload
+          ? parseFloat(action.payload.cost.totalAmount.amount)
+          : 0,
         itemCount: action.payload ? action.payload.totalQuantity : 0,
         isLoading: false,
         isUpdating: false,
@@ -259,7 +269,7 @@ interface CartContextType extends CartState {
   updateCartLine: (lineId: string, quantity: number) => Promise<void>;
   removeCartLine: (lineId: string) => Promise<void>;
   getCheckoutUrl: () => string | null;
-  
+
   // Legacy methods for backward compatibility
   addItem: (product: Product) => void;
   removeItem: (id: string) => void;
@@ -289,7 +299,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const response = await sfFetch<CartQueryResponse>(CART_QUERY, {
           id: savedCartId,
         });
-        
+
         if (response.cart) {
           dispatch({ type: "SET_CART_ID", payload: savedCartId });
           dispatch({ type: "SET_SHOPIFY_CART", payload: response.cart });
@@ -321,7 +331,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("shopify-cart-id", cartId);
       dispatch({ type: "SET_CART_ID", payload: cartId });
       dispatch({ type: "SET_SHOPIFY_CART", payload: response.cartCreate.cart });
-      
+
       return cartId;
     } catch (error) {
       console.error("Error creating cart:", error);
@@ -330,96 +340,129 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.cartId]);
 
-  const addToCart = useCallback(async (variantId: string, quantity = 1) => {
-    try {
-      dispatch({ type: "SET_UPDATING", payload: true });
-      const cartId = await ensureCart();
+  const addToCart = useCallback(
+    async (variantId: string, quantity = 1) => {
+      try {
+        dispatch({ type: "SET_UPDATING", payload: true });
+        const cartId = await ensureCart();
 
-      const response = await sfFetch<CartLinesAddResponse>(CART_LINES_ADD, {
-        cartId,
-        lines: [
-          {
-            merchandiseId: variantId,
-            quantity,
-          },
-        ],
-      });
-
-      if (response.cartLinesAdd.userErrors.length > 0) {
-        throw new Error(response.cartLinesAdd.userErrors[0].message);
-      }
-
-      dispatch({ type: "SET_SHOPIFY_CART", payload: response.cartLinesAdd.cart });
-      dispatch({ type: "OPEN_CART" });
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      dispatch({ type: "SET_ERROR", payload: "Failed to add item to cart" });
-    }
-  }, [ensureCart]);
-
-  const updateCartLine = useCallback(async (lineId: string, quantity: number) => {
-    if (!state.cartId) return;
-
-    try {
-      dispatch({ type: "SET_UPDATING", payload: true });
-
-      if (quantity === 0) {
-        // Remove the line instead of setting quantity to 0
-        const response = await sfFetch<CartLinesRemoveResponse>(CART_LINES_REMOVE, {
-          cartId: state.cartId,
-          lineIds: [lineId],
+        const response = await sfFetch<CartLinesAddResponse>(CART_LINES_ADD, {
+          cartId,
+          lines: [
+            {
+              merchandiseId: variantId,
+              quantity,
+            },
+          ],
         });
+
+        if (response.cartLinesAdd.userErrors.length > 0) {
+          throw new Error(response.cartLinesAdd.userErrors[0].message);
+        }
+
+        dispatch({
+          type: "SET_SHOPIFY_CART",
+          payload: response.cartLinesAdd.cart,
+        });
+        dispatch({ type: "OPEN_CART" });
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        dispatch({ type: "SET_ERROR", payload: "Failed to add item to cart" });
+      }
+    },
+    [ensureCart]
+  );
+
+  const updateCartLine = useCallback(
+    async (lineId: string, quantity: number) => {
+      if (!state.cartId) return;
+
+      try {
+        dispatch({ type: "SET_UPDATING", payload: true });
+
+        if (quantity === 0) {
+          // Remove the line instead of setting quantity to 0
+          const response = await sfFetch<CartLinesRemoveResponse>(
+            CART_LINES_REMOVE,
+            {
+              cartId: state.cartId,
+              lineIds: [lineId],
+            }
+          );
+
+          if (response.cartLinesRemove.userErrors.length > 0) {
+            throw new Error(response.cartLinesRemove.userErrors[0].message);
+          }
+
+          dispatch({
+            type: "SET_SHOPIFY_CART",
+            payload: response.cartLinesRemove.cart,
+          });
+          return;
+        }
+
+        const response = await sfFetch<CartLinesUpdateResponse>(
+          CART_LINES_UPDATE,
+          {
+            cartId: state.cartId,
+            lines: [
+              {
+                id: lineId,
+                quantity,
+              },
+            ],
+          }
+        );
+
+        if (response.cartLinesUpdate.userErrors.length > 0) {
+          throw new Error(response.cartLinesUpdate.userErrors[0].message);
+        }
+
+        dispatch({
+          type: "SET_SHOPIFY_CART",
+          payload: response.cartLinesUpdate.cart,
+        });
+      } catch (error) {
+        console.error("Error updating cart line:", error);
+        dispatch({ type: "SET_ERROR", payload: "Failed to update cart" });
+      }
+    },
+    [state.cartId]
+  );
+
+  const removeCartLine = useCallback(
+    async (lineId: string) => {
+      if (!state.cartId) return;
+
+      try {
+        dispatch({ type: "SET_UPDATING", payload: true });
+
+        const response = await sfFetch<CartLinesRemoveResponse>(
+          CART_LINES_REMOVE,
+          {
+            cartId: state.cartId,
+            lineIds: [lineId],
+          }
+        );
 
         if (response.cartLinesRemove.userErrors.length > 0) {
           throw new Error(response.cartLinesRemove.userErrors[0].message);
         }
 
-        dispatch({ type: "SET_SHOPIFY_CART", payload: response.cartLinesRemove.cart });
-        return;
+        dispatch({
+          type: "SET_SHOPIFY_CART",
+          payload: response.cartLinesRemove.cart,
+        });
+      } catch (error) {
+        console.error("Error removing cart line:", error);
+        dispatch({
+          type: "SET_ERROR",
+          payload: "Failed to remove item from cart",
+        });
       }
-
-      const response = await sfFetch<CartLinesUpdateResponse>(CART_LINES_UPDATE, {
-        cartId: state.cartId,
-        lines: [
-          {
-            id: lineId,
-            quantity,
-          },
-        ],
-      });
-
-      if (response.cartLinesUpdate.userErrors.length > 0) {
-        throw new Error(response.cartLinesUpdate.userErrors[0].message);
-      }
-
-      dispatch({ type: "SET_SHOPIFY_CART", payload: response.cartLinesUpdate.cart });
-    } catch (error) {
-      console.error("Error updating cart line:", error);
-      dispatch({ type: "SET_ERROR", payload: "Failed to update cart" });
-    }
-  }, [state.cartId]);
-
-  const removeCartLine = useCallback(async (lineId: string) => {
-    if (!state.cartId) return;
-
-    try {
-      dispatch({ type: "SET_UPDATING", payload: true });
-
-      const response = await sfFetch<CartLinesRemoveResponse>(CART_LINES_REMOVE, {
-        cartId: state.cartId,
-        lineIds: [lineId],
-      });
-
-      if (response.cartLinesRemove.userErrors.length > 0) {
-        throw new Error(response.cartLinesRemove.userErrors[0].message);
-      }
-
-      dispatch({ type: "SET_SHOPIFY_CART", payload: response.cartLinesRemove.cart });
-    } catch (error) {
-      console.error("Error removing cart line:", error);
-      dispatch({ type: "SET_ERROR", payload: "Failed to remove item from cart" });
-    }
-  }, [state.cartId]);
+    },
+    [state.cartId]
+  );
 
   const getCheckoutUrl = useCallback((): string | null => {
     return state.shopifyCart?.checkoutUrl || null;
@@ -434,7 +477,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const response = await sfFetch<CartQueryResponse>(CART_QUERY, {
             id: savedCartId,
           });
-          
+
           if (response.cart) {
             dispatch({ type: "SET_CART_ID", payload: savedCartId });
             dispatch({ type: "SET_SHOPIFY_CART", payload: response.cart });

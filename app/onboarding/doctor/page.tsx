@@ -21,7 +21,6 @@ import { useAuth } from "@/contexts/AuthContext";
 
 // Import step components
 import PersonalInformationStep from "./components/PersonalInformationStep";
-import CredentialVerificationStep from "./components/CredentialVerificationStep";
 import WorkScheduleStep from "./components/WorkScheduleStep";
 import CompletionStep from "./components/CompletionStep";
 import MentorshipStep from "./components/MentorshipStep";
@@ -256,9 +255,9 @@ function DoctorOnboardingPage() {
 
     try {
       // Get the access token from localStorage
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error("No authentication token found");
       }
 
       // Transform frontend data to backend format
@@ -266,63 +265,81 @@ function DoctorOnboardingPage() {
         personal_info: {
           first_name: onboardingData.personalInfo.firstName || "John",
           last_name: onboardingData.personalInfo.lastName || "Doe",
-          registration_number: onboardingData.credentials.medicalLicense || "REG123456",
-          years_of_experience: onboardingData.personalInfo.yearsOfExperience || 0,
+          registration_number:
+            onboardingData.credentials.medicalLicense || "REG123456",
+          years_of_experience:
+            onboardingData.personalInfo.yearsOfExperience || 0,
           consultation_fee: onboardingData.payment?.consultationFee || 0,
           telehealth_fee: onboardingData.payment?.telehealthFee || 0,
         },
-        specializations: Array.isArray(onboardingData.personalInfo.specializations) && onboardingData.personalInfo.specializations.length > 0 
-          ? onboardingData.personalInfo.specializations 
-          : [1], // Default to General Medicine if none selected
-        credentials: onboardingData.credentials.licenses?.length > 0 
-          ? onboardingData.credentials.licenses.map(license => ({
-              license_number: license.number,
-              license_state: license.state,
-              license_type: "medical",
-              expiry_date: null,
-              issuing_authority: null,
-              document_url: null,
-            })) 
-          : [{
-              license_number: onboardingData.credentials.medicalLicense || "LIC123456",
-              license_state: onboardingData.credentials.licenseState || "CA",
-              license_type: "medical",
-              expiry_date: null,
-              issuing_authority: null,
-              document_url: null,
-            }],
-        degrees: [{
-          degree_name: onboardingData.credentials.degree || "MBBS",
-          institution: "Medical College",
-          year_obtained: null,
-          document_url: null,
-        }],
-        hospital_privileges: Array.isArray(onboardingData.credentials.hospitalPrivileges) 
-          ? onboardingData.credentials.hospitalPrivileges.map(privilege => ({
+        specializations:
+          Array.isArray(onboardingData.personalInfo.specializations) &&
+          onboardingData.personalInfo.specializations.length > 0
+            ? onboardingData.personalInfo.specializations
+            : [1], // Default to General Medicine if none selected
+        credentials:
+          onboardingData.credentials.licenses?.length > 0
+            ? onboardingData.credentials.licenses.map((license) => ({
+                license_number: license.number,
+                license_state: license.state,
+                license_type: "medical",
+                expiry_date: null,
+                issuing_authority: null,
+                document_url: null,
+              }))
+            : [
+                {
+                  license_number:
+                    onboardingData.credentials.medicalLicense || "LIC123456",
+                  license_state:
+                    onboardingData.credentials.licenseState || "CA",
+                  license_type: "medical",
+                  expiry_date: null,
+                  issuing_authority: null,
+                  document_url: null,
+                },
+              ],
+        degrees: [
+          {
+            degree_name: onboardingData.credentials.degree || "MBBS",
+            institution: "Medical College",
+            year_obtained: null,
+            document_url: null,
+          },
+        ],
+        hospital_privileges: Array.isArray(
+          onboardingData.credentials.hospitalPrivileges
+        )
+          ? onboardingData.credentials.hospitalPrivileges.map((privilege) => ({
               hospital_name: privilege,
               department: null,
               privilege_type: null,
               start_date: null,
               end_date: null,
-            })) 
+            }))
           : [],
         banking_details: {
-          account_holder_name: onboardingData.payment?.bankDetails?.accountHolder || null,
-          account_number: onboardingData.payment?.bankDetails?.accountNumber || null,
+          account_holder_name:
+            onboardingData.payment?.bankDetails?.accountHolder || null,
+          account_number:
+            onboardingData.payment?.bankDetails?.accountNumber || null,
           ifsc_code: onboardingData.payment?.bankDetails?.ifscCode || null,
           bank_name: onboardingData.payment?.bankDetails?.bankName || null,
         },
         mentorship: {
-          willing_to_mentor: onboardingData.mentorship?.willingToMentor || false,
+          willing_to_mentor:
+            onboardingData.mentorship?.willingToMentor || false,
           mentor_slots: onboardingData.mentorship?.mentorSlots || 0,
           mentorship_experience: onboardingData.mentorship?.experience || null,
         },
-        availability: onboardingData.schedule?.workingHours?.filter(hours => hours.start && hours.end).map(hours => ({
-          day_of_week: "monday", // Map actual days from the schedule
-          start_time: `${hours.start}:00`, // Ensure format is HH:MM:SS
-          end_time: `${hours.end}:00`, // Ensure format is HH:MM:SS
-          is_available: true,
-        })) || [
+        availability: onboardingData.schedule?.workingHours
+          ?.filter((hours) => hours.start && hours.end)
+          .map((hours) => ({
+            day_of_week: "monday", // Map actual days from the schedule
+            start_time: `${hours.start}:00`, // Ensure format is HH:MM:SS
+            end_time: `${hours.end}:00`, // Ensure format is HH:MM:SS
+            is_available: true,
+          })) || [
           // Default availability if none provided
           {
             day_of_week: "monday",
@@ -340,25 +357,35 @@ function DoctorOnboardingPage() {
       };
 
       // Submit to backend
-      console.log('Submitting doctor onboarding payload:', JSON.stringify(onboardingPayload, null, 2));
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/v1/doctors/onboarding`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(onboardingPayload),
-      });
+      console.log(
+        "Submitting doctor onboarding payload:",
+        JSON.stringify(onboardingPayload, null, 2)
+      );
+
+      const response = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
+        }/api/v1/doctors/onboarding`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(onboardingPayload),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Backend validation error:', errorData);
-        throw new Error(JSON.stringify(errorData) || 'Failed to complete onboarding');
+        console.error("Backend validation error:", errorData);
+        throw new Error(
+          JSON.stringify(errorData) || "Failed to complete onboarding"
+        );
       }
 
       setShowCompletion(true);
-      
+
       // Update onboarding status in auth context
       updateOnboardingStatus(true);
 
@@ -517,8 +544,10 @@ function DoctorOnboardingPage() {
                           <div
                             className={cn(
                               "absolute left-3.5 top-7 w-0.5 h-6 transition-colors duration-200",
-                              completedSteps.includes(step.id) ? "bg-healthcare-emerald/30" : "bg-gray-200"
-                            )} 
+                              completedSteps.includes(step.id)
+                                ? "bg-healthcare-emerald/30"
+                                : "bg-gray-200"
+                            )}
                           />
                         )}
                       </div>
@@ -632,7 +661,9 @@ function DoctorOnboardingPage() {
 
                     <Button
                       onClick={goToNextStep}
-                      disabled={isSubmitting || !completedSteps.includes(currentStep)}
+                      disabled={
+                        isSubmitting || !completedSteps.includes(currentStep)
+                      }
                       className="flex items-center gap-2 bg-gradient-to-r from-healthcare-primary to-healthcare-teal hover:from-healthcare-teal hover:to-healthcare-primary"
                       size="default"
                     >

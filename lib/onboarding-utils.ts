@@ -448,6 +448,7 @@ export interface TemplatePreview {
  */
 export async function generateTemplatePreview(
   templateId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _customData: Record<string, unknown>
 ): Promise<TemplatePreview> {
   try {

@@ -1,15 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Clock,
-  MapPin,
-  Calendar,
-  FileText,
-  Video,
-  AlertCircle,
-} from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Calendar, FileText, MapPin, Video } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
 import { Button } from "@/components/ui/button";
@@ -19,94 +11,121 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
+interface OperatingDay {
+  id: string;
+  day: string;
+  open: string;
+  close: string;
+  is_closed?: boolean;
+}
+
 interface OperatingHours {
   location_id: string;
-  hours: {
-    day: string;
-    open: string;
-    close: string;
-    is_closed: boolean;
-  }[];
+  hours: OperatingDay[];
+}
+
+interface OperationalPolicies {
+  operating_hours: OperatingHours[];
+  appointment_lead_time_hours: number;
+  cancellation_policy: string;
+  no_show_policy: string;
+  telehealth_sop: string;
+  patient_onboarding_steps: string[];
 }
 
 export default function OperationalPoliciesStep() {
   const { data, updateData } = useHospitalOnboarding();
   const [selectedLocation, setSelectedLocation] = useState<string>("");
 
-  // Safety checks
-  const operationalPolicies = data.operationalPolicies || {
-    operating_hours: [],
-    appointment_lead_time_hours: 24,
-    cancellation_policy: "",
-    no_show_policy: "",
-    telehealth_sop: "",
-    patient_onboarding_steps: [],
-  };
+  const operationalPolicies: OperationalPolicies = useMemo(
+    () =>
+      data.operationalPolicies || {
+        operating_hours: [],
+        appointment_lead_time_hours: 24,
+        cancellation_policy: "",
+        no_show_policy: "",
+        telehealth_sop: "",
+        patient_onboarding_steps: [],
+      },
+    [data.operationalPolicies]
+  );
 
-  const locations = Array.isArray(data.locations) ? data.locations : [];
-  const operatingHours: OperatingHours[] = Array.isArray(
-    operationalPolicies.operating_hours
-  )
-    ? operationalPolicies.operating_hours.map(
-        (h: {
-          location_id: string;
-          hours: {
-            day: string;
-            open: string;
-            close: string;
-            is_closed?: boolean;
-          }[];
-        }) => ({
-          location_id: h.location_id,
-          hours: h.hours.map((dh) => ({
-            day: dh.day,
-            open: dh.open,
-            close: dh.close,
-            is_closed: dh.is_closed ?? false,
-          })),
-        })
-      )
-    : [];
-  const patientOnboardingSteps = Array.isArray(
-    operationalPolicies.patient_onboarding_steps
-  )
-    ? operationalPolicies.patient_onboarding_steps
-    : [];
+  const locations = useMemo(
+    () => (Array.isArray(data.locations) ? data.locations : []),
+    [data.locations]
+  );
 
-  const daysOfWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  const daysOfWeek = useMemo(
+    () => [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ],
+    []
+  );
 
-  // Initialize hours for a location
-  const initializeHoursForLocation = (locationId: string) => {
-    const existingHours = operatingHours.find(
-      (h) => h.location_id === locationId
-    );
-    if (existingHours) return;
+  const operatingHours: OperatingHours[] = useMemo(() => {
+    const hoursArray = operationalPolicies.operating_hours;
+    if (!Array.isArray(hoursArray)) return [];
 
-    const defaultHours = daysOfWeek.map((day) => ({
-      day,
-      open: "09:00",
-      close: "18:00",
-      is_closed: day === "Sunday",
+    return hoursArray.map((h) => ({
+      location_id: h.location_id,
+      hours: (Array.isArray(h.hours) ? h.hours : []).map((dh, idx) => ({
+        id:
+          dh.id ||
+          `${h.location_id || "loc"}-${(
+            dh.day ||
+            daysOfWeek[idx] ||
+            "day"
+          ).toLowerCase()}-${idx}`,
+        day: dh.day || daysOfWeek[idx % daysOfWeek.length] || "",
+        open: dh.open || "09:00",
+        close: dh.close || "18:00",
+        is_closed: dh.is_closed ?? false,
+      })),
     }));
+  }, [daysOfWeek, operationalPolicies.operating_hours]);
 
-    updateData("operationalPolicies", {
-      ...operationalPolicies,
-      operating_hours: [
-        ...operatingHours,
-        { location_id: locationId, hours: defaultHours },
-      ],
-    } as any);
-  };
+  const patientOnboardingSteps = useMemo(
+    () =>
+      Array.isArray(operationalPolicies.patient_onboarding_steps)
+        ? operationalPolicies.patient_onboarding_steps
+        : [],
+    [operationalPolicies.patient_onboarding_steps]
+  );
 
-  // Update hours for a specific location and day
+  const initializeHoursForLocation = useCallback(
+    (locationId: string) => {
+      const existingHours = operatingHours.find(
+        (h) => h.location_id === locationId
+      );
+      if (existingHours) return;
+
+      const defaultHours: OperatingDay[] = daysOfWeek.map((day, idx) => ({
+        id: `${locationId}-${day.toLowerCase()}-${idx}`,
+        day,
+        open: "09:00",
+        close: "18:00",
+        is_closed: day === "Sunday",
+      }));
+
+      const updatedPolicies: OperationalPolicies = {
+        ...operationalPolicies,
+        operating_hours: [
+          ...operatingHours,
+          { location_id: locationId, hours: defaultHours },
+        ],
+      };
+
+      updateData("operationalPolicies", updatedPolicies);
+    },
+    [daysOfWeek, operatingHours, operationalPolicies, updateData]
+  );
+
   const updateLocationHours = (
     locationId: string,
     dayIndex: number,
@@ -124,13 +143,14 @@ export default function OperationalPoliciesStep() {
       return h;
     });
 
-    updateData("operationalPolicies", {
+    const updatedPolicies: OperationalPolicies = {
       ...operationalPolicies,
       operating_hours: updatedHours,
-    } as any);
+    };
+
+    updateData("operationalPolicies", updatedPolicies);
   };
 
-  // Copy hours to all locations
   const copyHoursToAllLocations = () => {
     if (!selectedLocation) return;
 
@@ -141,48 +161,64 @@ export default function OperationalPoliciesStep() {
 
     const updatedHours = locations.map((loc) => ({
       location_id: loc.id,
-      hours: [...sourceHours.hours],
+      hours: sourceHours.hours.map((dh, idx) => ({
+        ...dh,
+        id:
+          dh.id ||
+          `${loc.id || "loc"}-${(
+            dh.day ||
+            daysOfWeek[idx] ||
+            "day"
+          ).toLowerCase()}-${idx}`,
+      })),
     }));
 
-    updateData("operationalPolicies", {
+    const updatedPolicies: OperationalPolicies = {
       ...operationalPolicies,
       operating_hours: updatedHours,
-    } as any);
+    };
+
+    updateData("operationalPolicies", updatedPolicies);
   };
 
-  // Patient onboarding steps
   const addOnboardingStep = () => {
-    updateData("operationalPolicies", {
+    const updatedPolicies: OperationalPolicies = {
       ...operationalPolicies,
       patient_onboarding_steps: [...patientOnboardingSteps, ""],
-    } as any);
+    };
+
+    updateData("operationalPolicies", updatedPolicies);
   };
 
   const updateOnboardingStep = (index: number, value: string) => {
     const updated = [...patientOnboardingSteps];
     updated[index] = value;
-    updateData("operationalPolicies", {
+
+    const updatedPolicies: OperationalPolicies = {
       ...operationalPolicies,
       patient_onboarding_steps: updated,
-    } as any);
+    };
+
+    updateData("operationalPolicies", updatedPolicies);
   };
 
   const removeOnboardingStep = (index: number) => {
-    updateData("operationalPolicies", {
+    const updatedPolicies: OperationalPolicies = {
       ...operationalPolicies,
       patient_onboarding_steps: patientOnboardingSteps.filter(
         (_, idx) => idx !== index
       ),
-    } as any);
+    };
+
+    updateData("operationalPolicies", updatedPolicies);
   };
 
-  // Select first location by default
-  React.useEffect(() => {
+  useEffect(() => {
     if (locations.length > 0 && !selectedLocation) {
       setSelectedLocation(locations[0].id);
       initializeHoursForLocation(locations[0].id);
     }
-  }, [locations.length]);
+  }, [initializeHoursForLocation, locations, selectedLocation]);
 
   const currentLocationHours = operatingHours.find(
     (h) => h.location_id === selectedLocation
@@ -293,7 +329,7 @@ export default function OperationalPoliciesStep() {
                           checked={dayHours.is_closed}
                           onCheckedChange={(checked) =>
                             updateLocationHours(selectedLocation, index, {
-                              is_closed: checked as boolean,
+                              is_closed: Boolean(checked),
                             })
                           }
                         />
@@ -331,8 +367,8 @@ export default function OperationalPoliciesStep() {
             onChange={(e) =>
               updateData("operationalPolicies", {
                 ...operationalPolicies,
-                appointment_lead_time_hours: parseInt(e.target.value) || 0,
-              } as any)
+                appointment_lead_time_hours: parseInt(e.target.value, 10) || 0,
+              })
             }
             min="0"
             className="w-32"
@@ -357,7 +393,7 @@ export default function OperationalPoliciesStep() {
             updateData("operationalPolicies", {
               ...operationalPolicies,
               cancellation_policy: e.target.value,
-            } as any)
+            })
           }
           placeholder="e.g., Patients may cancel appointments up to 24 hours in advance without penalty..."
           rows={4}
@@ -384,7 +420,7 @@ export default function OperationalPoliciesStep() {
             updateData("operationalPolicies", {
               ...operationalPolicies,
               no_show_policy: e.target.value,
-            } as any)
+            })
           }
           placeholder="e.g., Patients who miss appointments without prior notice may be charged a no-show fee..."
           rows={4}
@@ -413,7 +449,7 @@ export default function OperationalPoliciesStep() {
             updateData("operationalPolicies", {
               ...operationalPolicies,
               telehealth_sop: e.target.value,
-            } as any)
+            })
           }
           placeholder="e.g., Patients must have stable internet connection, camera, and microphone. Platform: [Name]. Appointment reminders sent 1 hour before..."
           rows={5}

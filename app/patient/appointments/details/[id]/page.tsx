@@ -3,7 +3,7 @@
 import { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format, isPast, isToday, addMinutes } from "date-fns";
+import { format, isPast, isToday } from "date-fns";
 import {
   Calendar,
   Clock,
@@ -12,7 +12,6 @@ import {
   Phone,
   ArrowLeft,
   MoreVertical,
-  Edit2,
   Trash2,
   ClipboardCopy,
   FileText,
@@ -22,11 +21,8 @@ import {
   AlertCircle,
   CheckCircle,
   Download,
-  ChevronRight,
-  Paperclip,
   Share2,
   Plus,
-  Heart,
   Bell,
   BellOff,
   Printer,
@@ -38,7 +34,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -53,7 +48,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -157,13 +151,12 @@ export default function AppointmentDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const resolvedParams = use(params);
+  use(params); // Consume the promise (ID used by mockAppointment in real app)
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("details");
   const [isJoiningCall, setIsJoiningCall] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [isRescheduling, setIsRescheduling] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(
     mockAppointment.reminders
@@ -173,8 +166,6 @@ export default function AppointmentDetailsPage({
   const appointment = mockAppointment;
 
   // Calculate whether this is a past, current, or upcoming appointment
-  const isPastAppointment =
-    isPast(appointment.date) && !isToday(appointment.date);
   const isUpcomingAppointment =
     !isPast(appointment.date) || isToday(appointment.date);
 

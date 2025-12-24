@@ -1,19 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, UserPlus, Mail, Phone, Shield, Send, CheckCircle, Clock, X } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { HelpPopover } from '../widgets/HelpPopover';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { isValidEmail, isValidPhone } from '@/lib/onboarding-utils';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Trash2,
+  UserPlus,
+  Mail,
+  Phone,
+  Shield,
+  Send,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { isValidEmail, isValidPhone } from "@/lib/onboarding-utils";
 
-import type { TeamMemberData } from '@/contexts/HospitalOnboardingContextV2';
+import type { TeamMemberData } from "@/contexts/HospitalOnboardingContextV2";
 
 export default function AdminStaffInvitationsStep() {
   const { data, updateData } = useHospitalOnboarding();
@@ -25,16 +34,16 @@ export default function AdminStaffInvitationsStep() {
   const addTeamMember = () => {
     const newMember: TeamMemberData = {
       id: `member_${Date.now()}`,
-      full_name: '',
-      role: '',
-      email: '',
-      phone: '',
-      status: 'pending',
-      scope_hint: '',
-      notes: '',
+      full_name: "",
+      role: "",
+      email: "",
+      phone: "",
+      status: "pending",
+      scope_hint: "",
+      notes: "",
     };
 
-    updateData('adminTeam', [...adminTeam, newMember]);
+    updateData("adminTeam", [...adminTeam, newMember]);
   };
 
   // Update team member
@@ -42,40 +51,43 @@ export default function AdminStaffInvitationsStep() {
     const updatedTeam = adminTeam.map((member) =>
       member.id === id ? { ...member, ...updates } : member
     );
-    updateData('adminTeam', updatedTeam);
+    updateData("adminTeam", updatedTeam);
   };
 
   // Remove team member
   const removeTeamMember = (id: string) => {
-    updateData('adminTeam', adminTeam.filter((m) => m.id !== id));
+    updateData(
+      "adminTeam",
+      adminTeam.filter((m) => m.id !== id)
+    );
   };
 
   // Apply role preset
   const applyRolePreset = (id: string, presetRole: string) => {
     const presets: { [key: string]: Partial<TeamMemberData> } = {
-      'Hospital Admin': {
-        role: 'Hospital Admin',
-        scope_hint: 'Full platform access, user management, billing',
+      "Hospital Admin": {
+        role: "Hospital Admin",
+        scope_hint: "Full platform access, user management, billing",
       },
-      'HR Manager': {
-        role: 'HR Manager',
-        scope_hint: 'Staff management, scheduling, payroll',
+      "HR Manager": {
+        role: "HR Manager",
+        scope_hint: "Staff management, scheduling, payroll",
       },
-      'Doctor Lead': {
-        role: 'Doctor Lead',
-        scope_hint: 'Medical staff coordination, clinical oversight',
+      "Doctor Lead": {
+        role: "Doctor Lead",
+        scope_hint: "Medical staff coordination, clinical oversight",
       },
-      'Finance Manager': {
-        role: 'Finance Manager',
-        scope_hint: 'Financial operations, invoicing, reports',
+      "Finance Manager": {
+        role: "Finance Manager",
+        scope_hint: "Financial operations, invoicing, reports",
       },
-      'Reception Manager': {
-        role: 'Reception Manager',
-        scope_hint: 'Appointment management, patient check-in',
+      "Reception Manager": {
+        role: "Reception Manager",
+        scope_hint: "Appointment management, patient check-in",
       },
-      'IT Administrator': {
-        role: 'IT Administrator',
-        scope_hint: 'System configuration, integrations, security',
+      "IT Administrator": {
+        role: "IT Administrator",
+        scope_hint: "System configuration, integrations, security",
       },
     };
 
@@ -85,25 +97,42 @@ export default function AdminStaffInvitationsStep() {
   };
 
   const rolePresets = [
-    'Hospital Admin',
-    'HR Manager',
-    'Doctor Lead',
-    'Finance Manager',
-    'Reception Manager',
-    'IT Administrator',
+    "Hospital Admin",
+    "HR Manager",
+    "Doctor Lead",
+    "Finance Manager",
+    "Reception Manager",
+    "IT Administrator",
   ];
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: 'bg-gray-100 text-gray-700', icon: Clock },
-    { value: 'invited', label: 'Invited', color: 'bg-blue-100 text-blue-700', icon: Send },
-    { value: 'active', label: 'Active', color: 'bg-green-100 text-green-700', icon: CheckCircle },
+    {
+      value: "pending",
+      label: "Pending",
+      color: "bg-gray-100 text-gray-700",
+      icon: Clock,
+    },
+    {
+      value: "invited",
+      label: "Invited",
+      color: "bg-blue-100 text-blue-700",
+      icon: Send,
+    },
+    {
+      value: "active",
+      label: "Active",
+      color: "bg-green-100 text-green-700",
+      icon: CheckCircle,
+    },
   ];
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">Admin & Staff Invitations</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Admin & Staff Invitations
+        </h3>
         <p className="text-sm text-gray-600 mt-1">
           Invite administrators and key staff members to access the platform
         </p>
@@ -113,7 +142,9 @@ export default function AdminStaffInvitationsStep() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Label className="text-base font-medium">Team Members</Label>
-          <Badge variant="secondary">{adminTeam.length} member{adminTeam.length !== 1 ? 's' : ''}</Badge>
+          <Badge variant="secondary">
+            {adminTeam.length} member{adminTeam.length !== 1 ? "s" : ""}
+          </Badge>
         </div>
         <Button onClick={addTeamMember} className="bg-healthcare-primary">
           <Plus className="w-4 h-4 mr-2" />
@@ -154,10 +185,13 @@ export default function AdminStaffInvitationsStep() {
         <div className="flex items-start gap-3">
           <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h4 className="font-semibold text-blue-900 mb-1">About Invitations</h4>
+            <h4 className="font-semibold text-blue-900 mb-1">
+              About Invitations
+            </h4>
             <p className="text-sm text-blue-800">
-              Team members will receive email invitations to create their accounts and access the platform. 
-              You can manage their roles and permissions later from the admin dashboard.
+              Team members will receive email invitations to create their
+              accounts and access the platform. You can manage their roles and
+              permissions later from the admin dashboard.
             </p>
           </div>
         </div>
@@ -171,7 +205,12 @@ interface TeamMemberCardProps {
   member: TeamMemberData;
   index: number;
   rolePresets: string[];
-  statusOptions: { value: string; label: string; color: string; icon: React.ComponentType<{ className?: string }> }[];
+  statusOptions: {
+    value: string;
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[];
   onUpdate: (updates: Partial<TeamMemberData>) => void;
   onApplyPreset: (role: string) => void;
   onRemove: () => void;
@@ -188,7 +227,8 @@ function TeamMemberCard({
 }: TeamMemberCardProps) {
   const [showPresets, setShowPresets] = useState(false);
 
-  const currentStatus = statusOptions.find(s => s.value === member.status) || statusOptions[0];
+  const currentStatus =
+    statusOptions.find((s) => s.value === member.status) || statusOptions[0];
   const StatusIcon = currentStatus.icon;
 
   const emailValid = !member.email || isValidEmail(member.email);
@@ -218,7 +258,7 @@ function TeamMemberCard({
               </Badge>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              {member.full_name || 'Unnamed Member'}
+              {member.full_name || "Unnamed Member"}
             </p>
           </div>
         </div>
@@ -265,7 +305,7 @@ function TeamMemberCard({
           {showPresets && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="flex flex-wrap gap-2 pt-2"
             >
@@ -334,7 +374,7 @@ function TeamMemberCard({
       <div className="space-y-2">
         <Label>Scope / Permissions Hint</Label>
         <Textarea
-          value={member.scope_hint || ''}
+          value={member.scope_hint || ""}
           onChange={(e) => onUpdate({ scope_hint: e.target.value })}
           placeholder="e.g., Full platform access, user management..."
           rows={2}
@@ -345,7 +385,7 @@ function TeamMemberCard({
       <div className="space-y-2">
         <Label>Internal Notes (Optional)</Label>
         <Textarea
-          value={member.notes || ''}
+          value={member.notes || ""}
           onChange={(e) => onUpdate({ notes: e.target.value })}
           placeholder="Any additional notes about this team member..."
           rows={2}
@@ -357,7 +397,9 @@ function TeamMemberCard({
         <Label>Invitation Status</Label>
         <select
           value={member.status}
-          onChange={(e) => onUpdate({ status: e.target.value as TeamMemberData['status'] })}
+          onChange={(e) =>
+            onUpdate({ status: e.target.value as TeamMemberData["status"] })
+          }
           className={cn(
             "w-full px-3 py-2 rounded-md text-sm font-medium border-0",
             currentStatus.color

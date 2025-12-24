@@ -1,17 +1,31 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { API_CONFIG } from '@/lib/api-config';
-import { ArrowLeft, Calendar, Clock, Loader2, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { API_CONFIG } from "@/lib/api-config";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface TimeSlot {
   start_time: string;
@@ -22,15 +36,18 @@ interface TimeSlot {
 export default function AppointmentBookingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const doctorId = searchParams.get('doctor');
-  const hospitalId = searchParams.get('hospital') || localStorage.getItem('hospital_id');
-  const patientId = localStorage.getItem('user_id');
+  const doctorId = searchParams.get("doctor");
+  const hospitalId =
+    searchParams.get("hospital") || localStorage.getItem("hospital_id");
+  const patientId = localStorage.getItem("user_id");
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [visitType, setVisitType] = useState('in-person');
-  const [reasonForVisit, setReasonForVisit] = useState('');
+  const [visitType, setVisitType] = useState("in-person");
+  const [reasonForVisit, setReasonForVisit] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,18 +74,20 @@ export default function AppointmentBookingPage() {
         `${API_CONFIG.BASE_URL}/appointments/hospital/${hospitalId}/doctors`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
         }
       );
 
       if (response.ok) {
         const result = await response.json();
-        const doctor = result.data?.find((d: any) => d.doctor_id === parseInt(doctorId || '0'));
+        const doctor = result.data?.find(
+          (d: any) => d.doctor_id === parseInt(doctorId || "0")
+        );
         setDoctorInfo(doctor);
       }
     } catch (error) {
-      console.error('Error fetching doctor info:', error);
+      console.error("Error fetching doctor info:", error);
     }
   };
 
@@ -79,13 +98,13 @@ export default function AppointmentBookingPage() {
     setError(null);
 
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = selectedDate.toISOString().split("T")[0];
       const response = await fetch(
         `${API_CONFIG.BASE_URL}/appointments/doctor/${doctorId}/available-slots?appointment_date=${dateStr}`,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
         }
       );
 
@@ -93,19 +112,25 @@ export default function AppointmentBookingPage() {
         const result = await response.json();
         setAvailableSlots(result.data || []);
       } else {
-        setError('Failed to load available slots');
+        setError("Failed to load available slots");
       }
     } catch (error) {
-      console.error('Error fetching slots:', error);
-      setError('An error occurred while loading slots');
+      console.error("Error fetching slots:", error);
+      setError("An error occurred while loading slots");
     } finally {
       setLoadingSlots(false);
     }
   };
 
   const handleBookAppointment = async () => {
-    if (!selectedSlot || !selectedDate || !doctorId || !hospitalId || !patientId) {
-      setError('Please select a time slot');
+    if (
+      !selectedSlot ||
+      !selectedDate ||
+      !doctorId ||
+      !hospitalId ||
+      !patientId
+    ) {
+      setError("Please select a time slot");
       return;
     }
 
@@ -116,37 +141,37 @@ export default function AppointmentBookingPage() {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}/appointments/create`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
             hospital_id: parseInt(hospitalId),
             patient_id: parseInt(patientId),
             doctor_id: parseInt(doctorId),
-            appointment_date: selectedDate.toISOString().split('T')[0],
+            appointment_date: selectedDate.toISOString().split("T")[0],
             start_time: selectedSlot.start_time,
             end_time: selectedSlot.end_time,
             visit_type: visitType,
             reason_for_visit: reasonForVisit || null,
-            appointment_type: 'consultation'
-          })
+            appointment_type: "consultation",
+          }),
         }
       );
 
       if (response.ok) {
         setSuccess(true);
         setTimeout(() => {
-          router.push('/patient/dashboard');
+          router.push("/patient/dashboard");
         }, 2000);
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Failed to book appointment');
+        setError(errorData.detail || "Failed to book appointment");
       }
     } catch (error) {
-      console.error('Error booking appointment:', error);
-      setError('An error occurred while booking the appointment');
+      console.error("Error booking appointment:", error);
+      setError("An error occurred while booking the appointment");
     } finally {
       setLoading(false);
     }
@@ -171,13 +196,13 @@ export default function AppointmentBookingPage() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Appointment Booked!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Appointment Booked!
+            </h2>
             <p className="text-gray-600 mb-4">
               Your appointment has been successfully scheduled.
             </p>
-            <p className="text-sm text-gray-500">
-              Redirecting to dashboard...
-            </p>
+            <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
           </CardContent>
         </Card>
       </div>
@@ -200,7 +225,9 @@ export default function AppointmentBookingPage() {
           <h1 className="text-3xl font-bold text-gray-900">Book Appointment</h1>
           {doctorInfo && (
             <p className="text-gray-600 mt-2">
-              with {doctorInfo.full_name} - {doctorInfo.professional_details?.specialization || 'General Practice'}
+              with {doctorInfo.full_name} -{" "}
+              {doctorInfo.professional_details?.specialization ||
+                "General Practice"}
             </p>
           )}
         </div>
@@ -257,17 +284,21 @@ export default function AppointmentBookingPage() {
                   </div>
                 ) : availableSlots.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {availableSlots.filter(slot => slot.available).map((slot, index) => (
-                      <Button
-                        key={index}
-                        variant={selectedSlot === slot ? 'default' : 'outline'}
-                        onClick={() => setSelectedSlot(slot)}
-                        className="w-full text-sm"
-                        disabled={!slot.available}
-                      >
-                        {slot.start_time.substring(0, 5)}
-                      </Button>
-                    ))}
+                    {availableSlots
+                      .filter((slot) => slot.available)
+                      .map((slot, index) => (
+                        <Button
+                          key={index}
+                          variant={
+                            selectedSlot === slot ? "default" : "outline"
+                          }
+                          onClick={() => setSelectedSlot(slot)}
+                          className="w-full text-sm"
+                          disabled={!slot.available}
+                        >
+                          {slot.start_time.substring(0, 5)}
+                        </Button>
+                      ))}
                   </div>
                 ) : (
                   <p className="text-gray-600 text-center py-4">
@@ -288,9 +319,15 @@ export default function AppointmentBookingPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="in-person">In-Person Visit</SelectItem>
-                        <SelectItem value="video">Video Consultation</SelectItem>
-                        <SelectItem value="phone">Phone Consultation</SelectItem>
+                        <SelectItem value="in-person">
+                          In-Person Visit
+                        </SelectItem>
+                        <SelectItem value="video">
+                          Video Consultation
+                        </SelectItem>
+                        <SelectItem value="phone">
+                          Phone Consultation
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

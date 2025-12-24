@@ -9,7 +9,6 @@ import {
   CalendarPlus,
   CheckCircle,
   ArrowLeft,
-  Phone,
   Clock,
   Calendar,
   MapPin,
@@ -17,7 +16,6 @@ import {
   AlertCircle,
   Download,
   Share2,
-  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -317,8 +315,8 @@ ${mockAppointment.location ? `Location: ${mockAppointment.location}` : ""}`;
                   Add to Calendar
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  Add this appointment to your personal calendar so you don't
-                  forget.
+                  Add this appointment to your personal calendar so you
+                  don&apos;t forget.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -380,8 +378,8 @@ ${mockAppointment.location ? `Location: ${mockAppointment.location}` : ""}`;
                     <div className="flex items-center text-blue-600 text-sm">
                       <AlertCircle className="h-3.5 w-3.5 mr-1" />
                       <span>
-                        You'll receive a link to join 15 minutes before your
-                        appointment
+                        You&apos;ll receive a link to join 15 minutes before
+                        your appointment
                       </span>
                     </div>
                   </div>
@@ -408,7 +406,8 @@ ${mockAppointment.location ? `Location: ${mockAppointment.location}` : ""}`;
                     <div className="flex items-center text-emerald-600 text-sm">
                       <AlertCircle className="h-3.5 w-3.5 mr-1" />
                       <span>
-                        Please wear a mask if you're experiencing any symptoms
+                        Please wear a mask if you&apos;re experiencing any
+                        symptoms
                       </span>
                     </div>
                   </div>

@@ -1,24 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, DollarSign, Stethoscope, MapPin, AlertCircle, X } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { HelpPopover } from '../widgets/HelpPopover';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Trash2,
+  DollarSign,
+  Stethoscope,
+  MapPin,
+  AlertCircle,
+  X,
+} from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { HelpPopover } from "../widgets/HelpPopover";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-import type { ServiceData } from '@/contexts/HospitalOnboardingContextV2';
+import type { ServiceData } from "@/contexts/HospitalOnboardingContextV2";
 
 export default function ServicesPricingStep() {
   const { data, updateData } = useHospitalOnboarding();
-  const [newDepartment, setNewDepartment] = useState('');
-  const [newProcedure, setNewProcedure] = useState('');
-  const [newInsurance, setNewInsurance] = useState('');
+  const [newDepartment, setNewDepartment] = useState("");
+  const [newProcedure, setNewProcedure] = useState("");
+  const [newInsurance, setNewInsurance] = useState("");
 
   // Safety checks
   const servicesPricing = data.servicesPricing || {
@@ -29,52 +38,64 @@ export default function ServicesPricingStep() {
     insurance_partnerships: [],
   };
 
-  const departments = Array.isArray(servicesPricing.departments) ? servicesPricing.departments : [];
-  const procedures = Array.isArray(servicesPricing.procedures) ? servicesPricing.procedures : [];
-  const consultationTypes = Array.isArray(servicesPricing.consultation_types) ? servicesPricing.consultation_types : [];
-  const services = Array.isArray(servicesPricing.services) ? servicesPricing.services : [];
-  const insurancePartnerships = Array.isArray(servicesPricing.insurance_partnerships) ? servicesPricing.insurance_partnerships : [];
+  const departments = Array.isArray(servicesPricing.departments)
+    ? servicesPricing.departments
+    : [];
+  const procedures = Array.isArray(servicesPricing.procedures)
+    ? servicesPricing.procedures
+    : [];
+  const consultationTypes = Array.isArray(servicesPricing.consultation_types)
+    ? servicesPricing.consultation_types
+    : [];
+  const services = Array.isArray(servicesPricing.services)
+    ? servicesPricing.services
+    : [];
+  const insurancePartnerships = Array.isArray(
+    servicesPricing.insurance_partnerships
+  )
+    ? servicesPricing.insurance_partnerships
+    : [];
   const locations = Array.isArray(data.locations) ? data.locations : [];
 
   // Department management
   const addDepartment = () => {
     if (newDepartment.trim() && !departments.includes(newDepartment.trim())) {
-      updateData('servicesPricing', {
+      updateData("servicesPricing", {
         departments: [...departments, newDepartment.trim()],
       });
-      setNewDepartment('');
+      setNewDepartment("");
     }
   };
 
   const removeDepartment = (dept: string) => {
-    updateData('servicesPricing', {
-      departments: departments.filter(d => d !== dept),
+    updateData("servicesPricing", {
+      departments: departments.filter((d) => d !== dept),
     });
   };
 
   // Procedure management
   const addProcedure = () => {
     if (newProcedure.trim() && !procedures.includes(newProcedure.trim())) {
-      updateData('servicesPricing', {
+      updateData("servicesPricing", {
         procedures: [...procedures, newProcedure.trim()],
       });
-      setNewProcedure('');
+      setNewProcedure("");
     }
   };
 
   const removeProcedure = (proc: string) => {
-    updateData('servicesPricing', {
-      procedures: procedures.filter(p => p !== proc),
+    updateData("servicesPricing", {
+      procedures: procedures.filter((p) => p !== proc),
     });
   };
 
   // Consultation type toggle
   const toggleConsultationType = (type: string) => {
     const updated = consultationTypes.includes(type as any)
-      ? consultationTypes.filter(t => t !== type)
-      : [...consultationTypes, type as 'in-person' | 'telehealth' | 'home'];
-    
-    updateData('servicesPricing', {
+      ? consultationTypes.filter((t) => t !== type)
+      : [...consultationTypes, type as "in-person" | "telehealth" | "home"];
+
+    updateData("servicesPricing", {
       consultation_types: updated,
     });
   };
@@ -83,67 +104,78 @@ export default function ServicesPricingStep() {
   const addService = () => {
     const newService: ServiceData = {
       id: `service_${Date.now()}`,
-      name: '',
-      department: '',
-      description: '',
+      name: "",
+      department: "",
+      description: "",
       consultation_types: [],
       fee_range: {
         min: 0,
         max: 0,
-        currency: 'INR',
+        currency: "INR",
       },
       location_ids: [],
       specialty_ids: [],
     };
 
-    updateData('servicesPricing', {
+    updateData("servicesPricing", {
       services: [...services, newService],
     });
   };
 
   const updateService = (id: string, updates: Partial<ServiceData>) => {
-    const updatedServices = services.map(s =>
+    const updatedServices = services.map((s) =>
       s.id === id ? { ...s, ...updates } : s
     );
-    updateData('servicesPricing', {
+    updateData("servicesPricing", {
       services: updatedServices,
     });
   };
 
   const removeService = (id: string) => {
-    updateData('servicesPricing', {
-      services: services.filter(s => s.id !== id),
+    updateData("servicesPricing", {
+      services: services.filter((s) => s.id !== id),
     });
   };
 
   // Insurance management
   const addInsurance = () => {
-    if (newInsurance.trim() && !insurancePartnerships.includes(newInsurance.trim())) {
-      updateData('servicesPricing', {
+    if (
+      newInsurance.trim() &&
+      !insurancePartnerships.includes(newInsurance.trim())
+    ) {
+      updateData("servicesPricing", {
         insurance_partnerships: [...insurancePartnerships, newInsurance.trim()],
       });
-      setNewInsurance('');
+      setNewInsurance("");
     }
   };
 
   const removeInsurance = (insurance: string) => {
-    updateData('servicesPricing', {
-      insurance_partnerships: insurancePartnerships.filter(i => i !== insurance),
+    updateData("servicesPricing", {
+      insurance_partnerships: insurancePartnerships.filter(
+        (i) => i !== insurance
+      ),
     });
   };
 
-  type ConsultationType = 'in-person' | 'telehealth' | 'home';
-  const consultationTypeOptions: { value: ConsultationType; label: string; icon: typeof Stethoscope }[] = [
-    { value: 'in-person', label: 'In-Person', icon: Stethoscope },
-    { value: 'telehealth', label: 'Telehealth', icon: MapPin },
-    { value: 'home', label: 'Home Visit', icon: MapPin },
+  type ConsultationType = "in-person" | "telehealth" | "home";
+  const consultationTypeOptions: {
+    value: ConsultationType;
+    label: string;
+    icon: typeof Stethoscope;
+  }[] = [
+    { value: "in-person", label: "In-Person", icon: Stethoscope },
+    { value: "telehealth", label: "Telehealth", icon: MapPin },
+    { value: "home", label: "Home Visit", icon: MapPin },
   ];
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">Clinical Services & Pricing</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Clinical Services & Pricing
+        </h3>
         <p className="text-sm text-gray-600 mt-1">
           Define your departments, procedures, services, and pricing structure
         </p>
@@ -158,12 +190,12 @@ export default function ServicesPricingStep() {
             content="List all clinical departments in your hospital (e.g., Cardiology, Orthopedics, Pediatrics)"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <Input
             value={newDepartment}
             onChange={(e) => setNewDepartment(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addDepartment()}
+            onKeyPress={(e) => e.key === "Enter" && addDepartment()}
             placeholder="e.g., Cardiology"
             className="flex-1"
           />
@@ -197,12 +229,12 @@ export default function ServicesPricingStep() {
             content="List common procedures offered (e.g., MRI Scan, Blood Test, ECG)"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <Input
             value={newProcedure}
             onChange={(e) => setNewProcedure(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addProcedure()}
+            onKeyPress={(e) => e.key === "Enter" && addProcedure()}
             placeholder="e.g., MRI Scan"
             className="flex-1"
           />
@@ -249,18 +281,22 @@ export default function ServicesPricingStep() {
                   : "border-gray-200 hover:border-gray-300"
               )}
             >
-              <option.icon className={cn(
-                "w-5 h-5",
-                (consultationTypes as string[]).includes(option.value)
-                  ? "text-healthcare-primary"
-                  : "text-gray-400"
-              )} />
-              <span className={cn(
-                "font-medium",
-                (consultationTypes as string[]).includes(option.value)
-                  ? "text-healthcare-primary"
-                  : "text-gray-700"
-              )}>
+              <option.icon
+                className={cn(
+                  "w-5 h-5",
+                  (consultationTypes as string[]).includes(option.value)
+                    ? "text-healthcare-primary"
+                    : "text-gray-400"
+                )}
+              />
+              <span
+                className={cn(
+                  "font-medium",
+                  (consultationTypes as string[]).includes(option.value)
+                    ? "text-healthcare-primary"
+                    : "text-gray-700"
+                )}
+              >
                 {option.label}
               </span>
             </button>
@@ -272,7 +308,11 @@ export default function ServicesPricingStep() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label className="text-base font-medium">Services & Pricing</Label>
-          <Button onClick={addService} size="sm" className="bg-healthcare-primary">
+          <Button
+            onClick={addService}
+            size="sm"
+            className="bg-healthcare-primary"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Service
           </Button>
@@ -308,18 +348,20 @@ export default function ServicesPricingStep() {
       {/* Insurance Partnerships */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Insurance Partnerships</Label>
+          <Label className="text-base font-medium">
+            Insurance Partnerships
+          </Label>
           <HelpPopover
             title="Insurance Partnerships"
             content="List insurance providers you have partnerships with"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <Input
             value={newInsurance}
             onChange={(e) => setNewInsurance(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addInsurance()}
+            onKeyPress={(e) => e.key === "Enter" && addInsurance()}
             placeholder="e.g., Star Health Insurance"
             className="flex-1"
           />
@@ -331,7 +373,11 @@ export default function ServicesPricingStep() {
 
         <div className="flex flex-wrap gap-2">
           {insurancePartnerships.map((insurance) => (
-            <Badge key={insurance} variant="secondary" className="text-sm py-1 px-3">
+            <Badge
+              key={insurance}
+              variant="secondary"
+              className="text-sm py-1 px-3"
+            >
               {insurance}
               <button
                 onClick={() => removeInsurance(insurance)}
@@ -348,10 +394,10 @@ export default function ServicesPricingStep() {
 }
 
 // Service Card Component
-type ConsultationTypeOption = { 
-  value: 'in-person' | 'telehealth' | 'home'; 
-  label: string; 
-  icon: React.ComponentType<{ className?: string }>; 
+type ConsultationTypeOption = {
+  value: "in-person" | "telehealth" | "home";
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 interface ServiceCardProps {
@@ -373,21 +419,21 @@ function ServiceCard({
   onUpdate,
   onRemove,
 }: ServiceCardProps) {
-  type ConsultationType = 'in-person' | 'telehealth' | 'home';
-  
+  type ConsultationType = "in-person" | "telehealth" | "home";
+
   const toggleServiceConsultationType = (type: ConsultationType) => {
     const updated = service.consultation_types.includes(type)
-      ? service.consultation_types.filter(t => t !== type)
+      ? service.consultation_types.filter((t) => t !== type)
       : [...service.consultation_types, type];
-    
+
     onUpdate({ consultation_types: updated });
   };
 
   const toggleLocation = (locationId: string) => {
     const updated = service.location_ids.includes(locationId)
-      ? service.location_ids.filter(id => id !== locationId)
+      ? service.location_ids.filter((id) => id !== locationId)
       : [...service.location_ids, locationId];
-    
+
     onUpdate({ location_ids: updated });
   };
 
@@ -411,7 +457,7 @@ function ServiceCard({
               Service #{index + 1}
             </h4>
             <p className="text-xs text-gray-500 mt-0.5">
-              {service.name || 'Unnamed Service'}
+              {service.name || "Unnamed Service"}
             </p>
           </div>
         </div>
@@ -445,7 +491,9 @@ function ServiceCard({
           >
             <option value="">Select Department</option>
             {departments.map((dept) => (
-              <option key={dept} value={dept}>{dept}</option>
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
             ))}
           </select>
         </div>
@@ -469,7 +517,11 @@ function ServiceCard({
           {consultationTypeOptions.map((option) => (
             <Badge
               key={option.value}
-              variant={service.consultation_types.includes(option.value) ? "default" : "outline"}
+              variant={
+                service.consultation_types.includes(option.value)
+                  ? "default"
+                  : "outline"
+              }
               className="cursor-pointer"
               onClick={() => toggleServiceConsultationType(option.value)}
             >
@@ -491,9 +543,14 @@ function ServiceCard({
               <Input
                 type="number"
                 value={service.fee_range.min}
-                onChange={(e) => onUpdate({
-                  fee_range: { ...service.fee_range, min: parseInt(e.target.value) || 0 }
-                })}
+                onChange={(e) =>
+                  onUpdate({
+                    fee_range: {
+                      ...service.fee_range,
+                      min: parseInt(e.target.value) || 0,
+                    },
+                  })
+                }
                 className="pl-10"
                 placeholder="0"
               />
@@ -507,9 +564,14 @@ function ServiceCard({
               <Input
                 type="number"
                 value={service.fee_range.max}
-                onChange={(e) => onUpdate({
-                  fee_range: { ...service.fee_range, max: parseInt(e.target.value) || 0 }
-                })}
+                onChange={(e) =>
+                  onUpdate({
+                    fee_range: {
+                      ...service.fee_range,
+                      max: parseInt(e.target.value) || 0,
+                    },
+                  })
+                }
                 className="pl-10"
                 placeholder="0"
               />
@@ -533,7 +595,11 @@ function ServiceCard({
             {locations.map((location) => (
               <Badge
                 key={location.id}
-                variant={service.location_ids.includes(location.id) ? "default" : "outline"}
+                variant={
+                  service.location_ids.includes(location.id)
+                    ? "default"
+                    : "outline"
+                }
                 className="cursor-pointer"
                 onClick={() => toggleLocation(location.id)}
               >

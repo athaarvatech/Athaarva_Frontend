@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -10,7 +11,6 @@ import {
   Upload,
   X,
   Users,
-  Briefcase,
 } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface LeaderData {
@@ -312,6 +311,7 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
         <Label>Profile Photo</Label>
         {leader.profile_photo_url ? (
           <div className="relative inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={leader.profile_photo_url}
               alt={leader.full_name}

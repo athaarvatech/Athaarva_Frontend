@@ -43,14 +43,12 @@ import {
   Shield,
   Zap,
   UserPlus,
-  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useHospitalOnboarding,
   HospitalOnboardingProvider,
 } from "@/contexts/HospitalOnboardingContextV2";
-import { API_CONFIG } from "@/lib/api-config";
 
 // Import step components
 import InvitationTemplateStep from "./steps/InvitationTemplateStep";
@@ -68,10 +66,9 @@ import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 
 // Import widgets for contextual panels
 import { ActivityLog } from "./widgets/ActivityLog";
-import { HelpPopover } from "./widgets/HelpPopover";
 
 // Import the real API client
-import { onboardingAPI, type ValidateTokenResponse } from "@/lib/api";
+import { onboardingAPI } from "@/lib/api";
 
 interface StepConfig {
   id: number;
@@ -353,6 +350,7 @@ function HospitalOnboardingContent({
     data,
     currentStep,
     setCurrentStep,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isStepValid,
     activityLog,
     buildSubmissionPayload,
@@ -371,7 +369,8 @@ function HospitalOnboardingContent({
   useEffect(() => {
     if (validationData && !invitationPrefilled.current && token) {
       // Update invitation section with validated data
-      const invitationData: any = {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _invitationData = {
         token,
         email: validationData.email || "",
         expires_at: validationData.expires_at || "",
@@ -607,7 +606,7 @@ function HospitalOnboardingContent({
                 {/* Steps - Scrollable */}
                 <div className="flex-1 overflow-y-auto">
                   <div className="p-4 space-y-1">
-                    {STEP_CONFIGS.map((step, index) => {
+                    {STEP_CONFIGS.map((step) => {
                       const isCompleted = currentStep > step.id;
                       const isCurrent = currentStep === step.id;
                       const isClickable = isCompleted || isCurrent;

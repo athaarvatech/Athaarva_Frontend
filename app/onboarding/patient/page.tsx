@@ -366,7 +366,7 @@ function PatientOnboardingContent() {
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.detail || errorData.message || errorMessage;
-        } catch (e) {
+        } catch {
           errorMessage = errorText || errorMessage;
         }
 

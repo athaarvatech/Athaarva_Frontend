@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Users,
   UserPlus,
@@ -9,17 +9,15 @@ import {
   Filter,
   MoreVertical,
   Mail,
-  Phone,
   Shield,
   CheckCircle,
   Clock,
   XCircle,
-  Send,
   Trash2,
   Edit,
   RefreshCw,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -76,7 +74,10 @@ interface PendingInvitation {
 // =============================================================================
 
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+  const styles: Record<
+    string,
+    { bg: string; text: string; icon: React.ReactNode }
+  > = {
     active: {
       bg: "bg-green-100",
       text: "text-green-700",
@@ -124,7 +125,11 @@ interface TeamMembersTableProps {
   onAction: (action: string, member: TeamMember) => void;
 }
 
-function TeamMembersTable({ members, primaryColor, onAction }: TeamMembersTableProps) {
+function TeamMembersTable({
+  members,
+  primaryColor,
+  onAction,
+}: TeamMembersTableProps) {
   return (
     <div className="border rounded-lg overflow-hidden">
       <Table>
@@ -165,7 +170,9 @@ function TeamMembersTable({ members, primaryColor, onAction }: TeamMembersTableP
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-gray-900">{member.full_name}</p>
+                      <p className="font-medium text-gray-900">
+                        {member.full_name}
+                      </p>
                       <p className="text-sm text-gray-500">{member.email}</p>
                     </div>
                   </div>
@@ -177,7 +184,9 @@ function TeamMembersTable({ members, primaryColor, onAction }: TeamMembersTableP
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm text-gray-600">{member.department || "-"}</span>
+                  <span className="text-sm text-gray-600">
+                    {member.department || "-"}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={member.status} />
@@ -197,11 +206,15 @@ function TeamMembersTable({ members, primaryColor, onAction }: TeamMembersTableP
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onAction("view", member)}>
+                      <DropdownMenuItem
+                        onClick={() => onAction("view", member)}
+                      >
                         <Users className="w-4 h-4 mr-2" />
                         View Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onAction("edit", member)}>
+                      <DropdownMenuItem
+                        onClick={() => onAction("edit", member)}
+                      >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
@@ -394,7 +407,9 @@ export default function TeamManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<
+    PendingInvitation[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   const primaryColor = hospital?.primary_color || "#007C7C";
@@ -479,7 +494,8 @@ export default function TeamManagementPage() {
       member.email.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeTab === "all") return matchesSearch;
-    if (activeTab === "doctors") return matchesSearch && member.role === "Doctor";
+    if (activeTab === "doctors")
+      return matchesSearch && member.role === "Doctor";
     if (activeTab === "staff") return matchesSearch && member.role !== "Doctor";
     return matchesSearch;
   });
@@ -501,9 +517,14 @@ export default function TeamManagementPage() {
 
   const stats = {
     totalMembers: teamMembers.length,
-    activeDoctors: teamMembers.filter((m) => m.role === "Doctor" && m.status === "active").length,
-    activeStaff: teamMembers.filter((m) => m.role !== "Doctor" && m.status === "active").length,
-    pendingInvites: pendingInvitations.filter((i) => i.status === "pending").length,
+    activeDoctors: teamMembers.filter(
+      (m) => m.role === "Doctor" && m.status === "active"
+    ).length,
+    activeStaff: teamMembers.filter(
+      (m) => m.role !== "Doctor" && m.status === "active"
+    ).length,
+    pendingInvites: pendingInvitations.filter((i) => i.status === "pending")
+      .length,
   };
 
   if (loading) {
@@ -520,7 +541,9 @@ export default function TeamManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
-          <p className="text-gray-500 mt-1">Manage your hospital staff and invitations</p>
+          <p className="text-gray-500 mt-1">
+            Manage your hospital staff and invitations
+          </p>
         </div>
         <Link href={`/hospital/${subdomain}/admin/team/invite`}>
           <Button
@@ -558,7 +581,9 @@ export default function TeamManagementPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All Members ({teamMembers.length})</TabsTrigger>
+          <TabsTrigger value="all">
+            All Members ({teamMembers.length})
+          </TabsTrigger>
           <TabsTrigger value="doctors">
             Doctors ({teamMembers.filter((m) => m.role === "Doctor").length})
           </TabsTrigger>
@@ -566,7 +591,8 @@ export default function TeamManagementPage() {
             Staff ({teamMembers.filter((m) => m.role !== "Doctor").length})
           </TabsTrigger>
           <TabsTrigger value="pending">
-            Pending ({pendingInvitations.filter((i) => i.status === "pending").length})
+            Pending (
+            {pendingInvitations.filter((i) => i.status === "pending").length})
           </TabsTrigger>
         </TabsList>
 

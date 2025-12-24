@@ -1,19 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Trash2, Navigation, Phone, Mail, AlertTriangle } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { HelpPopover } from '../widgets/HelpPopover';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { geocodeAddress, isValidEmail, isValidPhone, isValidPincode } from '@/lib/onboarding-utils';
-import type { LocationData } from '@/contexts/HospitalOnboardingContextV2';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Plus, Trash2, Navigation, Phone, Mail } from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { geocodeAddress } from "@/lib/onboarding-utils";
+import type { LocationData } from "@/contexts/HospitalOnboardingContextV2";
 
 export default function LocationsContactsStep() {
   const { data, updateData } = useHospitalOnboarding();
@@ -25,30 +24,33 @@ export default function LocationsContactsStep() {
   const addLocation = () => {
     const newLocation: LocationData = {
       id: `loc_${Date.now()}`,
-      name: '',
-      address: '',
-      city: '',
-      state: '',
-      pincode: '',
+      name: "",
+      address: "",
+      city: "",
+      state: "",
+      pincode: "",
       geo: null,
-      contact_phone: '',
-      contact_email: '',
+      contact_phone: "",
+      contact_email: "",
       services: [],
       is_headquarters: locations.length === 0,
     };
 
-    updateData('locations', [...locations, newLocation]);
+    updateData("locations", [...locations, newLocation]);
   };
 
   const updateLocation = (id: string, updates: Partial<LocationData>) => {
-    const updatedLocations = locations.map(loc =>
+    const updatedLocations = locations.map((loc) =>
       loc.id === id ? { ...loc, ...updates } : loc
     );
-    updateData('locations', updatedLocations);
+    updateData("locations", updatedLocations);
   };
 
   const removeLocation = (id: string) => {
-    updateData('locations', locations.filter(loc => loc.id !== id));
+    updateData(
+      "locations",
+      locations.filter((loc) => loc.id !== id)
+    );
   };
 
   const handleGeocode = async (id: string, address: string) => {
@@ -59,7 +61,7 @@ export default function LocationsContactsStep() {
         updateLocation(id, { geo: { lat: result.lat, lng: result.lng } });
       }
     } catch (error) {
-      console.error('Geocoding failed:', error);
+      console.error("Geocoding failed:", error);
     } finally {
       setGeocoding(null);
     }
@@ -70,7 +72,9 @@ export default function LocationsContactsStep() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Hospital Locations</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Hospital Locations
+          </h3>
           <p className="text-sm text-gray-600 mt-1">
             Add all your hospital locations and contact information
           </p>
@@ -93,7 +97,12 @@ export default function LocationsContactsStep() {
             index={index}
             onUpdate={(updates) => updateLocation(location.id, updates)}
             onRemove={() => removeLocation(location.id)}
-            onGeocode={() => handleGeocode(location.id, `${location.address}, ${location.city}, ${location.state} ${location.pincode}`)}
+            onGeocode={() =>
+              handleGeocode(
+                location.id,
+                `${location.address}, ${location.city}, ${location.state} ${location.pincode}`
+              )
+            }
             isGeocoding={geocoding === location.id}
           />
         ))}
@@ -107,11 +116,16 @@ export default function LocationsContactsStep() {
           className="text-center py-12 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg"
         >
           <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Locations Added</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Locations Added
+          </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Add your hospital's headquarters and any satellite locations
+            Add your hospital&apos;s headquarters and any satellite locations
           </p>
-          <Button onClick={addLocation} className="bg-healthcare-primary hover:bg-healthcare-primary/90">
+          <Button
+            onClick={addLocation}
+            className="bg-healthcare-primary hover:bg-healthcare-primary/90"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add First Location
           </Button>
@@ -130,10 +144,23 @@ interface LocationCardProps {
   isGeocoding: boolean;
 }
 
-function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocoding }: LocationCardProps) {
+function LocationCard({
+  location,
+  index,
+  onUpdate,
+  onRemove,
+  onGeocode,
+  isGeocoding,
+}: LocationCardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showServices, setShowServices] = useState(false);
 
-  const hasValidation = location.name && location.address && location.city && location.state && location.pincode;
+  const hasValidation =
+    location.name &&
+    location.address &&
+    location.city &&
+    location.state &&
+    location.pincode;
   const hasGeocode = location.geo !== null;
 
   return (
@@ -159,7 +186,7 @@ function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocod
               )}
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              {location.name || 'Unnamed Location'}
+              {location.name || "Unnamed Location"}
             </p>
           </div>
         </div>
@@ -189,7 +216,9 @@ function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocod
             <div className="flex items-center space-x-2 h-10">
               <Checkbox
                 checked={location.is_headquarters}
-                onCheckedChange={(checked) => onUpdate({ is_headquarters: checked as boolean })}
+                onCheckedChange={(checked) =>
+                  onUpdate({ is_headquarters: checked as boolean })
+                }
                 id={`hq-${location.id}`}
               />
               <label
@@ -242,14 +271,18 @@ function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocod
         {/* Geocoding */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center space-x-2">
-            <Navigation className={cn(
-              'w-4 h-4',
-              hasGeocode ? 'text-healthcare-emerald' : 'text-gray-400'
-            )} />
+            <Navigation
+              className={cn(
+                "w-4 h-4",
+                hasGeocode ? "text-healthcare-emerald" : "text-gray-400"
+              )}
+            />
             <span className="text-sm text-gray-700">
               {hasGeocode
-                ? `Geocoded: ${location.geo?.lat.toFixed(4)}, ${location.geo?.lng.toFixed(4)}`
-                : 'Not geocoded yet'}
+                ? `Geocoded: ${location.geo?.lat.toFixed(
+                    4
+                  )}, ${location.geo?.lng.toFixed(4)}`
+                : "Not geocoded yet"}
             </span>
           </div>
           <Button
@@ -258,7 +291,11 @@ function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocod
             onClick={onGeocode}
             disabled={!hasValidation || isGeocoding}
           >
-            {isGeocoding ? 'Geocoding...' : hasGeocode ? 'Update' : 'Get Coordinates'}
+            {isGeocoding
+              ? "Geocoding..."
+              : hasGeocode
+              ? "Update"
+              : "Get Coordinates"}
           </Button>
         </div>
 
@@ -293,7 +330,7 @@ function LocationCard({ location, index, onUpdate, onRemove, onGeocode, isGeocod
         {/* Emergency Hotline */}
         <FormField label="Emergency Hotline (Optional)">
           <Input
-            value={location.emergency_hotline || ''}
+            value={location.emergency_hotline || ""}
             onChange={(e) => onUpdate({ emergency_hotline: e.target.value })}
             placeholder="+91 99999 99999"
           />

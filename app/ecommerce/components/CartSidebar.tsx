@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -143,15 +144,16 @@ export default function CartSidebar() {
                       >
                         <div className="flex items-start gap-4">
                           {/* Product Image */}
-                          <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                             {line.merchandise.product.featuredImage ? (
-                              <img
+                              <Image
                                 src={line.merchandise.product.featuredImage.url}
                                 alt={
                                   line.merchandise.product.featuredImage
                                     .altText || line.merchandise.product.title
                                 }
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
                               />
                             ) : (
                               <div className="text-xs text-gray-400">IMG</div>

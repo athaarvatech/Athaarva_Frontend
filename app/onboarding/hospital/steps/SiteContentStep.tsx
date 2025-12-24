@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /**
@@ -19,12 +20,11 @@
  * - Character/word limits with live validation
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { FileText, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { Plus, Sparkles, X } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
-import { FileUploadZone } from "../widgets/FileUploadZone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { countWords } from "@/lib/onboarding-utils";
 
 export default function SiteContentStep() {

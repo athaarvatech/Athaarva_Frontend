@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useCallback, useState } from 'react';
-import { Upload, File, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
-import { formatFileSize, validateFile } from '@/lib/onboarding-utils';
+import React, { useCallback, useState } from "react";
+import {
+  Upload,
+  File,
+  X,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { formatFileSize, validateFile } from "@/lib/onboarding-utils";
 
 interface FileUploadZoneProps {
   onFileSelect: (file: File) => void;
@@ -28,10 +35,10 @@ export function FileUploadZone({
   onUploadComplete,
   currentFile,
   currentUrl,
-  accept = 'image/*',
+  accept = "image/*",
   maxSizeMB = 5,
-  label = 'Upload File',
-  description = 'Drag and drop or click to browse',
+  label = "Upload File",
+  description = "Drag and drop or click to browse",
   preview = true,
   className,
 }: FileUploadZoneProps) {
@@ -54,66 +61,77 @@ export function FileUploadZone({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFile(files[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFile(files[0]);
-    }
-  }, []);
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleFile(files[0]);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    []
+  );
 
-  const handleFile = useCallback((file: File) => {
-    setError(null);
+  const handleFile = useCallback(
+    (file: File) => {
+      setError(null);
 
-    // Validate file
-    const validation = validateFile(file, {
-      maxSizeMB,
-      allowedTypes: accept === 'image/*' ? ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'] : [],
-    });
+      // Validate file
+      const validation = validateFile(file, {
+        maxSizeMB,
+        allowedTypes:
+          accept === "image/*"
+            ? ["image/jpeg", "image/png", "image/jpg", "image/webp"]
+            : [],
+      });
 
-    if (!validation.valid) {
-      setError(validation.error || 'Invalid file');
-      return;
-    }
+      if (!validation.valid) {
+        setError(validation.error || "Invalid file");
+        return;
+      }
 
-    // Create preview for images
-    if (preview && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+      // Create preview for images
+      if (preview && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviewUrl(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
 
-    onFileSelect(file);
+      onFileSelect(file);
 
-    // Simulate upload progress (replace with actual upload in production)
-    if (onUploadComplete) {
-      setIsUploading(true);
-      setUploadProgress(0);
-      let progress = 0;
+      // Simulate upload progress (replace with actual upload in production)
+      if (onUploadComplete) {
+        setIsUploading(true);
+        setUploadProgress(0);
+        let progress = 0;
 
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(progress);
-        
-        if (progress >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          // Use setTimeout to defer the callback and avoid setState during render
-          setTimeout(() => {
-            onUploadComplete(`/uploads/${file.name}`);
-          }, 0);
-        }
-      }, 200);
-    }
-  }, [accept, maxSizeMB, preview, onFileSelect, onUploadComplete]);
+        const interval = setInterval(() => {
+          progress += 10;
+          setUploadProgress(progress);
+
+          if (progress >= 100) {
+            clearInterval(interval);
+            setIsUploading(false);
+            // Use setTimeout to defer the callback and avoid setState during render
+            setTimeout(() => {
+              onUploadComplete(`/uploads/${file.name}`);
+            }, 0);
+          }
+        }, 200);
+      }
+    },
+    [accept, maxSizeMB, preview, onFileSelect, onUploadComplete]
+  );
 
   const handleRemove = useCallback(() => {
     setPreviewUrl(null);
@@ -125,10 +143,8 @@ export function FileUploadZone({
   const hasFile = currentFile || currentUrl;
 
   return (
-    <div className={cn('space-y-3', className)}>
-      <label className="block text-sm font-medium text-gray-700">
-        {label}
-      </label>
+    <div className={cn("space-y-3", className)}>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
 
       {/* Upload Zone */}
       {!hasFile && (
@@ -137,12 +153,12 @@ export function FileUploadZone({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            'relative border-2 border-dashed rounded-lg p-6 transition-all cursor-pointer',
+            "relative border-2 border-dashed rounded-lg p-6 transition-all cursor-pointer",
             isDragging
-              ? 'border-healthcare-primary bg-healthcare-primary/5'
+              ? "border-healthcare-primary bg-healthcare-primary/5"
               : error
-              ? 'border-red-300 bg-red-50'
-              : 'border-gray-300 hover:border-healthcare-primary hover:bg-gray-50'
+              ? "border-red-300 bg-red-50"
+              : "border-gray-300 hover:border-healthcare-primary hover:bg-gray-50"
           )}
         >
           <input
@@ -153,15 +169,18 @@ export function FileUploadZone({
           />
 
           <div className="text-center">
-            <Upload className={cn(
-              'mx-auto h-12 w-12 mb-3',
-              error ? 'text-red-400' : 'text-gray-400'
-            )} />
+            <Upload
+              className={cn(
+                "mx-auto h-12 w-12 mb-3",
+                error ? "text-red-400" : "text-gray-400"
+              )}
+            />
             <p className="text-sm font-medium text-gray-900 mb-1">
-              {isDragging ? 'Drop file here' : description}
+              {isDragging ? "Drop file here" : description}
             </p>
             <p className="text-xs text-gray-500">
-              {accept === 'image/*' ? 'PNG, JPG, WEBP' : accept} up to {maxSizeMB}MB
+              {accept === "image/*" ? "PNG, JPG, WEBP" : accept} up to{" "}
+              {maxSizeMB}MB
             </p>
           </div>
 
@@ -186,6 +205,7 @@ export function FileUploadZone({
             {/* Preview Image */}
             {preview && (previewUrl || currentUrl) && (
               <div className="mb-3 rounded-lg overflow-hidden bg-gray-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewUrl || currentUrl}
                   alt="Preview"
@@ -208,7 +228,7 @@ export function FileUploadZone({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {currentFile?.name || 'Uploaded file'}
+                    {currentFile?.name || "Uploaded file"}
                   </p>
                   {currentFile && (
                     <p className="text-xs text-gray-500">

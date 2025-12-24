@@ -272,7 +272,13 @@ export interface HospitalOnboardingData {
   operationalPolicies: {
     operating_hours: {
       location_id: string;
-      hours: { id: string; day: string; open: string; close: string }[];
+      hours: {
+        id: string;
+        day: string;
+        open: string;
+        close: string;
+        is_closed?: boolean;
+      }[];
     }[];
     appointment_lead_time_hours: number;
     cancellation_policy: string;
@@ -791,18 +797,30 @@ export const HospitalOnboardingProvider: React.FC<
           siteContent: {
             ...initialData.siteContent,
             ...parsed.siteContent,
-            testimonials: Array.isArray(parsed.siteContent?.testimonials) ? parsed.siteContent.testimonials : [],
+            testimonials: Array.isArray(parsed.siteContent?.testimonials)
+              ? parsed.siteContent.testimonials
+              : [],
           },
           leadershipTeam: {
             ...initialData.leadershipTeam,
             ...parsed.leadershipTeam,
-            leadership_cards: Array.isArray(parsed.leadershipTeam?.leadership_cards) ? parsed.leadershipTeam.leadership_cards : [],
+            leadership_cards: Array.isArray(
+              parsed.leadershipTeam?.leadership_cards
+            )
+              ? parsed.leadershipTeam.leadership_cards
+              : [],
           },
           compliance: {
             ...initialData.compliance,
             ...parsed.compliance,
-            documents: Array.isArray(parsed.compliance?.documents) ? parsed.compliance.documents : [],
-            consent_templates: Array.isArray(parsed.compliance?.consent_templates) ? parsed.compliance.consent_templates : [],
+            documents: Array.isArray(parsed.compliance?.documents)
+              ? parsed.compliance.documents
+              : [],
+            consent_templates: Array.isArray(
+              parsed.compliance?.consent_templates
+            )
+              ? parsed.compliance.consent_templates
+              : [],
           },
         });
       }
@@ -848,10 +866,18 @@ export const HospitalOnboardingProvider: React.FC<
   const buildSubmissionPayload = useCallback(() => {
     // Ensure arrays are safely accessed
     const locations = Array.isArray(data.locations) ? data.locations : [];
-    const testimonials = Array.isArray(data.siteContent?.testimonials) ? data.siteContent.testimonials : [];
-    const leadershipCards = Array.isArray(data.leadershipTeam?.leadership_cards) ? data.leadershipTeam.leadership_cards : [];
-    const complianceDocs = Array.isArray(data.compliance?.documents) ? data.compliance.documents : [];
-    const consentTemplates = Array.isArray(data.compliance?.consent_templates) ? data.compliance.consent_templates : [];
+    const testimonials = Array.isArray(data.siteContent?.testimonials)
+      ? data.siteContent.testimonials
+      : [];
+    const leadershipCards = Array.isArray(data.leadershipTeam?.leadership_cards)
+      ? data.leadershipTeam.leadership_cards
+      : [];
+    const complianceDocs = Array.isArray(data.compliance?.documents)
+      ? data.compliance.documents
+      : [];
+    const consentTemplates = Array.isArray(data.compliance?.consent_templates)
+      ? data.compliance.consent_templates
+      : [];
 
     return {
       invitation_token: data.invitation.token,
