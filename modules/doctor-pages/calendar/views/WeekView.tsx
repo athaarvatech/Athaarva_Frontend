@@ -3,7 +3,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'da
 import { useCalendar } from '../CalendarContext';
 import { AppointmentCard } from '../AppointmentCard';
 import { TimeSlotDropZone } from '../TimeSlotDropZone';
-import { Appointment } from '../types';
+import { Appointment } from '../type';
 
 interface WeekViewProps {
   onAppointmentClick: (appointment: Appointment) => void;

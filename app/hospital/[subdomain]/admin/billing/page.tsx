@@ -6,18 +6,15 @@ import { format } from "date-fns";
 import {
   Search,
   Plus,
-  Filter,
   MoreVertical,
   DollarSign,
   CreditCard,
-  FileText,
   Download,
   Eye,
   Send,
   ChevronLeft,
   ChevronRight,
   TrendingUp,
-  TrendingDown,
   Clock,
   CheckCircle,
   XCircle,
@@ -29,12 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -64,7 +56,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
 // Types
@@ -105,9 +96,19 @@ const mockInvoices: Invoice[] = [
     patientName: "John Smith",
     patientId: "pat-1",
     services: [
-      { name: "Consultation - Cardiology", quantity: 1, unitPrice: 150, total: 150 },
+      {
+        name: "Consultation - Cardiology",
+        quantity: 1,
+        unitPrice: 150,
+        total: 150,
+      },
       { name: "ECG Test", quantity: 1, unitPrice: 75, total: 75 },
-      { name: "Blood Test - Lipid Panel", quantity: 1, unitPrice: 50, total: 50 },
+      {
+        name: "Blood Test - Lipid Panel",
+        quantity: 1,
+        unitPrice: 50,
+        total: 50,
+      },
     ],
     subtotal: 275,
     tax: 27.5,
@@ -126,7 +127,12 @@ const mockInvoices: Invoice[] = [
     patientName: "Emily Davis",
     patientId: "pat-2",
     services: [
-      { name: "Consultation - Dermatology", quantity: 1, unitPrice: 120, total: 120 },
+      {
+        name: "Consultation - Dermatology",
+        quantity: 1,
+        unitPrice: 120,
+        total: 120,
+      },
       { name: "Skin Biopsy", quantity: 1, unitPrice: 200, total: 200 },
     ],
     subtotal: 320,
@@ -171,7 +177,12 @@ const mockInvoices: Invoice[] = [
     patientName: "Maria Garcia",
     patientId: "pat-4",
     services: [
-      { name: "Pediatric Consultation", quantity: 1, unitPrice: 100, total: 100 },
+      {
+        name: "Pediatric Consultation",
+        quantity: 1,
+        unitPrice: 100,
+        total: 100,
+      },
       { name: "Vaccination - MMR", quantity: 1, unitPrice: 45, total: 45 },
     ],
     subtotal: 145,
@@ -212,7 +223,10 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-const statusIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const statusIcons: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   paid: CheckCircle,
   pending: Clock,
   partial: AlertCircle,
@@ -221,6 +235,7 @@ const statusIcons: Record<string, React.ComponentType<{ className?: string }>> =
 };
 
 export default function BillingPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const params = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -232,7 +247,8 @@ export default function BillingPage() {
     const matchesSearch =
       invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       invoice.patientName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || invoice.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -249,7 +265,9 @@ export default function BillingPage() {
       .reduce((sum, i) => sum + i.balance, 0),
     collectionRate: Math.round(
       (mockInvoices.reduce((sum, i) => sum + i.amountPaid, 0) /
-        mockInvoices.filter((i) => i.status !== "cancelled").reduce((sum, i) => sum + i.total, 0)) *
+        mockInvoices
+          .filter((i) => i.status !== "cancelled")
+          .reduce((sum, i) => sum + i.total, 0)) *
         100
     ),
   };
@@ -266,8 +284,12 @@ export default function BillingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing & Invoices</h1>
-          <p className="text-gray-600">Manage invoices, payments, and insurance claims</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Billing & Invoices
+          </h1>
+          <p className="text-gray-600">
+            Manage invoices, payments, and insurance claims
+          </p>
         </div>
         <Button className="bg-teal-600 hover:bg-teal-700">
           <Plus className="h-4 w-4 mr-2" />
@@ -282,7 +304,9 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalRevenue)}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {formatCurrency(stats.totalRevenue)}
+                </p>
                 <div className="flex items-center text-xs text-green-600 mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +12% from last month
@@ -299,9 +323,16 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Pending</p>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(stats.pending)}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(stats.pending)}
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {mockInvoices.filter((i) => i.status === "pending" || i.status === "partial").length} invoices
+                  {
+                    mockInvoices.filter(
+                      (i) => i.status === "pending" || i.status === "partial"
+                    ).length
+                  }{" "}
+                  invoices
                 </p>
               </div>
               <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -315,9 +346,12 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(stats.overdue)}</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {formatCurrency(stats.overdue)}
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {mockInvoices.filter((i) => i.status === "overdue").length} invoices
+                  {mockInvoices.filter((i) => i.status === "overdue").length}{" "}
+                  invoices
                 </p>
               </div>
               <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -331,7 +365,9 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Collection Rate</p>
-                <p className="text-2xl font-bold text-teal-600">{stats.collectionRate}%</p>
+                <p className="text-2xl font-bold text-teal-600">
+                  {stats.collectionRate}%
+                </p>
                 <Progress value={stats.collectionRate} className="h-1.5 mt-2" />
               </div>
               <div className="h-10 w-10 bg-teal-100 rounded-lg flex items-center justify-center">
@@ -404,23 +440,42 @@ export default function BillingPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Receipt className="h-4 w-4 text-gray-400" />
-                        <span className="font-medium">{invoice.invoiceNumber}</span>
+                        <span className="font-medium">
+                          {invoice.invoiceNumber}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium text-gray-900">{invoice.patientName}</p>
-                      <p className="text-sm text-gray-500">ID: {invoice.patientId}</p>
+                      <p className="font-medium text-gray-900">
+                        {invoice.patientName}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ID: {invoice.patientId}
+                      </p>
                     </TableCell>
-                    <TableCell className="font-medium">{formatCurrency(invoice.total)}</TableCell>
-                    <TableCell className="text-green-600">{formatCurrency(invoice.amountPaid)}</TableCell>
-                    <TableCell className={invoice.balance > 0 ? "text-red-600 font-medium" : ""}>
+                    <TableCell className="font-medium">
+                      {formatCurrency(invoice.total)}
+                    </TableCell>
+                    <TableCell className="text-green-600">
+                      {formatCurrency(invoice.amountPaid)}
+                    </TableCell>
+                    <TableCell
+                      className={
+                        invoice.balance > 0 ? "text-red-600 font-medium" : ""
+                      }
+                    >
                       {formatCurrency(invoice.balance)}
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm">{format(new Date(invoice.dueDate), "MMM d, yyyy")}</p>
+                      <p className="text-sm">
+                        {format(new Date(invoice.dueDate), "MMM d, yyyy")}
+                      </p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={statusColors[invoice.status]}>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[invoice.status]}
+                      >
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {invoice.status}
                       </Badge>
@@ -450,15 +505,16 @@ export default function BillingPage() {
                             <Send className="h-4 w-4 mr-2" />
                             Send to Patient
                           </DropdownMenuItem>
-                          {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <CreditCard className="h-4 w-4 mr-2" />
-                                Record Payment
-                              </DropdownMenuItem>
-                            </>
-                          )}
+                          {invoice.status !== "paid" &&
+                            invoice.status !== "cancelled" && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                  <CreditCard className="h-4 w-4 mr-2" />
+                                  Record Payment
+                                </DropdownMenuItem>
+                              </>
+                            )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -471,8 +527,12 @@ export default function BillingPage() {
           {filteredInvoices.length === 0 && (
             <div className="p-8 text-center">
               <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No invoices found</h3>
-              <p className="text-gray-500">Try adjusting your filters or search query</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                No invoices found
+              </h3>
+              <p className="text-gray-500">
+                Try adjusting your filters or search query
+              </p>
             </div>
           )}
 
@@ -480,7 +540,8 @@ export default function BillingPage() {
           {filteredInvoices.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t">
               <p className="text-sm text-gray-500">
-                Showing {filteredInvoices.length} of {mockInvoices.length} invoices
+                Showing {filteredInvoices.length} of {mockInvoices.length}{" "}
+                invoices
               </p>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm">
@@ -507,12 +568,21 @@ export default function BillingPage() {
               {/* Invoice Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-xl font-bold">{selectedInvoice.invoiceNumber}</h3>
+                  <h3 className="text-xl font-bold">
+                    {selectedInvoice.invoiceNumber}
+                  </h3>
                   <p className="text-gray-500">
-                    Created: {format(new Date(selectedInvoice.createdAt), "MMMM d, yyyy")}
+                    Created:{" "}
+                    {format(
+                      new Date(selectedInvoice.createdAt),
+                      "MMMM d, yyyy"
+                    )}
                   </p>
                 </div>
-                <Badge variant="outline" className={statusColors[selectedInvoice.status]}>
+                <Badge
+                  variant="outline"
+                  className={statusColors[selectedInvoice.status]}
+                >
                   {selectedInvoice.status}
                 </Badge>
               </div>
@@ -521,7 +591,9 @@ export default function BillingPage() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Bill To</p>
                 <p className="font-semibold">{selectedInvoice.patientName}</p>
-                <p className="text-sm text-gray-500">Patient ID: {selectedInvoice.patientId}</p>
+                <p className="text-sm text-gray-500">
+                  Patient ID: {selectedInvoice.patientId}
+                </p>
               </div>
 
               {/* Services Table */}
@@ -540,9 +612,15 @@ export default function BillingPage() {
                     {selectedInvoice.services.map((service, index) => (
                       <TableRow key={index}>
                         <TableCell>{service.name}</TableCell>
-                        <TableCell className="text-right">{service.quantity}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(service.unitPrice)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(service.total)}</TableCell>
+                        <TableCell className="text-right">
+                          {service.quantity}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(service.unitPrice)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(service.total)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -582,15 +660,21 @@ export default function BillingPage() {
               {/* Insurance Claim */}
               {selectedInvoice.insuranceClaim && (
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 mb-2">Insurance Claim</h4>
+                  <h4 className="font-semibold text-blue-900 mb-2">
+                    Insurance Claim
+                  </h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-gray-500">Provider:</span>{" "}
-                      <span className="font-medium">{selectedInvoice.insuranceClaim.provider}</span>
+                      <span className="font-medium">
+                        {selectedInvoice.insuranceClaim.provider}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-500">Claim ID:</span>{" "}
-                      <span className="font-medium">{selectedInvoice.insuranceClaim.claimId}</span>
+                      <span className="font-medium">
+                        {selectedInvoice.insuranceClaim.claimId}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-500">Amount:</span>{" "}
@@ -617,12 +701,13 @@ export default function BillingPage() {
               <Printer className="h-4 w-4 mr-2" />
               Print
             </Button>
-            {selectedInvoice?.status !== "paid" && selectedInvoice?.status !== "cancelled" && (
-              <Button className="bg-teal-600 hover:bg-teal-700">
-                <CreditCard className="h-4 w-4 mr-2" />
-                Record Payment
-              </Button>
-            )}
+            {selectedInvoice?.status !== "paid" &&
+              selectedInvoice?.status !== "cancelled" && (
+                <Button className="bg-teal-600 hover:bg-teal-700">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Record Payment
+                </Button>
+              )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

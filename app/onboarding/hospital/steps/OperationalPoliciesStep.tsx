@@ -1,16 +1,23 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Clock, MapPin, Calendar, FileText, Video, AlertCircle } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { HelpPopover } from '../widgets/HelpPopover';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Clock,
+  MapPin,
+  Calendar,
+  FileText,
+  Video,
+  AlertCircle,
+} from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { HelpPopover } from "../widgets/HelpPopover";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface OperatingHours {
   location_id: string;
@@ -24,50 +31,88 @@ interface OperatingHours {
 
 export default function OperationalPoliciesStep() {
   const { data, updateData } = useHospitalOnboarding();
-  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
 
   // Safety checks
   const operationalPolicies = data.operationalPolicies || {
     operating_hours: [],
     appointment_lead_time_hours: 24,
-    cancellation_policy: '',
-    no_show_policy: '',
-    telehealth_sop: '',
+    cancellation_policy: "",
+    no_show_policy: "",
+    telehealth_sop: "",
     patient_onboarding_steps: [],
   };
 
   const locations = Array.isArray(data.locations) ? data.locations : [];
-  const operatingHours = Array.isArray(operationalPolicies.operating_hours) ? operationalPolicies.operating_hours : [];
-  const patientOnboardingSteps = Array.isArray(operationalPolicies.patient_onboarding_steps) ? operationalPolicies.patient_onboarding_steps : [];
+  const operatingHours: OperatingHours[] = Array.isArray(
+    operationalPolicies.operating_hours
+  )
+    ? operationalPolicies.operating_hours.map(
+        (h: {
+          location_id: string;
+          hours: {
+            day: string;
+            open: string;
+            close: string;
+            is_closed?: boolean;
+          }[];
+        }) => ({
+          location_id: h.location_id,
+          hours: h.hours.map((dh) => ({
+            day: dh.day,
+            open: dh.open,
+            close: dh.close,
+            is_closed: dh.is_closed ?? false,
+          })),
+        })
+      )
+    : [];
+  const patientOnboardingSteps = Array.isArray(
+    operationalPolicies.patient_onboarding_steps
+  )
+    ? operationalPolicies.patient_onboarding_steps
+    : [];
 
   const daysOfWeek = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
   ];
 
   // Initialize hours for a location
   const initializeHoursForLocation = (locationId: string) => {
-    const existingHours = operatingHours.find(h => h.location_id === locationId);
+    const existingHours = operatingHours.find(
+      (h) => h.location_id === locationId
+    );
     if (existingHours) return;
 
-    const defaultHours = daysOfWeek.map(day => ({
+    const defaultHours = daysOfWeek.map((day) => ({
       day,
-      open: '09:00',
-      close: '18:00',
-      is_closed: day === 'Sunday',
+      open: "09:00",
+      close: "18:00",
+      is_closed: day === "Sunday",
     }));
 
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       operating_hours: [
         ...operatingHours,
-        { location_id: locationId, hours: defaultHours }
+        { location_id: locationId, hours: defaultHours },
       ],
     } as any);
   };
 
   // Update hours for a specific location and day
-  const updateLocationHours = (locationId: string, dayIndex: number, updates: Partial<{ open: string; close: string; is_closed: boolean }>) => {
-    const updatedHours = operatingHours.map(h => {
+  const updateLocationHours = (
+    locationId: string,
+    dayIndex: number,
+    updates: Partial<{ open: string; close: string; is_closed: boolean }>
+  ) => {
+    const updatedHours = operatingHours.map((h) => {
       if (h.location_id === locationId) {
         return {
           ...h,
@@ -79,7 +124,7 @@ export default function OperationalPoliciesStep() {
       return h;
     });
 
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       operating_hours: updatedHours,
     } as any);
@@ -88,16 +133,18 @@ export default function OperationalPoliciesStep() {
   // Copy hours to all locations
   const copyHoursToAllLocations = () => {
     if (!selectedLocation) return;
-    
-    const sourceHours = operatingHours.find(h => h.location_id === selectedLocation);
+
+    const sourceHours = operatingHours.find(
+      (h) => h.location_id === selectedLocation
+    );
     if (!sourceHours) return;
 
-    const updatedHours = locations.map(loc => ({
+    const updatedHours = locations.map((loc) => ({
       location_id: loc.id,
       hours: [...sourceHours.hours],
     }));
 
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       operating_hours: updatedHours,
     } as any);
@@ -105,25 +152,27 @@ export default function OperationalPoliciesStep() {
 
   // Patient onboarding steps
   const addOnboardingStep = () => {
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
-      patient_onboarding_steps: [...patientOnboardingSteps, ''],
+      patient_onboarding_steps: [...patientOnboardingSteps, ""],
     } as any);
   };
 
   const updateOnboardingStep = (index: number, value: string) => {
     const updated = [...patientOnboardingSteps];
     updated[index] = value;
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       patient_onboarding_steps: updated,
     } as any);
   };
 
   const removeOnboardingStep = (index: number) => {
-    updateData('operationalPolicies', {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
-      patient_onboarding_steps: patientOnboardingSteps.filter((_, idx) => idx !== index),
+      patient_onboarding_steps: patientOnboardingSteps.filter(
+        (_, idx) => idx !== index
+      ),
     } as any);
   };
 
@@ -135,13 +184,17 @@ export default function OperationalPoliciesStep() {
     }
   }, [locations.length]);
 
-  const currentLocationHours = operatingHours.find(h => h.location_id === selectedLocation);
+  const currentLocationHours = operatingHours.find(
+    (h) => h.location_id === selectedLocation
+  );
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">Operational Policies</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Operational Policies
+        </h3>
         <p className="text-sm text-gray-600 mt-1">
           Define operating hours, policies, and patient onboarding procedures
         </p>
@@ -203,13 +256,22 @@ export default function OperationalPoliciesStep() {
 
                   {/* Days */}
                   {currentLocationHours.hours.map((dayHours, index) => (
-                    <div key={dayHours.day} className="col-span-4 px-4 py-3 grid grid-cols-4 gap-4 items-center">
-                      <div className="font-medium text-gray-900">{dayHours.day}</div>
-                      
+                    <div
+                      key={dayHours.day}
+                      className="col-span-4 px-4 py-3 grid grid-cols-4 gap-4 items-center"
+                    >
+                      <div className="font-medium text-gray-900">
+                        {dayHours.day}
+                      </div>
+
                       <Input
                         type="time"
                         value={dayHours.open}
-                        onChange={(e) => updateLocationHours(selectedLocation, index, { open: e.target.value })}
+                        onChange={(e) =>
+                          updateLocationHours(selectedLocation, index, {
+                            open: e.target.value,
+                          })
+                        }
                         disabled={dayHours.is_closed}
                         className={cn(dayHours.is_closed && "opacity-50")}
                       />
@@ -217,7 +279,11 @@ export default function OperationalPoliciesStep() {
                       <Input
                         type="time"
                         value={dayHours.close}
-                        onChange={(e) => updateLocationHours(selectedLocation, index, { close: e.target.value })}
+                        onChange={(e) =>
+                          updateLocationHours(selectedLocation, index, {
+                            close: e.target.value,
+                          })
+                        }
                         disabled={dayHours.is_closed}
                         className={cn(dayHours.is_closed && "opacity-50")}
                       />
@@ -225,8 +291,10 @@ export default function OperationalPoliciesStep() {
                       <div className="flex items-center">
                         <Checkbox
                           checked={dayHours.is_closed}
-                          onCheckedChange={(checked) => 
-                            updateLocationHours(selectedLocation, index, { is_closed: checked as boolean })
+                          onCheckedChange={(checked) =>
+                            updateLocationHours(selectedLocation, index, {
+                              is_closed: checked as boolean,
+                            })
                           }
                         />
                       </div>
@@ -239,7 +307,9 @@ export default function OperationalPoliciesStep() {
         ) : (
           <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <MapPin className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600 text-sm">Add locations in Step 2 to set operating hours</p>
+            <p className="text-gray-600 text-sm">
+              Add locations in Step 2 to set operating hours
+            </p>
           </div>
         )}
       </div>
@@ -258,10 +328,12 @@ export default function OperationalPoliciesStep() {
           <Input
             type="number"
             value={operationalPolicies.appointment_lead_time_hours}
-            onChange={(e) => updateData('operationalPolicies', {
-              ...operationalPolicies,
-              appointment_lead_time_hours: parseInt(e.target.value) || 0,
-            } as any)}
+            onChange={(e) =>
+              updateData("operationalPolicies", {
+                ...operationalPolicies,
+                appointment_lead_time_hours: parseInt(e.target.value) || 0,
+              } as any)
+            }
             min="0"
             className="w-32"
           />
@@ -281,10 +353,12 @@ export default function OperationalPoliciesStep() {
 
         <Textarea
           value={operationalPolicies.cancellation_policy}
-          onChange={(e) => updateData('operationalPolicies', {
-            ...operationalPolicies,
-            cancellation_policy: e.target.value,
-          } as any)}
+          onChange={(e) =>
+            updateData("operationalPolicies", {
+              ...operationalPolicies,
+              cancellation_policy: e.target.value,
+            } as any)
+          }
           placeholder="e.g., Patients may cancel appointments up to 24 hours in advance without penalty..."
           rows={4}
         />
@@ -306,10 +380,12 @@ export default function OperationalPoliciesStep() {
 
         <Textarea
           value={operationalPolicies.no_show_policy}
-          onChange={(e) => updateData('operationalPolicies', {
-            ...operationalPolicies,
-            no_show_policy: e.target.value,
-          } as any)}
+          onChange={(e) =>
+            updateData("operationalPolicies", {
+              ...operationalPolicies,
+              no_show_policy: e.target.value,
+            } as any)
+          }
           placeholder="e.g., Patients who miss appointments without prior notice may be charged a no-show fee..."
           rows={4}
         />
@@ -322,7 +398,9 @@ export default function OperationalPoliciesStep() {
       {/* Telehealth SOP */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Telehealth Standard Operating Procedure</Label>
+          <Label className="text-base font-medium">
+            Telehealth Standard Operating Procedure
+          </Label>
           <HelpPopover
             title="Telehealth SOP"
             content="Outline procedures for virtual consultations, technical requirements, and patient guidelines"
@@ -331,10 +409,12 @@ export default function OperationalPoliciesStep() {
 
         <Textarea
           value={operationalPolicies.telehealth_sop}
-          onChange={(e) => updateData('operationalPolicies', {
-            ...operationalPolicies,
-            telehealth_sop: e.target.value,
-          } as any)}
+          onChange={(e) =>
+            updateData("operationalPolicies", {
+              ...operationalPolicies,
+              telehealth_sop: e.target.value,
+            } as any)
+          }
           placeholder="e.g., Patients must have stable internet connection, camera, and microphone. Platform: [Name]. Appointment reminders sent 1 hour before..."
           rows={5}
         />
@@ -347,7 +427,9 @@ export default function OperationalPoliciesStep() {
       {/* Patient Onboarding Steps */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Patient Onboarding Steps</Label>
+          <Label className="text-base font-medium">
+            Patient Onboarding Steps
+          </Label>
           <Button onClick={addOnboardingStep} size="sm" variant="outline">
             Add Step
           </Button>
@@ -379,7 +461,9 @@ export default function OperationalPoliciesStep() {
           {patientOnboardingSteps.length === 0 && (
             <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 text-sm mb-3">No onboarding steps defined</p>
+              <p className="text-gray-600 text-sm mb-3">
+                No onboarding steps defined
+              </p>
               <Button onClick={addOnboardingStep} variant="outline" size="sm">
                 Add First Step
               </Button>

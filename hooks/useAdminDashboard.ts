@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import adminApiService, {
   DashboardStats,
   RecentActivity,
   PendingAction,
   Doctor,
   Staff,
-} from '@/lib/admin-api';
-import { getMockAdminDashboardData } from '@/lib/mocks/admin-dashboard';
+} from "@/lib/admin-api";
+import { getMockAdminDashboardData } from "@/lib/mocks/admin-dashboard";
 
 /**
  * Hook for managing admin dashboard data
@@ -26,13 +26,14 @@ export function useAdminDashboard() {
       setIsUsingMockData(false);
 
       const data = await adminApiService.getDashboardOverview();
-      
+
       setStats(data.stats);
       setRecentActivity(data.recentActivity);
       setPendingActions(data.pendingActions);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-      console.error('Error fetching dashboard data:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load dashboard data";
+      console.error("Error fetching dashboard data:", err);
 
       const mockData = getMockAdminDashboardData();
       setStats(mockData.stats);
@@ -78,14 +79,15 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
       setError(null);
 
       const data = await adminApiService.getAllDoctors(page, perPage);
-      
+
       setDoctors(data.doctors);
       setTotal(data.total);
       setTotalPages(data.total_pages);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load doctors';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load doctors";
       setError(errorMessage);
-      console.error('Error fetching doctors:', err);
+      console.error("Error fetching doctors:", err);
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +99,10 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
 
   const updateDoctorStatus = async (
     doctorId: string,
-    updates: { is_verified?: boolean; is_active?: boolean }
+    updates: {
+      verification_status?: "pending" | "approved" | "rejected";
+      status?: "active" | "suspended" | "deactivated";
+    }
   ) => {
     try {
       await adminApiService.updateDoctorStatus(doctorId, updates);
@@ -105,7 +110,8 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
       await fetchDoctors();
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update doctor';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update doctor";
       return { success: false, error: errorMessage };
     }
   };
@@ -117,7 +123,8 @@ export function useAdminDoctors(page: number = 1, perPage: number = 50) {
       await fetchDoctors();
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete doctor';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete doctor";
       return { success: false, error: errorMessage };
     }
   };
@@ -150,14 +157,15 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
       setError(null);
 
       const data = await adminApiService.getAllStaff(page, perPage);
-      
+
       setStaff(data.staff);
       setTotal(data.total);
       setTotalPages(data.total_pages);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load staff';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load staff";
       setError(errorMessage);
-      console.error('Error fetching staff:', err);
+      console.error("Error fetching staff:", err);
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +177,10 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
 
   const updateStaffStatus = async (
     staffId: string,
-    updates: { is_verified?: boolean; is_active?: boolean }
+    updates: {
+      verification_status?: "pending" | "approved" | "rejected";
+      status?: "active" | "suspended" | "deactivated";
+    }
   ) => {
     try {
       await adminApiService.updateStaffStatus(staffId, updates);
@@ -177,7 +188,8 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
       await fetchStaff();
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update staff';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update staff";
       return { success: false, error: errorMessage };
     }
   };
@@ -189,7 +201,8 @@ export function useAdminStaff(page: number = 1, perPage: number = 50) {
       await fetchStaff();
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete staff';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete staff";
       return { success: false, error: errorMessage };
     }
   };
@@ -215,9 +228,9 @@ export function useAdminRefresh() {
   const refreshAll = useCallback(async (callbacks: (() => Promise<void>)[]) => {
     setIsRefreshing(true);
     try {
-      await Promise.all(callbacks.map(cb => cb()));
+      await Promise.all(callbacks.map((cb) => cb()));
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error("Error refreshing data:", error);
     } finally {
       setIsRefreshing(false);
     }

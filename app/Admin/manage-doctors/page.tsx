@@ -32,7 +32,6 @@ import { toast } from "sonner";
 import {
   Search,
   Filter,
-  Edit,
   Trash2,
   RotateCcw,
   UserPlus,
@@ -70,17 +69,6 @@ const ManageDoctorsPage = () => {
     deleteDoctor,
   } = useAdminDoctors(currentPage, perPage);
 
-  // Get unique specializations for filter
-  const specializations = useMemo(() => {
-    const specs = new Set<string>();
-    doctors.forEach((doc) => {
-      if (doc.specialization) {
-        specs.add(doc.specialization);
-      }
-    });
-    return ["all", ...Array.from(specs)];
-  }, [doctors]);
-
   const statuses = ["all", "active", "inactive"];
   const verificationStatuses = ["all", "verified", "unverified"];
 
@@ -90,7 +78,10 @@ const ManageDoctorsPage = () => {
       const matchesSearch =
         doctor.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+        (doctor.specialization
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ??
+          false);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -140,14 +131,15 @@ const ManageDoctorsPage = () => {
   };
 
   const handleStatusToggle = async (doctor: Doctor) => {
-    const newStatus = !doctor.is_active;
+    const isActive = doctor.is_active;
+    const newStatus = isActive ? "deactivated" : "active";
     const result = await updateDoctorStatus(doctor.doctor_id, {
-      is_active: newStatus,
+      status: newStatus as "active" | "deactivated",
     });
 
     if (result.success) {
       toast.success(
-        `Doctor ${newStatus ? "activated" : "deactivated"} successfully`
+        `Doctor ${!isActive ? "activated" : "deactivated"} successfully`
       );
     } else {
       toast.error(result.error || "Failed to update doctor status");
@@ -155,14 +147,15 @@ const ManageDoctorsPage = () => {
   };
 
   const handleVerificationToggle = async (doctor: Doctor) => {
-    const newStatus = !doctor.is_verified;
+    const isVerified = doctor.is_verified;
+    const newStatus = isVerified ? "pending" : "approved";
     const result = await updateDoctorStatus(doctor.doctor_id, {
-      is_verified: newStatus,
+      verification_status: newStatus as "pending" | "approved",
     });
 
     if (result.success) {
       toast.success(
-        `Doctor ${newStatus ? "verified" : "unverified"} successfully`
+        `Doctor ${!isVerified ? "verified" : "unverified"} successfully`
       );
     } else {
       toast.error(result.error || "Failed to update verification status");
@@ -428,13 +421,20 @@ const ManageDoctorsPage = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredDoctors.map((doctor) => (
-                    <TableRow key={doctor.doctor_id} className="hover:bg-gray-50">
+                    <TableRow
+                      key={doctor.doctor_id}
+                      className="hover:bg-gray-50"
+                    >
                       <TableCell>
                         <div>
                           <p className="font-medium">{doctor.full_name}</p>
-                          <p className="text-sm text-gray-500">{doctor.email}</p>
+                          <p className="text-sm text-gray-500">
+                            {doctor.email}
+                          </p>
                           {doctor.phone && (
-                            <p className="text-sm text-gray-500">{doctor.phone}</p>
+                            <p className="text-sm text-gray-500">
+                              {doctor.phone}
+                            </p>
                           )}
                         </div>
                       </TableCell>
@@ -467,9 +467,7 @@ const ManageDoctorsPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleVerificationToggle(doctor)}
-                            title={
-                              doctor.is_verified ? "Unverify" : "Verify"
-                            }
+                            title={doctor.is_verified ? "Unverify" : "Verify"}
                             className={
                               doctor.is_verified
                                 ? "text-yellow-600 hover:text-yellow-700"
@@ -486,9 +484,7 @@ const ManageDoctorsPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleStatusToggle(doctor)}
-                            title={
-                              doctor.is_active ? "Deactivate" : "Activate"
-                            }
+                            title={doctor.is_active ? "Deactivate" : "Activate"}
                             className={
                               doctor.is_active
                                 ? "text-gray-600 hover:text-gray-700"
@@ -522,7 +518,9 @@ const ManageDoctorsPage = () => {
                   <Eye className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-lg font-medium">No doctors found</p>
                   <p className="text-sm">
-                    {searchTerm || statusFilter !== "all" || verificationFilter !== "all"
+                    {searchTerm ||
+                    statusFilter !== "all" ||
+                    verificationFilter !== "all"
                       ? "Try adjusting your filters"
                       : "Add your first doctor to get started"}
                   </p>

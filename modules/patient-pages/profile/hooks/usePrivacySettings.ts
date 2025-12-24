@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export function usePrivacySettings() {
   // Mock privacy settings
@@ -7,50 +7,58 @@ export function usePrivacySettings() {
       shareWithProviders: true,
       shareWithFamily: true,
       shareWithResearchers: false,
-      shareForPublicHealth: true
+      shareForPublicHealth: true,
     },
     accessControls: {
       twoFactorAuth: true,
       loginNotifications: true,
-      bioAuthEnabled: true
+      bioAuthEnabled: true,
     },
     dataExport: {
       exportReady: true,
-      lastExported: '2025-02-15',
-      format: 'fhir'
+      lastExported: "2025-02-15",
+      format: "fhir",
     },
     granularControls: {
-      medications: 'all',
-      labResults: 'selected',
-      conditions: 'all',
-      procedures: 'none',
-      mentalHealth: 'none',
-      sexualHealth: 'none'
-    }
+      medications: "all",
+      labResults: "selected",
+      conditions: "all",
+      procedures: "none",
+      mentalHealth: "none",
+      sexualHealth: "none",
+    },
   });
-  
-  const handleToggleChange = (category, setting, value) => {
+
+  const handleToggleChange = (
+    category: string,
+    setting: string,
+    value: boolean
+  ) => {
     setPrivacySettings({
       ...privacySettings,
       [category]: {
-        ...privacySettings[category],
-        [setting]: value
-      }
+        ...privacySettings[category as keyof typeof privacySettings],
+        [setting]: value,
+      },
     });
   };
-  
-  const handleSelectChange = (category, setting, value) => {
+
+  const handleSelectChange = (
+    category: string,
+    setting: string,
+    value: string
+  ) => {
     setPrivacySettings({
       ...privacySettings,
       [category]: {
-        ...privacySettings[category],
-        [setting]: value
-      }
+        ...privacySettings[category as keyof typeof privacySettings],
+        [setting]: value,
+      },
     });
   };
-  
+
   const onComplete = () => {
-    console.log('Privacy settings saved', privacySettings);
+    console.log("Privacy settings saved", privacySettings);
     // Here we would typically call an API to save the settings
     // For now, just returning a mocked success
     return Promise.resolve({ success: true });
@@ -60,6 +68,6 @@ export function usePrivacySettings() {
     privacySettings,
     handleToggleChange,
     handleSelectChange,
-    onComplete
+    onComplete,
   };
 }

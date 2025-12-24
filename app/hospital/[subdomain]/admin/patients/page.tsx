@@ -5,8 +5,6 @@ import { useParams } from "next/navigation";
 import { format } from "date-fns";
 import {
   Search,
-  Plus,
-  Filter,
   MoreVertical,
   User,
   Phone,
@@ -27,13 +25,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -170,13 +163,16 @@ const mockPatients: Patient[] = [
 ];
 
 export default function PatientsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const params = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentPage, setCurrentPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pageSize = 10;
 
   // Filter patients
@@ -185,8 +181,10 @@ export default function PatientsPage() {
       patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.phone.includes(searchQuery);
-    const matchesStatus = statusFilter === "all" || patient.status === statusFilter;
-    const matchesGender = genderFilter === "all" || patient.gender === genderFilter;
+    const matchesStatus =
+      statusFilter === "all" || patient.status === statusFilter;
+    const matchesGender =
+      genderFilter === "all" || patient.gender === genderFilter;
     return matchesSearch && matchesStatus && matchesGender;
   });
 
@@ -195,10 +193,14 @@ export default function PatientsPage() {
     total: mockPatients.length,
     active: mockPatients.filter((p) => p.status === "active").length,
     newThisMonth: mockPatients.filter(
-      (p) => new Date(p.registeredAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      (p) =>
+        new Date(p.registeredAt) >
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     ).length,
     visitedThisWeek: mockPatients.filter(
-      (p) => p.lastVisit && new Date(p.lastVisit) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      (p) =>
+        p.lastVisit &&
+        new Date(p.lastVisit) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     ).length,
   };
 
@@ -207,7 +209,10 @@ export default function PatientsPage() {
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -219,7 +224,9 @@ export default function PatientsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Patients</h1>
-          <p className="text-gray-600">Manage patient records and information</p>
+          <p className="text-gray-600">
+            Manage patient records and information
+          </p>
         </div>
         <Button className="bg-teal-600 hover:bg-teal-700">
           <UserPlus className="h-4 w-4 mr-2" />
@@ -234,7 +241,9 @@ export default function PatientsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Total Patients</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.total}
+                </p>
               </div>
               <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <User className="h-5 w-5 text-blue-600" />
@@ -247,7 +256,9 @@ export default function PatientsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Active</p>
-                <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.active}
+                </p>
               </div>
               <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Activity className="h-5 w-5 text-green-600" />
@@ -260,7 +271,9 @@ export default function PatientsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">New This Month</p>
-                <p className="text-2xl font-bold text-teal-600">{stats.newThisMonth}</p>
+                <p className="text-2xl font-bold text-teal-600">
+                  {stats.newThisMonth}
+                </p>
               </div>
               <div className="h-10 w-10 bg-teal-100 rounded-lg flex items-center justify-center">
                 <UserPlus className="h-5 w-5 text-teal-600" />
@@ -273,7 +286,9 @@ export default function PatientsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Visited This Week</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.visitedThisWeek}</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {stats.visitedThisWeek}
+                </p>
               </div>
               <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-5 w-5 text-purple-600" />
@@ -352,12 +367,19 @@ export default function PatientsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarFallback className="bg-teal-100 text-teal-700">
-                          {patient.name.split(" ").map((n) => n[0]).join("")}
+                          {patient.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-gray-900">{patient.name}</p>
-                        <p className="text-sm text-gray-500">ID: {patient.id}</p>
+                        <p className="font-medium text-gray-900">
+                          {patient.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          ID: {patient.id}
+                        </p>
                       </div>
                     </div>
                   </TableCell>
@@ -374,19 +396,30 @@ export default function PatientsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="font-medium">{getAge(patient.dateOfBirth)} years</p>
-                    <p className="text-sm text-gray-500 capitalize">{patient.gender}</p>
+                    <p className="font-medium">
+                      {getAge(patient.dateOfBirth)} years
+                    </p>
+                    <p className="text-sm text-gray-500 capitalize">
+                      {patient.gender}
+                    </p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                    <Badge
+                      variant="outline"
+                      className="bg-red-50 text-red-700 border-red-200"
+                    >
                       {patient.bloodGroup}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     {patient.lastVisit ? (
                       <div>
-                        <p className="text-sm">{format(new Date(patient.lastVisit), "MMM d, yyyy")}</p>
-                        <p className="text-xs text-gray-500">{patient.totalVisits} total visits</p>
+                        <p className="text-sm">
+                          {format(new Date(patient.lastVisit), "MMM d, yyyy")}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {patient.totalVisits} total visits
+                        </p>
                       </div>
                     ) : (
                       <span className="text-sm text-gray-400">No visits</span>
@@ -449,8 +482,12 @@ export default function PatientsPage() {
           {filteredPatients.length === 0 && (
             <div className="p-8 text-center">
               <User className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No patients found</h3>
-              <p className="text-gray-500">Try adjusting your filters or search query</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                No patients found
+              </h3>
+              <p className="text-gray-500">
+                Try adjusting your filters or search query
+              </p>
             </div>
           )}
 
@@ -458,13 +495,20 @@ export default function PatientsPage() {
           {filteredPatients.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t">
               <p className="text-sm text-gray-500">
-                Showing {filteredPatients.length} of {mockPatients.length} patients
+                Showing {filteredPatients.length} of {mockPatients.length}{" "}
+                patients
               </p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled={currentPage === 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm text-gray-600">Page {currentPage}</span>
+                <span className="text-sm text-gray-600">
+                  Page {currentPage}
+                </span>
                 <Button variant="outline" size="sm">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -492,12 +536,19 @@ export default function PatientsPage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarFallback className="bg-teal-100 text-teal-700 text-xl">
-                      {selectedPatient.name.split(" ").map((n) => n[0]).join("")}
+                      {selectedPatient.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-xl font-semibold">{selectedPatient.name}</h3>
-                    <p className="text-gray-500">Patient ID: {selectedPatient.id}</p>
+                    <h3 className="text-xl font-semibold">
+                      {selectedPatient.name}
+                    </h3>
+                    <p className="text-gray-500">
+                      Patient ID: {selectedPatient.id}
+                    </p>
                     <Badge
                       variant="outline"
                       className={
@@ -523,13 +574,18 @@ export default function PatientsPage() {
                   <div>
                     <p className="text-sm text-gray-500">Date of Birth</p>
                     <p className="font-medium">
-                      {format(new Date(selectedPatient.dateOfBirth), "MMMM d, yyyy")} (
-                      {getAge(selectedPatient.dateOfBirth)} years)
+                      {format(
+                        new Date(selectedPatient.dateOfBirth),
+                        "MMMM d, yyyy"
+                      )}{" "}
+                      ({getAge(selectedPatient.dateOfBirth)} years)
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Gender</p>
-                    <p className="font-medium capitalize">{selectedPatient.gender}</p>
+                    <p className="font-medium capitalize">
+                      {selectedPatient.gender}
+                    </p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-sm text-gray-500">Address</p>
@@ -540,7 +596,9 @@ export default function PatientsPage() {
                 <div className="pt-4 border-t">
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <p className="text-2xl font-bold text-teal-600">{selectedPatient.totalVisits}</p>
+                      <p className="text-2xl font-bold text-teal-600">
+                        {selectedPatient.totalVisits}
+                      </p>
                       <p className="text-sm text-gray-500">Total Visits</p>
                     </div>
                     <div>
@@ -553,7 +611,10 @@ export default function PatientsPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-purple-600">
-                        {format(new Date(selectedPatient.registeredAt), "MMM yyyy")}
+                        {format(
+                          new Date(selectedPatient.registeredAt),
+                          "MMM yyyy"
+                        )}
                       </p>
                       <p className="text-sm text-gray-500">Registered</p>
                     </div>
@@ -565,18 +626,27 @@ export default function PatientsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Blood Group</p>
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 mt-1">
+                    <Badge
+                      variant="outline"
+                      className="bg-red-50 text-red-700 border-red-200 mt-1"
+                    >
                       {selectedPatient.bloodGroup}
                     </Badge>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Medical Conditions</p>
+                  <p className="text-sm text-gray-500 mb-2">
+                    Medical Conditions
+                  </p>
                   {selectedPatient.conditions.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {selectedPatient.conditions.map((condition, index) => (
-                        <Badge key={index} variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="bg-amber-50 text-amber-700 border-amber-200"
+                        >
                           {condition}
                         </Badge>
                       ))}
@@ -592,17 +662,23 @@ export default function PatientsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-500">Provider</p>
-                      <p className="font-medium">{selectedPatient.insuranceProvider}</p>
+                      <p className="font-medium">
+                        {selectedPatient.insuranceProvider}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Policy ID</p>
-                      <p className="font-medium">{selectedPatient.insuranceId}</p>
+                      <p className="font-medium">
+                        {selectedPatient.insuranceId}
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No insurance information on file</p>
+                    <p className="text-gray-500">
+                      No insurance information on file
+                    </p>
                   </div>
                 )}
               </TabsContent>

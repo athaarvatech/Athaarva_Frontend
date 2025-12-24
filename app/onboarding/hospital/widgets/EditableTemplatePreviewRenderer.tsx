@@ -545,9 +545,9 @@ function EditableSpecialtiesSection({
 
             {isEditMode ? (
               <EditableListItem
-                icon={specialty.icon}
-                title={specialty.title}
-                description={specialty.description}
+                icon={specialty.icon || ""}
+                title={specialty.title || ""}
+                description={specialty.description || ""}
                 onIconChange={(val) => updateSpecialty(index, "icon", val)}
                 onTitleChange={(val) => updateSpecialty(index, "title", val)}
                 onDescriptionChange={(val) =>
@@ -1043,7 +1043,7 @@ function EditableTestimonialsSection({
                   />
                   <div className="mt-4 flex gap-2 text-sm text-white/70">
                     <EditableText
-                      value={testimonial.patient}
+                      value={testimonial.patient || ""}
                       onChange={(val) =>
                         updateTestimonial(index, "patient", val)
                       }
@@ -1053,7 +1053,7 @@ function EditableTestimonialsSection({
                     />
                     <span>·</span>
                     <EditableText
-                      value={testimonial.procedure}
+                      value={testimonial.procedure || ""}
                       onChange={(val) =>
                         updateTestimonial(index, "procedure", val)
                       }
@@ -1199,14 +1199,32 @@ function EditableFooter({
   isEditMode,
 }: EditableFooterProps) {
   const updateContact = (
-    field: keyof TemplateBlueprint["footer"]["contact"],
+    field: "phone" | "email" | "location",
     value: string
   ) => {
+    const currentContact = blueprint.footer.contact || {
+      phone: "",
+      email: "",
+      location: "",
+    };
     onUpdate({
       ...blueprint.footer,
-      contact: { ...blueprint.footer.contact, [field]: value },
+      contact: {
+        phone: currentContact.phone || "",
+        email: currentContact.email || "",
+        location: currentContact.location || "",
+        [field]: value,
+      },
     });
   };
+
+  // Safely access footer contact with defaults
+  const contact = blueprint.footer.contact || {
+    phone: "",
+    email: "",
+    location: "",
+  };
+  const quickLinks = blueprint.footer.quickLinks || [];
 
   return (
     <footer className="bg-slate-900 text-white">
@@ -1218,7 +1236,7 @@ function EditableFooter({
           {isEditMode ? (
             <>
               <EditableText
-                value={blueprint.footer.contact.phone}
+                value={contact.phone || ""}
                 onChange={(val) => updateContact("phone", val)}
                 as="p"
                 className="text-lg font-semibold text-white"
@@ -1226,7 +1244,7 @@ function EditableFooter({
                 editIndicator="border"
               />
               <EditableText
-                value={blueprint.footer.contact.email}
+                value={contact.email || ""}
                 onChange={(val) => updateContact("email", val)}
                 as="p"
                 className="text-sm text-white/70"
@@ -1234,7 +1252,7 @@ function EditableFooter({
                 editIndicator="none"
               />
               <EditableText
-                value={blueprint.footer.contact.location}
+                value={contact.location || ""}
                 onChange={(val) => updateContact("location", val)}
                 as="p"
                 className="mt-2 text-sm text-white/60"
@@ -1244,15 +1262,9 @@ function EditableFooter({
             </>
           ) : (
             <>
-              <p className="text-lg font-semibold">
-                {blueprint.footer.contact.phone}
-              </p>
-              <p className="text-sm text-white/70">
-                {blueprint.footer.contact.email}
-              </p>
-              <p className="mt-2 text-sm text-white/60">
-                {blueprint.footer.contact.location}
-              </p>
+              <p className="text-lg font-semibold">{contact.phone}</p>
+              <p className="text-sm text-white/70">{contact.email}</p>
+              <p className="mt-2 text-sm text-white/60">{contact.location}</p>
             </>
           )}
         </div>
@@ -1261,13 +1273,13 @@ function EditableFooter({
             Quick links
           </p>
           <ul className="mt-3 space-y-2 text-sm text-white/80">
-            {blueprint.footer.quickLinks.map((link, index) => (
+            {quickLinks.map((link, index) => (
               <li key={index}>
                 {isEditMode ? (
                   <EditableText
                     value={link}
                     onChange={(val) => {
-                      const newLinks = [...blueprint.footer.quickLinks];
+                      const newLinks = [...quickLinks];
                       newLinks[index] = val;
                       onUpdate({ ...blueprint.footer, quickLinks: newLinks });
                     }}

@@ -8,7 +8,6 @@ import AIInsightsWidget from "@/modules/doctor-pages/dashboard/AIInsightsWidget"
 import AnalyticsSummaryWidget from "@/modules/doctor-pages/dashboard/AnalyticsSummaryWidget";
 import TaskManagementWidget from "@/modules/doctor-pages/dashboard/TaskManagementWidget";
 import {
-  PlusIcon,
   Calendar,
   Users,
   MessageCircle,
@@ -20,7 +19,6 @@ import {
   Maximize2,
   Minimize2,
   X,
-  ArrowUpRight,
   RefreshCw,
   ChevronDown,
   Sliders,
@@ -34,7 +32,12 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
 
 // Widget configuration type
 type WidgetConfig = {
@@ -51,6 +54,7 @@ type WidgetConfig = {
 
 const Dashboard = () => {
   // State for dashboard functionality
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [greeting, setGreeting] = useState("Good morning");
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
@@ -193,7 +197,7 @@ const Dashboard = () => {
   };
 
   // Handle drag and drop reordering
-  const handleDragEnd = (result) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
     const items = Array.from(widgets);
@@ -251,7 +255,7 @@ const Dashboard = () => {
                   {greeting}, {doctorInfo.name}
                 </h1>
                 <p className="text-white/80 mt-1">
-                  Here's your day at a glance
+                  Here&apos;s your day at a glance
                 </p>
               </div>
 
@@ -369,7 +373,10 @@ const Dashboard = () => {
                                 {widget.title}
                               </h3>
                               <span className="text-xs text-gray-500 ml-2">
-                                Updated {formatTimeSince(widget.lastRefreshed)}
+                                Updated{" "}
+                                {widget.lastRefreshed
+                                  ? formatTimeSince(widget.lastRefreshed)
+                                  : "Never"}
                               </span>
                             </div>
 

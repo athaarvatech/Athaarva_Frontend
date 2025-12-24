@@ -6,7 +6,6 @@ import {
   Users,
   Calendar,
   TrendingUp,
-  DollarSign,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -15,9 +14,14 @@ import {
   UserPlus,
   Stethoscope,
   Activity,
-  Bell,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -68,7 +72,14 @@ interface StatsCardProps {
   color: string;
 }
 
-function StatsCard({ title, value, change, changeLabel, icon, color }: StatsCardProps) {
+function StatsCard({
+  title,
+  value,
+  change,
+  changeLabel,
+  icon,
+  color,
+}: StatsCardProps) {
   const isPositive = change && change > 0;
   const isNegative = change && change < 0;
 
@@ -86,16 +97,26 @@ function StatsCard({ title, value, change, changeLabel, icon, color }: StatsCard
               <p className="text-3xl font-bold text-gray-900">{value}</p>
               {change !== undefined && (
                 <div className="flex items-center gap-1">
-                  {isPositive && <ArrowUpRight className="w-4 h-4 text-green-500" />}
-                  {isNegative && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                  {isPositive && (
+                    <ArrowUpRight className="w-4 h-4 text-green-500" />
+                  )}
+                  {isNegative && (
+                    <ArrowDownRight className="w-4 h-4 text-red-500" />
+                  )}
                   <span
                     className={`text-sm font-medium ${
-                      isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500"
+                      isPositive
+                        ? "text-green-600"
+                        : isNegative
+                        ? "text-red-600"
+                        : "text-gray-500"
                     }`}
                   >
                     {Math.abs(change)}%
                   </span>
-                  {changeLabel && <span className="text-sm text-gray-400">{changeLabel}</span>}
+                  {changeLabel && (
+                    <span className="text-sm text-gray-400">{changeLabel}</span>
+                  )}
                 </div>
               )}
             </div>
@@ -109,7 +130,9 @@ function StatsCard({ title, value, change, changeLabel, icon, color }: StatsCard
           {/* Decorative gradient */}
           <div
             className="absolute bottom-0 left-0 right-0 h-1"
-            style={{ background: `linear-gradient(to right, ${color}, ${color}80)` }}
+            style={{
+              background: `linear-gradient(to right, ${color}, ${color}80)`,
+            }}
           />
         </CardContent>
       </Card>
@@ -173,10 +196,17 @@ function QuickActions({ subdomain, primaryColor }: QuickActionsProps) {
                   className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
                   style={{ backgroundColor: `${primaryColor}15` }}
                 >
-                  <action.icon className="w-5 h-5" style={{ color: primaryColor }} />
+                  <action.icon
+                    className="w-5 h-5"
+                    style={{ color: primaryColor }}
+                  />
                 </div>
-                <h4 className="font-medium text-gray-900 text-sm">{action.title}</h4>
-                <p className="text-xs text-gray-500 mt-1">{action.description}</p>
+                <h4 className="font-medium text-gray-900 text-sm">
+                  {action.title}
+                </h4>
+                <p className="text-xs text-gray-500 mt-1">
+                  {action.description}
+                </p>
               </motion.div>
             </Link>
           ))}
@@ -195,6 +225,7 @@ interface PendingActionsCardProps {
   subdomain: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PendingActionsCard({ actions, subdomain }: PendingActionsCardProps) {
   const priorityColors = {
     high: "bg-red-100 text-red-700",
@@ -218,7 +249,9 @@ function PendingActionsCard({ actions, subdomain }: PendingActionsCardProps) {
           {actions.length === 0 ? (
             <div className="text-center py-8">
               <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <p className="text-gray-600">All caught up! No pending actions.</p>
+              <p className="text-gray-600">
+                All caught up! No pending actions.
+              </p>
             </div>
           ) : (
             actions.map((action) => (
@@ -228,8 +261,12 @@ function PendingActionsCard({ actions, subdomain }: PendingActionsCardProps) {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-gray-900 text-sm">{action.title}</h4>
-                    <Badge className={`text-xs ${priorityColors[action.priority]}`}>
+                    <h4 className="font-medium text-gray-900 text-sm">
+                      {action.title}
+                    </h4>
+                    <Badge
+                      className={`text-xs ${priorityColors[action.priority]}`}
+                    >
                       {action.priority}
                     </Badge>
                   </div>
@@ -318,6 +355,7 @@ interface OnboardingProgressProps {
   primaryColor: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function OnboardingProgress({ status, primaryColor }: OnboardingProgressProps) {
   const isPending = status === "pending";
 
@@ -336,10 +374,13 @@ function OnboardingProgress({ status, primaryColor }: OnboardingProgressProps) {
               <Clock className="w-5 h-5 text-amber-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-amber-900">Onboarding Under Review</h3>
+              <h3 className="font-semibold text-amber-900">
+                Onboarding Under Review
+              </h3>
               <p className="text-sm text-amber-700 mt-1">
-                Your hospital profile is being reviewed by our team. This usually takes 1-2 business
-                days. You can still invite team members while waiting.
+                Your hospital profile is being reviewed by our team. This
+                usually takes 1-2 business days. You can still invite team
+                members while waiting.
               </p>
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs text-amber-600 mb-1">
@@ -366,10 +407,18 @@ interface WelcomeBannerProps {
   primaryColor: string;
 }
 
-function WelcomeBanner({ hospitalName, userName, primaryColor }: WelcomeBannerProps) {
+function WelcomeBanner({
+  hospitalName,
+  userName,
+  primaryColor,
+}: WelcomeBannerProps) {
   const currentHour = new Date().getHours();
   const greeting =
-    currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
+    currentHour < 12
+      ? "Good morning"
+      : currentHour < 18
+      ? "Good afternoon"
+      : "Good evening";
 
   return (
     <motion.div
@@ -398,7 +447,8 @@ function WelcomeBanner({ hospitalName, userName, primaryColor }: WelcomeBannerPr
             {greeting}, {userName}! 👋
           </h1>
           <p className="text-white/80">
-            Welcome to {hospitalName} Admin Portal. Here's your overview for today.
+            Welcome to {hospitalName} Admin Portal. Here&apos;s your overview
+            for today.
           </p>
         </div>
       </div>
@@ -502,7 +552,10 @@ export default function HospitalAdminDashboard() {
       />
 
       {/* Onboarding Progress (if pending) */}
-      <OnboardingProgress status={hospital?.status || "pending"} primaryColor={primaryColor} />
+      <OnboardingProgress
+        status={hospital?.status || "pending"}
+        primaryColor={primaryColor}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -525,7 +578,12 @@ export default function HospitalAdminDashboard() {
           value={stats.totalDoctors}
           change={8}
           changeLabel="vs last month"
-          icon={<Stethoscope className="w-6 h-6" style={{ color: secondaryColor }} />}
+          icon={
+            <Stethoscope
+              className="w-6 h-6"
+              style={{ color: secondaryColor }}
+            />
+          }
           color={secondaryColor}
         />
         <StatsCard

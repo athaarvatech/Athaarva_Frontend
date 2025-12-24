@@ -370,7 +370,10 @@ export default function AppointmentSchedulePage() {
 
     // Create the new appointment
     const newAppointment = {
-      id: Date.now(),
+      id: String(Date.now()),
+      patient_id: "current-patient-uuid", // TODO: Get from auth context
+      doctor_id: selectedDoctor.id || "doctor-uuid", // TODO: Get from doctor data
+      tenant_id: "current-tenant-uuid", // TODO: Get from context
       title: reasonForVisit || `Appointment with Dr. ${selectedDoctor.name}`,
       doctor: selectedDoctor.name,
       doctorPhoto: selectedDoctor.photo,
@@ -389,7 +392,6 @@ export default function AppointmentSchedulePage() {
 
     // Add a notification
     addNotification({
-      id: Date.now().toString(),
       title: "Appointment Confirmed",
       message: `Your appointment with Dr. ${selectedDoctor.name} on ${format(
         selectedDate,
@@ -397,9 +399,8 @@ export default function AppointmentSchedulePage() {
       )} at ${selectedTimeSlot.time} has been confirmed.`,
       timestamp: new Date(),
       read: false,
-      priority: "normal",
+      priority: "routine",
       type: "appointment",
-      relatedItemId: newAppointment.id,
       actionUrl: `/patient/appointments/details/${newAppointment.id}`,
     });
 

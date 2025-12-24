@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -126,7 +126,7 @@ export interface PatientOnboardingData {
   };
 }
 
-function PatientOnboardingPage() {
+function PatientOnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { updateOnboardingStatus } = useAuth();
@@ -710,6 +710,27 @@ function PatientOnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function OnboardingLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-gray-600">Loading patient onboarding...</p>
+      </div>
+    </div>
+  );
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+function PatientOnboardingPage() {
+  return (
+    <Suspense fallback={<OnboardingLoading />}>
+      <PatientOnboardingContent />
+    </Suspense>
   );
 }
 

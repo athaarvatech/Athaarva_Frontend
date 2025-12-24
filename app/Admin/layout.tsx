@@ -4,7 +4,10 @@ import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AdminTopBar from "./components/AdminTopBar";
 import AdminSidebar from "./components/AdminSidebar";
-import { HospitalAdminAuthProvider, useHospitalAdminAuth } from "@/contexts/HospitalAdminAuthContext";
+import {
+  HospitalAdminAuthProvider,
+  useHospitalAdminAuth,
+} from "@/contexts/HospitalAdminAuthContext";
 import { Loader2 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -16,7 +19,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, isAuthenticated } = useHospitalAdminAuth();
+  const { loading, isAuthenticated } = useHospitalAdminAuth();
 
   // Close mobile menu when pathname changes
   useEffect(() => {

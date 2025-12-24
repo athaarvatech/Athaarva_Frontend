@@ -189,7 +189,7 @@ const FamilyMedicationDashboard = () => {
       });
 
   // Status badge styling - simplified to neutral tones
-  const getStatusBadge = (status, takenAt) => {
+  const getStatusBadge = (status: string, takenAt?: string) => {
     switch (status) {
       case "taken":
         return (

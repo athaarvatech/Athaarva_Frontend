@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { ConsultationPage } from '@/modules/doctor-pages/consultation/ConsultationPage';
+import React from "react";
+import { ConsultationPage } from "@/modules/doctor-pages/consultation/ConsultationPage";
 
 export default function Page() {
   return (

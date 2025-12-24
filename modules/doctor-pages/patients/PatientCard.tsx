@@ -10,7 +10,7 @@ import {
   User,
   Activity,
 } from "lucide-react";
-import { Patient, PatientStatus } from "@/types/patient";
+import { Patient, PatientStatus } from "./patient";
 import { formatDate } from "@/lib/utils";
 
 interface PatientCardProps {

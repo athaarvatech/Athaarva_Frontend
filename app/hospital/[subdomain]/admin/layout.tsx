@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,14 +11,11 @@ import {
   Users,
   Calendar,
   Stethoscope,
-  FileText,
   Settings,
   Bell,
   LogOut,
   ChevronDown,
   Menu,
-  X,
-  UserPlus,
   ClipboardList,
   CreditCard,
   TrendingUp,
@@ -38,7 +35,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  HospitalAdminContext,
+  type HospitalAdminContextType,
+} from "./HospitalAdminContext";
+
+// Re-export for convenience
+export { useHospitalAdmin } from "./HospitalAdminContext";
 
 // =============================================================================
 // Types
@@ -61,24 +64,6 @@ interface AdminUser {
   avatar_url?: string;
   role: string;
 }
-
-interface HospitalAdminContextType {
-  hospital: HospitalProfile | null;
-  user: AdminUser | null;
-  loading: boolean;
-  error: string | null;
-  refreshHospital: () => Promise<void>;
-}
-
-const HospitalAdminContext = createContext<HospitalAdminContextType | undefined>(undefined);
-
-export const useHospitalAdmin = () => {
-  const context = useContext(HospitalAdminContext);
-  if (!context) {
-    throw new Error("useHospitalAdmin must be used within HospitalAdminLayout");
-  }
-  return context;
-};
 
 // =============================================================================
 // Navigation Items
@@ -185,7 +170,13 @@ interface SidebarProps {
   currentPath: string;
 }
 
-function Sidebar({ hospital, subdomain, isCollapsed, onToggle, currentPath }: SidebarProps) {
+function Sidebar({
+  hospital,
+  subdomain,
+  isCollapsed,
+  onToggle,
+  currentPath,
+}: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const basePath = `/hospital/${subdomain}/admin`;
 
@@ -289,7 +280,10 @@ function Sidebar({ hospital, subdomain, isCollapsed, onToggle, currentPath }: Si
                           <Badge
                             variant="secondary"
                             className="text-xs"
-                            style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
+                            style={{
+                              backgroundColor: `${theme.primary}20`,
+                              color: theme.primary,
+                            }}
                           >
                             {item.badge}
                           </Badge>
@@ -323,12 +317,17 @@ function Sidebar({ hospital, subdomain, isCollapsed, onToggle, currentPath }: Si
                     <item.icon className="w-5 h-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <>
-                        <span className="flex-1 text-sm font-medium">{item.title}</span>
+                        <span className="flex-1 text-sm font-medium">
+                          {item.title}
+                        </span>
                         {item.badge && !isItemActive && (
                           <Badge
                             variant="secondary"
                             className="text-xs"
-                            style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
+                            style={{
+                              backgroundColor: `${theme.primary}20`,
+                              color: theme.primary,
+                            }}
                           >
                             {item.badge}
                           </Badge>
@@ -362,7 +361,8 @@ function Sidebar({ hospital, subdomain, isCollapsed, onToggle, currentPath }: Si
                               className={cn(
                                 "block px-3 py-2 rounded-lg text-sm transition-colors",
                                 "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
-                                isActive(child.href) && "text-gray-900 bg-gray-50 font-medium"
+                                isActive(child.href) &&
+                                  "text-gray-900 bg-gray-50 font-medium"
                               )}
                             >
                               {child.title}
@@ -393,7 +393,9 @@ function Sidebar({ hospital, subdomain, isCollapsed, onToggle, currentPath }: Si
             )}
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="text-sm font-medium">{item.title}</span>}
+            {!isCollapsed && (
+              <span className="text-sm font-medium">{item.title}</span>
+            )}
           </Link>
         ))}
       </div>
@@ -430,7 +432,10 @@ function Header({ user, hospital, sidebarCollapsed, onLogout }: HeaderProps) {
       {/* Left side */}
       <div className="flex items-center gap-4">
         {hospital?.status === "pending" && (
-          <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+          <Badge
+            variant="outline"
+            className="text-amber-600 border-amber-300 bg-amber-50"
+          >
             Pending Review
           </Badge>
         )}
@@ -445,7 +450,11 @@ function Header({ user, hospital, sidebarCollapsed, onLogout }: HeaderProps) {
           onClick={() => setIsDarkMode(!isDarkMode)}
           className="text-gray-500 hover:text-gray-700"
         >
-          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDarkMode ? (
+            <Sun className="w-5 h-5" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
         </Button>
 
         {/* Notifications */}
@@ -475,15 +484,21 @@ function Header({ user, hospital, sidebarCollapsed, onLogout }: HeaderProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900">{user?.full_name || "Admin"}</p>
-                <p className="text-xs text-gray-500">{user?.role || "Hospital Admin"}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.full_name || "Admin"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {user?.role || "Hospital Admin"}
+                </p>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+              <p className="text-sm font-medium text-gray-900">
+                {user?.full_name}
+              </p>
               <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
             <DropdownMenuSeparator />
@@ -496,7 +511,10 @@ function Header({ user, hospital, sidebarCollapsed, onLogout }: HeaderProps) {
               Help & Support
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="text-red-600 focus:text-red-600">
+            <DropdownMenuItem
+              onClick={onLogout}
+              className="text-red-600 focus:text-red-600"
+            >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </DropdownMenuItem>
@@ -519,7 +537,13 @@ interface MobileSidebarProps {
   currentPath: string;
 }
 
-function MobileSidebar({ hospital, subdomain, isOpen, onClose, currentPath }: MobileSidebarProps) {
+function MobileSidebar({
+  hospital,
+  subdomain,
+  isOpen,
+  onClose,
+  currentPath,
+}: MobileSidebarProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -559,7 +583,11 @@ function MobileSidebar({ hospital, subdomain, isOpen, onClose, currentPath }: Mo
 // Main Layout Component
 // =============================================================================
 
-export default function HospitalAdminLayout({ children }: { children: React.ReactNode }) {
+export default function HospitalAdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -579,7 +607,8 @@ export default function HospitalAdminLayout({ children }: { children: React.Reac
 
       // Try to get auth token
       const token = localStorage.getItem("hospital_admin_token");
-      const tenantId = localStorage.getItem("hospital_admin_tenant_id");
+      // tenantId can be used for additional validation if needed
+      // const tenantId = localStorage.getItem("hospital_admin_tenant_id");
 
       if (!token) {
         // Redirect to auth if no token
@@ -588,13 +617,17 @@ export default function HospitalAdminLayout({ children }: { children: React.Reac
       }
 
       // Fetch hospital profile
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      
-      const hospitalResponse = await fetch(`${API_BASE}/hospitals/${subdomain}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      const hospitalResponse = await fetch(
+        `${API_BASE}/hospitals/${subdomain}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!hospitalResponse.ok) {
         if (hospitalResponse.status === 401) {
@@ -635,7 +668,9 @@ export default function HospitalAdminLayout({ children }: { children: React.Reac
       }
     } catch (err) {
       console.error("Error fetching hospital data:", err);
-      setError(err instanceof Error ? err.message : "Failed to load hospital data");
+      setError(
+        err instanceof Error ? err.message : "Failed to load hospital data"
+      );
     } finally {
       setLoading(false);
     }
@@ -643,6 +678,7 @@ export default function HospitalAdminLayout({ children }: { children: React.Reac
 
   useEffect(() => {
     fetchHospitalData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
 
   const handleLogout = () => {

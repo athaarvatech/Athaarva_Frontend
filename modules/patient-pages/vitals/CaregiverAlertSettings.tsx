@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Users,
   Heart,
@@ -23,17 +23,23 @@ import {
   Thermometer,
   Droplets,
   AlertTriangle,
-  Clock,
   Plus,
   Trash2,
   Mail,
   Send,
   ChevronDown,
   ChevronUp,
-  User
-} from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+  User,
+  Info,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CaregiverAlertSettingsProps {
   onClose: () => void;
@@ -42,52 +48,59 @@ interface CaregiverAlertSettingsProps {
 
 const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
   onClose,
-  onSaveSettings
+  onSaveSettings,
 }) => {
   // Mock data for caregivers
   const [caregivers, setCaregivers] = useState([
     {
-      id: 'cg1',
-      name: 'Richard Cooper',
-      relationship: 'Spouse',
-      phone: '555-123-4567',
-      email: 'richard@example.com',
-      photo: 'https://randomuser.me/api/portraits/men/32.jpg',
+      id: "cg1",
+      name: "Richard Cooper",
+      relationship: "Spouse",
+      phone: "555-123-4567",
+      email: "richard@example.com",
+      photo: "https://randomuser.me/api/portraits/men/32.jpg",
       alertConfig: {
         enabled: true,
-        types: ['critical', 'warning'],
-        vitals: ['bloodPressure', 'heartRate', 'oxygenSaturation']
-      }
+        types: ["critical", "warning"],
+        vitals: ["bloodPressure", "heartRate", "oxygenSaturation"],
+      },
     },
     {
-      id: 'cg2',
-      name: 'Amy Cooper',
-      relationship: 'Daughter',
-      phone: '555-987-6543',
-      email: 'amy@example.com',
-      photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+      id: "cg2",
+      name: "Amy Cooper",
+      relationship: "Daughter",
+      phone: "555-987-6543",
+      email: "amy@example.com",
+      photo: "https://randomuser.me/api/portraits/women/44.jpg",
       alertConfig: {
         enabled: true,
-        types: ['critical'],
-        vitals: ['bloodPressure', 'heartRate', 'oxygenSaturation', 'temperature', 'hydrationLevel']
-      }
-    }
+        types: ["critical"],
+        vitals: [
+          "bloodPressure",
+          "heartRate",
+          "oxygenSaturation",
+          "temperature",
+          "hydrationLevel",
+        ],
+      },
+    },
   ]);
 
   const [newCaregiver, setNewCaregiver] = useState({
-    name: '',
-    relationship: 'Family Member',
-    phone: '',
-    email: '',
+    name: "",
+    relationship: "Family Member",
+    phone: "",
+    email: "",
+    photo: "",
     alertConfig: {
       enabled: true,
-      types: ['critical'],
-      vitals: ['bloodPressure', 'heartRate']
-    }
+      types: ["critical"],
+      vitals: ["bloodPressure", "heartRate"],
+    },
   });
 
   const [showAddCaregiver, setShowAddCaregiver] = useState(false);
-  const [expandedCaregiverId, setExpandedCaregiverId] = useState('cg1');
+  const [expandedCaregiverId, setExpandedCaregiverId] = useState("cg1");
   const [testMessageSent, setTestMessageSent] = useState<string | null>(null);
 
   // Add a new caregiver
@@ -97,127 +110,150 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
         ...caregivers,
         {
           ...newCaregiver,
-          id: `cg${caregivers.length + 1}`
-        }
+          id: `cg${caregivers.length + 1}`,
+        },
       ]);
       setNewCaregiver({
-        name: '',
-        relationship: 'Family Member',
-        phone: '',
-        email: '',
+        name: "",
+        relationship: "Family Member",
+        phone: "",
+        email: "",
+        photo: "",
         alertConfig: {
           enabled: true,
-          types: ['critical'],
-          vitals: ['bloodPressure', 'heartRate']
-        }
+          types: ["critical"],
+          vitals: ["bloodPressure", "heartRate"],
+        },
       });
       setShowAddCaregiver(false);
     }
   };
 
   // Remove a caregiver
-  const removeCaregiver = (id) => {
-    setCaregivers(caregivers.filter(cg => cg.id !== id));
+  const removeCaregiver = (id: string) => {
+    setCaregivers(caregivers.filter((cg) => cg.id !== id));
   };
 
   // Update caregiver alert settings
-  const updateCaregiverAlerts = (caregiverId, field, value) => {
-    setCaregivers(caregivers.map(cg => {
-      if (cg.id === caregiverId) {
-        return {
-          ...cg,
-          alertConfig: {
-            ...cg.alertConfig,
-            [field]: value
-          }
-        };
-      }
-      return cg;
-    }));
+  const updateCaregiverAlerts = (
+    caregiverId: string,
+    field: string,
+    value: boolean | string[]
+  ) => {
+    setCaregivers(
+      caregivers.map((cg) => {
+        if (cg.id === caregiverId) {
+          return {
+            ...cg,
+            alertConfig: {
+              ...cg.alertConfig,
+              [field]: value,
+            },
+          };
+        }
+        return cg;
+      })
+    );
   };
 
   // Toggle vital in caregiver's alert configuration
-  const toggleVitalAlert = (caregiverId, vitalType) => {
-    setCaregivers(caregivers.map(cg => {
-      if (cg.id === caregiverId) {
-        const vitals = [...cg.alertConfig.vitals];
-        
-        if (vitals.includes(vitalType)) {
-          return {
-            ...cg,
-            alertConfig: {
-              ...cg.alertConfig,
-              vitals: vitals.filter(v => v !== vitalType)
-            }
-          };
-        } else {
-          return {
-            ...cg,
-            alertConfig: {
-              ...cg.alertConfig,
-              vitals: [...vitals, vitalType]
-            }
-          };
+  const toggleVitalAlert = (caregiverId: string, vitalType: string) => {
+    setCaregivers(
+      caregivers.map((cg) => {
+        if (cg.id === caregiverId) {
+          const vitals = [...cg.alertConfig.vitals];
+
+          if (vitals.includes(vitalType)) {
+            return {
+              ...cg,
+              alertConfig: {
+                ...cg.alertConfig,
+                vitals: vitals.filter((v) => v !== vitalType),
+              },
+            };
+          } else {
+            return {
+              ...cg,
+              alertConfig: {
+                ...cg.alertConfig,
+                vitals: [...vitals, vitalType],
+              },
+            };
+          }
         }
-      }
-      return cg;
-    }));
+        return cg;
+      })
+    );
   };
 
   // Toggle alert type in caregiver's alert configuration
-  const toggleAlertType = (caregiverId, alertType) => {
-    setCaregivers(caregivers.map(cg => {
-      if (cg.id === caregiverId) {
-        const types = [...cg.alertConfig.types];
-        
-        if (types.includes(alertType)) {
-          return {
-            ...cg,
-            alertConfig: {
-              ...cg.alertConfig,
-              types: types.filter(t => t !== alertType)
-            }
-          };
-        } else {
-          return {
-            ...cg,
-            alertConfig: {
-              ...cg.alertConfig,
-              types: [...types, alertType]
-            }
-          };
+  const toggleAlertType = (caregiverId: string, alertType: string) => {
+    setCaregivers(
+      caregivers.map((cg) => {
+        if (cg.id === caregiverId) {
+          const types = [...cg.alertConfig.types];
+
+          if (types.includes(alertType)) {
+            return {
+              ...cg,
+              alertConfig: {
+                ...cg.alertConfig,
+                types: types.filter((t) => t !== alertType),
+              },
+            };
+          } else {
+            return {
+              ...cg,
+              alertConfig: {
+                ...cg.alertConfig,
+                types: [...types, alertType],
+              },
+            };
+          }
         }
-      }
-      return cg;
-    }));
+        return cg;
+      })
+    );
   };
 
   // Get vital name from type
-  const getVitalName = (vitalType) => {
+  const getVitalName = (vitalType: string) => {
     switch (vitalType) {
-      case 'bloodPressure': return 'Blood Pressure';
-      case 'heartRate': return 'Heart Rate';
-      case 'oxygenSaturation': return 'Oxygen Saturation';
-      case 'temperature': return 'Temperature';
-      case 'hydrationLevel': return 'Hydration Level';
-      default: return vitalType;
+      case "bloodPressure":
+        return "Blood Pressure";
+      case "heartRate":
+        return "Heart Rate";
+      case "oxygenSaturation":
+        return "Oxygen Saturation";
+      case "temperature":
+        return "Temperature";
+      case "hydrationLevel":
+        return "Hydration Level";
+      default:
+        return vitalType;
     }
   };
 
   // Get icon for vital type
-  const getVitalIcon = (vitalType) => {
+  const getVitalIcon = (vitalType: string) => {
     switch (vitalType) {
-      case 'bloodPressure': return <Heart className="h-4 w-4 text-rose-500" />;
-      case 'heartRate': return <Activity className="h-4 w-4 text-purple-500" />;
-      case 'oxygenSaturation': return <Zap className="h-4 w-4 text-blue-500" />;
-      case 'temperature': return <Thermometer className="h-4 w-4 text-amber-500" />;
-      case 'hydrationLevel': return <Droplets className="h-4 w-4 text-blue-400" />;
-      default: return null;
+      case "bloodPressure":
+        return <Heart className="h-4 w-4 text-rose-500" />;
+      case "heartRate":
+        return <Activity className="h-4 w-4 text-purple-500" />;
+      case "oxygenSaturation":
+        return <Zap className="h-4 w-4 text-blue-500" />;
+      case "temperature":
+        return <Thermometer className="h-4 w-4 text-amber-500" />;
+      case "hydrationLevel":
+        return <Droplets className="h-4 w-4 text-blue-400" />;
+      default:
+        return null;
     }
   };
 
   // Simulate sending a test message
-  const sendTestMessage = (caregiverId) => {
+  const sendTestMessage = (caregiverId: string) => {
     setTestMessageSent(caregiverId);
     setTimeout(() => setTestMessageSent(null), 3000);
   };
@@ -257,7 +293,9 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                   <Input
                     id="caregiverName"
                     value={newCaregiver.name}
-                    onChange={(e) => setNewCaregiver({...newCaregiver, name: e.target.value})}
+                    onChange={(e) =>
+                      setNewCaregiver({ ...newCaregiver, name: e.target.value })
+                    }
                     placeholder="Full name"
                   />
                 </div>
@@ -265,7 +303,9 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                   <Label htmlFor="relationship">Relationship</Label>
                   <Select
                     value={newCaregiver.relationship}
-                    onValueChange={(value) => setNewCaregiver({...newCaregiver, relationship: value})}
+                    onValueChange={(value) =>
+                      setNewCaregiver({ ...newCaregiver, relationship: value })
+                    }
                   >
                     <SelectTrigger id="relationship">
                       <SelectValue placeholder="Select relationship" />
@@ -277,7 +317,9 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                       <SelectItem value="Sibling">Sibling</SelectItem>
                       <SelectItem value="Friend">Friend</SelectItem>
                       <SelectItem value="Caretaker">Caretaker</SelectItem>
-                      <SelectItem value="Family Member">Other Family Member</SelectItem>
+                      <SelectItem value="Family Member">
+                        Other Family Member
+                      </SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -287,7 +329,12 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                   <Input
                     id="phone"
                     value={newCaregiver.phone}
-                    onChange={(e) => setNewCaregiver({...newCaregiver, phone: e.target.value})}
+                    onChange={(e) =>
+                      setNewCaregiver({
+                        ...newCaregiver,
+                        phone: e.target.value,
+                      })
+                    }
                     placeholder="For SMS alerts"
                   />
                 </div>
@@ -297,18 +344,29 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                     id="email"
                     type="email"
                     value={newCaregiver.email}
-                    onChange={(e) => setNewCaregiver({...newCaregiver, email: e.target.value})}
+                    onChange={(e) =>
+                      setNewCaregiver({
+                        ...newCaregiver,
+                        email: e.target.value,
+                      })
+                    }
                     placeholder="For email alerts"
                   />
                 </div>
               </div>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowAddCaregiver(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddCaregiver(false)}
+                >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={addCaregiver}
-                  disabled={!newCaregiver.name || (!newCaregiver.phone && !newCaregiver.email)}
+                  disabled={
+                    !newCaregiver.name ||
+                    (!newCaregiver.phone && !newCaregiver.email)
+                  }
                   className="bg-[#006D77] hover:bg-[#00585F]"
                 >
                   Add Caregiver
@@ -319,39 +377,62 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
 
           {/* Caregiver list */}
           <div className="space-y-3">
-            {caregivers.map(caregiver => (
-              <div key={caregiver.id} className="border rounded-lg overflow-hidden">
+            {caregivers.map((caregiver) => (
+              <div
+                key={caregiver.id}
+                className="border rounded-lg overflow-hidden"
+              >
                 <div className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center">
                       <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={caregiver.photo} alt={caregiver.name} />
-                        <AvatarFallback>{caregiver.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          src={caregiver.photo}
+                          alt={caregiver.name}
+                        />
+                        <AvatarFallback>
+                          {caregiver.name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
-                      
+
                       <div>
                         <h3 className="font-medium">{caregiver.name}</h3>
                         <div className="flex items-center text-sm text-gray-500">
                           <span className="mr-2">{caregiver.relationship}</span>
-                          <Separator orientation="vertical" className="h-3 mx-1" />
-                          {caregiver.phone && <span className="mr-2">{caregiver.phone}</span>}
+                          <Separator
+                            orientation="vertical"
+                            className="h-3 mx-1"
+                          />
+                          {caregiver.phone && (
+                            <span className="mr-2">{caregiver.phone}</span>
+                          )}
                           {caregiver.email && <span>{caregiver.email}</span>}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Switch
                         checked={caregiver.alertConfig.enabled}
-                        onCheckedChange={(checked) => updateCaregiverAlerts(caregiver.id, 'enabled', checked)}
+                        onCheckedChange={(checked) =>
+                          updateCaregiverAlerts(
+                            caregiver.id,
+                            "enabled",
+                            checked
+                          )
+                        }
                       />
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        onClick={() => setExpandedCaregiverId(
-                          expandedCaregiverId === caregiver.id ? '' : caregiver.id
-                        )}
+                        onClick={() =>
+                          setExpandedCaregiverId(
+                            expandedCaregiverId === caregiver.id
+                              ? ""
+                              : caregiver.id
+                          )
+                        }
                       >
                         {expandedCaregiverId === caregiver.id ? (
                           <ChevronUp size={16} />
@@ -361,30 +442,42 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="flex mt-2 items-center flex-wrap gap-1">
-                    {caregiver.alertConfig.vitals.map(vitalType => (
-                      <Badge key={vitalType} variant="outline" className="bg-gray-50">
+                    {caregiver.alertConfig.vitals.map((vitalType) => (
+                      <Badge
+                        key={vitalType}
+                        variant="outline"
+                        className="bg-gray-50"
+                      >
                         {getVitalIcon(vitalType)}
-                        <span className="ml-1 text-xs">{getVitalName(vitalType)}</span>
+                        <span className="ml-1 text-xs">
+                          {getVitalName(vitalType)}
+                        </span>
                       </Badge>
                     ))}
                   </div>
                 </div>
-                
+
                 {expandedCaregiverId === caregiver.id && (
                   <div className="border-t p-4 bg-gray-50">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="text-sm font-medium mb-2">Alert Types</h4>
+                        <h4 className="text-sm font-medium mb-2">
+                          Alert Types
+                        </h4>
                         <div className="space-y-2">
                           <div className="flex items-center">
                             <Switch
-                              checked={caregiver.alertConfig.types.includes('critical')}
-                              onCheckedChange={() => toggleAlertType(caregiver.id, 'critical')}
+                              checked={caregiver.alertConfig.types.includes(
+                                "critical"
+                              )}
+                              onCheckedChange={() =>
+                                toggleAlertType(caregiver.id, "critical")
+                              }
                               id={`${caregiver.id}-critical`}
                             />
-                            <Label 
+                            <Label
                               htmlFor={`${caregiver.id}-critical`}
                               className="ml-2 flex items-center"
                             >
@@ -392,14 +485,18 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                               Critical Alerts
                             </Label>
                           </div>
-                          
+
                           <div className="flex items-center">
                             <Switch
-                              checked={caregiver.alertConfig.types.includes('warning')}
-                              onCheckedChange={() => toggleAlertType(caregiver.id, 'warning')}
+                              checked={caregiver.alertConfig.types.includes(
+                                "warning"
+                              )}
+                              onCheckedChange={() =>
+                                toggleAlertType(caregiver.id, "warning")
+                              }
                               id={`${caregiver.id}-warning`}
                             />
-                            <Label 
+                            <Label
                               htmlFor={`${caregiver.id}-warning`}
                               className="ml-2 flex items-center"
                             >
@@ -409,30 +506,44 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h4 className="text-sm font-medium mb-2">Monitored Vitals</h4>
+                        <h4 className="text-sm font-medium mb-2">
+                          Monitored Vitals
+                        </h4>
                         <div className="grid grid-cols-1 gap-2">
-                          {['bloodPressure', 'heartRate', 'oxygenSaturation', 'temperature', 'hydrationLevel'].map(vitalType => (
+                          {[
+                            "bloodPressure",
+                            "heartRate",
+                            "oxygenSaturation",
+                            "temperature",
+                            "hydrationLevel",
+                          ].map((vitalType) => (
                             <div key={vitalType} className="flex items-center">
                               <Switch
-                                checked={caregiver.alertConfig.vitals.includes(vitalType)}
-                                onCheckedChange={() => toggleVitalAlert(caregiver.id, vitalType)}
+                                checked={caregiver.alertConfig.vitals.includes(
+                                  vitalType
+                                )}
+                                onCheckedChange={() =>
+                                  toggleVitalAlert(caregiver.id, vitalType)
+                                }
                                 id={`${caregiver.id}-${vitalType}`}
                               />
-                              <Label 
+                              <Label
                                 htmlFor={`${caregiver.id}-${vitalType}`}
                                 className="ml-2 flex items-center"
                               >
                                 {getVitalIcon(vitalType)}
-                                <span className="ml-1">{getVitalName(vitalType)}</span>
+                                <span className="ml-1">
+                                  {getVitalName(vitalType)}
+                                </span>
                               </Label>
                             </div>
                           ))}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between mt-4 pt-3 border-t border-gray-200">
                       <Button
                         variant="outline"
@@ -443,7 +554,7 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                         <Trash2 className="h-4 w-4 mr-1" />
                         Remove
                       </Button>
-                      
+
                       <div className="flex space-x-2">
                         <Button
                           variant="outline"
@@ -463,7 +574,7 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
                             </>
                           )}
                         </Button>
-                        
+
                         <Button
                           variant="outline"
                           size="sm"
@@ -479,12 +590,12 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
               </div>
             ))}
           </div>
-          
+
           {caregivers.length === 0 && (
             <div className="text-center py-6 border rounded-lg">
               <Users className="h-12 w-12 mx-auto mb-2 text-gray-300" />
               <p className="text-gray-500">No caregivers have been added yet</p>
-              <Button 
+              <Button
                 className="mt-2 bg-[#006D77] hover:bg-[#00585F]"
                 onClick={() => setShowAddCaregiver(true)}
               >
@@ -493,21 +604,25 @@ const CaregiverAlertSettings: React.FC<CaregiverAlertSettingsProps> = ({
               </Button>
             </div>
           )}
-          
+
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md flex items-start">
             <Info className="h-4 w-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
             <div className="text-sm text-blue-800">
               <p className="font-medium">About Caregiver Alerts</p>
               <p className="mt-1">
-                Caregivers will receive alerts via SMS or email when your vital signs exceed the thresholds you've set. They will also have the option to view your vital timeline if you grant them access.
+                Caregivers will receive alerts via SMS or email when your vital
+                signs exceed the thresholds you've set. They will also have the
+                option to view your vital timeline if you grant them access.
               </p>
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button 
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
             className="bg-[#006D77] hover:bg-[#00585F]"
             onClick={() => onSaveSettings(caregivers)}
           >

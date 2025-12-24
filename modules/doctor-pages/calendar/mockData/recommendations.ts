@@ -1,4 +1,4 @@
-import { AIRecommendation } from '../types';
+import { AIRecommendation } from '../type';
 import { addHours, subHours } from 'date-fns';
 
 // Helper function to create a date relative to now

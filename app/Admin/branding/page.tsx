@@ -26,7 +26,10 @@ import {
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
-import { useHospitalBranding, useHospitalProfile } from "@/hooks/useHospitalAdmin";
+import {
+  useHospitalBranding,
+  useHospitalProfile,
+} from "@/hooks/useHospitalAdmin";
 import { BrandingUpdate } from "@/lib/api/hospital-admin";
 
 interface BrandingFormData {
@@ -50,10 +53,23 @@ interface BrandingFormData {
 }
 
 const HospitalBrandingPage = () => {
-  const { branding, isLoading: brandingLoading, error: brandingError, refetch: refetchBranding, updateBranding, uploadLogo, isSaving } = useHospitalBranding();
-  const { profile, isLoading: profileLoading, error: profileError } = useHospitalProfile();
-  
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const {
+    branding,
+    isLoading: brandingLoading,
+    error: brandingError,
+    refetch: refetchBranding,
+    updateBranding,
+    isSaving,
+  } = useHospitalBranding();
+  const {
+    profile,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useHospitalProfile();
+
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop"
+  );
   const [formData, setFormData] = useState<BrandingFormData>({
     hospitalName: "",
     tagline: "",
@@ -77,7 +93,7 @@ const HospitalBrandingPage = () => {
   // Update form when branding/profile data loads
   useEffect(() => {
     if (branding) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         primaryColor: branding.primary_color || "#007C7C",
         secondaryColor: branding.secondary_color || "#20B2AA",
@@ -85,9 +101,11 @@ const HospitalBrandingPage = () => {
         logoUrl: branding.logo_light_url || "",
         backgroundImageUrl: branding.hero_image_url || "",
         welcome_title: branding.welcome_title || "Welcome",
-        welcome_subtitle: branding.welcome_subtitle || "Your Health, Our Priority",
+        welcome_subtitle:
+          branding.welcome_subtitle || "Your Health, Our Priority",
         login_title: branding.login_title || "Sign In",
-        login_subtitle: branding.login_subtitle || "Access your healthcare portal",
+        login_subtitle:
+          branding.login_subtitle || "Access your healthcare portal",
         footer_text: branding.footer_text || "",
       }));
     }
@@ -95,13 +113,15 @@ const HospitalBrandingPage = () => {
 
   useEffect(() => {
     if (profile) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         hospitalName: profile.display_name || "",
         website: profile.contact?.website || "",
         phone: profile.contact?.phone || "",
         email: profile.contact?.email || "",
-        address: profile.address ? `${profile.address.street}, ${profile.address.city}, ${profile.address.state} ${profile.address.postal_code}` : "",
+        address: profile.address
+          ? `${profile.address.street}, ${profile.address.city}, ${profile.address.state} ${profile.address.postal_code}`
+          : "",
       }));
     }
   }, [profile]);
@@ -219,7 +239,9 @@ const HospitalBrandingPage = () => {
       if (result.success) {
         toast.success("Hospital branding updated successfully!");
       } else {
-        toast.error(result.error || "Failed to update branding. Please try again.");
+        toast.error(
+          result.error || "Failed to update branding. Please try again."
+        );
       }
     } catch {
       toast.error("Failed to update branding. Please try again.");
@@ -228,7 +250,7 @@ const HospitalBrandingPage = () => {
 
   const resetForm = () => {
     if (branding) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         primaryColor: branding.primary_color || "#007C7C",
         secondaryColor: branding.secondary_color || "#20B2AA",
@@ -236,9 +258,11 @@ const HospitalBrandingPage = () => {
         logoUrl: branding.logo_light_url || "",
         backgroundImageUrl: branding.hero_image_url || "",
         welcome_title: branding.welcome_title || "Welcome",
-        welcome_subtitle: branding.welcome_subtitle || "Your Health, Our Priority",
+        welcome_subtitle:
+          branding.welcome_subtitle || "Your Health, Our Priority",
         login_title: branding.login_title || "Sign In",
-        login_subtitle: branding.login_subtitle || "Access your healthcare portal",
+        login_subtitle:
+          branding.login_subtitle || "Access your healthcare portal",
         footer_text: branding.footer_text || "",
       }));
     }

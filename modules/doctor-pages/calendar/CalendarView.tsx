@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useCalendar } from './CalendarContext';
-import { DayView } from './views/DayView';
-import { WeekView } from './views/WeekView';
-import { MonthView } from './views/MonthView';
-import { Appointment } from './types';
+import React from "react";
+import { useCalendar } from "./CalendarContext";
+import { DayView } from "./views/DayView";
+import { WeekView } from "./views/WeekView";
+import { MonthView } from "./views/MonthView";
+import { Appointment } from "./type";
 
 interface CalendarViewProps {
   onAppointmentClick: (appointment: Appointment) => void;
@@ -16,9 +16,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ onAppointmentClick }) => {
 
   return (
     <div className="h-full p-4 overflow-y-auto">
-      {activeView === 'day' && <DayView onAppointmentClick={onAppointmentClick} />}
-      {activeView === 'week' && <WeekView onAppointmentClick={onAppointmentClick} />}
-      {activeView === 'month' && <MonthView onAppointmentClick={onAppointmentClick} />}
+      {activeView === "day" && (
+        <DayView onAppointmentClick={onAppointmentClick} />
+      )}
+      {activeView === "week" && (
+        <WeekView onAppointmentClick={onAppointmentClick} />
+      )}
+      {activeView === "month" && (
+        <MonthView onAppointmentClick={onAppointmentClick} />
+      )}
     </div>
   );
 };

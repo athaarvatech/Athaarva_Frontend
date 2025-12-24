@@ -1,4 +1,4 @@
-import { Appointment } from '../types';
+import { Appointment } from '../type';
 import { addDays } from 'date-fns';
 
 // Helper function to set time on a date

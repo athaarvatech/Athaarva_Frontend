@@ -1,17 +1,26 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, UserCircle, Linkedin, Upload, X, Users, Briefcase } from 'lucide-react';
-import { useHospitalOnboarding } from '@/contexts/HospitalOnboardingContextV2';
-import { HelpPopover } from '../widgets/HelpPopover';
-import { FileUploadZone } from '../widgets/FileUploadZone';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Trash2,
+  UserCircle,
+  Linkedin,
+  Upload,
+  X,
+  Users,
+  Briefcase,
+} from "lucide-react";
+import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
+import { HelpPopover } from "../widgets/HelpPopover";
+import { FileUploadZone } from "../widgets/FileUploadZone";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface LeaderData {
   id: string;
@@ -28,7 +37,7 @@ interface StaffingPlanItem {
   id: string;
   role: string;
   count: number;
-  status: 'planned' | 'recruiting' | 'filled';
+  status: "planned" | "recruiting" | "filled";
 }
 
 export default function LeadershipTeamStep() {
@@ -40,42 +49,60 @@ export default function LeadershipTeamStep() {
     staffing_plan: [],
   };
 
-  const leadershipCards = Array.isArray(leadershipTeam.leadership_cards) ? leadershipTeam.leadership_cards : [];
-  const staffingPlan = Array.isArray(leadershipTeam.staffing_plan) ? leadershipTeam.staffing_plan : [];
+  const leadershipCards = Array.isArray(leadershipTeam.leadership_cards)
+    ? leadershipTeam.leadership_cards
+    : [];
+  const staffingPlan: StaffingPlanItem[] = Array.isArray(
+    leadershipTeam.staffing_plan
+  )
+    ? leadershipTeam.staffing_plan.map(
+        (item: {
+          id: string;
+          role: string;
+          count: number;
+          status: string;
+        }) => ({
+          ...item,
+          status: (["planned", "recruiting", "filled"].includes(item.status)
+            ? item.status
+            : "planned") as "planned" | "recruiting" | "filled",
+        })
+      )
+    : [];
 
   // Leadership management
   const addLeader = () => {
     const newLeader: LeaderData = {
       id: `leader_${Date.now()}`,
-      full_name: '',
-      role: '',
-      bio: '',
-      credentials: '',
-      linkedin_url: '',
-      profile_photo_url: '',
+      full_name: "",
+      role: "",
+      bio: "",
+      credentials: "",
+      linkedin_url: "",
+      profile_photo_url: "",
       profile_photo_file: null,
     };
 
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
       leadership_cards: [...leadershipCards, newLeader],
     } as any);
   };
 
   const updateLeader = (id: string, updates: Partial<LeaderData>) => {
-    const updatedLeaders = leadershipCards.map(l =>
+    const updatedLeaders = leadershipCards.map((l) =>
       l.id === id ? { ...l, ...updates } : l
     );
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
       leadership_cards: updatedLeaders,
     } as any);
   };
 
   const removeLeader = (id: string) => {
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
-      leadership_cards: leadershipCards.filter(l => l.id !== id),
+      leadership_cards: leadershipCards.filter((l) => l.id !== id),
     } as any);
   };
 
@@ -83,31 +110,34 @@ export default function LeadershipTeamStep() {
   const addStaffingRole = () => {
     const newRole: StaffingPlanItem = {
       id: `staff_${Date.now()}`,
-      role: '',
+      role: "",
       count: 1,
-      status: 'planned',
+      status: "planned",
     };
 
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
       staffing_plan: [...staffingPlan, newRole],
     } as any);
   };
 
-  const updateStaffingRole = (id: string, updates: Partial<StaffingPlanItem>) => {
-    const updatedPlan = staffingPlan.map(s =>
+  const updateStaffingRole = (
+    id: string,
+    updates: Partial<StaffingPlanItem>
+  ) => {
+    const updatedPlan = staffingPlan.map((s) =>
       s.id === id ? { ...s, ...updates } : s
     );
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
       staffing_plan: updatedPlan,
     } as any);
   };
 
   const removeStaffingRole = (id: string) => {
-    updateData('leadershipTeam', {
+    updateData("leadershipTeam", {
       ...leadershipTeam,
-      staffing_plan: staffingPlan.filter(s => s.id !== id),
+      staffing_plan: staffingPlan.filter((s) => s.id !== id),
     } as any);
   };
 
@@ -115,7 +145,9 @@ export default function LeadershipTeamStep() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">Leadership & Team</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Leadership & Team
+        </h3>
         <p className="text-sm text-gray-600 mt-1">
           Introduce your leadership team and outline staffing requirements
         </p>
@@ -125,7 +157,11 @@ export default function LeadershipTeamStep() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label className="text-base font-medium">Leadership Team</Label>
-          <Button onClick={addLeader} size="sm" className="bg-healthcare-primary">
+          <Button
+            onClick={addLeader}
+            size="sm"
+            className="bg-healthcare-primary"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Leader
           </Button>
@@ -146,7 +182,9 @@ export default function LeadershipTeamStep() {
         {leadershipCards.length === 0 && (
           <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <UserCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 mb-4">No leadership members added yet</p>
+            <p className="text-gray-600 mb-4">
+              No leadership members added yet
+            </p>
             <Button onClick={addLeader} variant="outline">
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Leader
@@ -231,7 +269,10 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
     setShowPhotoUpload(false);
   };
 
-  const wordCount = (leader.bio || '').trim().split(/\s+/).filter(Boolean).length;
+  const wordCount = (leader.bio || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
   const maxWords = 150;
 
   return (
@@ -252,7 +293,7 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
               Leader #{index + 1}
             </h4>
             <p className="text-xs text-gray-500 mt-0.5">
-              {leader.full_name || 'Unnamed Leader'}
+              {leader.full_name || "Unnamed Leader"}
             </p>
           </div>
         </div>
@@ -277,7 +318,9 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
               className="w-32 h-32 rounded-lg object-cover border-2 border-gray-200"
             />
             <button
-              onClick={() => onUpdate({ profile_photo_url: '', profile_photo_file: null })}
+              onClick={() =>
+                onUpdate({ profile_photo_url: "", profile_photo_file: null })
+              }
               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
             >
               <X className="w-4 h-4" />
@@ -296,7 +339,7 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
 
         {showPhotoUpload && !leader.profile_photo_url && (
           <FileUploadZone
-            onFileSelect={(file) => console.log('File selected:', file)}
+            onFileSelect={(file) => console.log("File selected:", file)}
             onUploadComplete={handlePhotoUpload}
             maxSizeMB={5}
             label="Upload profile photo (JPG, PNG, or WebP, max 5MB)"
@@ -340,10 +383,12 @@ function LeaderCard({ leader, index, onUpdate, onRemove }: LeaderCardProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label>Biography</Label>
-          <span className={cn(
-            "text-xs",
-            wordCount > maxWords ? "text-red-600" : "text-gray-500"
-          )}>
+          <span
+            className={cn(
+              "text-xs",
+              wordCount > maxWords ? "text-red-600" : "text-gray-500"
+            )}
+          >
             {wordCount} / {maxWords} words
           </span>
         </div>
@@ -381,12 +426,17 @@ interface StaffingPlanRowProps {
 
 function StaffingPlanRow({ item, onUpdate, onRemove }: StaffingPlanRowProps) {
   const statusOptions = [
-    { value: 'planned', label: 'Planned', color: 'bg-gray-100 text-gray-700' },
-    { value: 'recruiting', label: 'Recruiting', color: 'bg-blue-100 text-blue-700' },
-    { value: 'filled', label: 'Filled', color: 'bg-green-100 text-green-700' },
+    { value: "planned", label: "Planned", color: "bg-gray-100 text-gray-700" },
+    {
+      value: "recruiting",
+      label: "Recruiting",
+      color: "bg-blue-100 text-blue-700",
+    },
+    { value: "filled", label: "Filled", color: "bg-green-100 text-green-700" },
   ];
 
-  const currentStatus = statusOptions.find(s => s.value === item.status) || statusOptions[0];
+  const currentStatus =
+    statusOptions.find((s) => s.value === item.status) || statusOptions[0];
 
   return (
     <tr>
@@ -410,7 +460,9 @@ function StaffingPlanRow({ item, onUpdate, onRemove }: StaffingPlanRowProps) {
       <td className="px-4 py-3">
         <select
           value={item.status}
-          onChange={(e) => onUpdate({ status: e.target.value as StaffingPlanItem['status'] })}
+          onChange={(e) =>
+            onUpdate({ status: e.target.value as StaffingPlanItem["status"] })
+          }
           className={cn(
             "px-3 py-1.5 rounded-md text-sm font-medium border-0",
             currentStatus.color

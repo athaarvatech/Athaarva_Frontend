@@ -2,7 +2,7 @@ import React from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth } from 'date-fns';
 import { useCalendar } from '../CalendarContext';
 import { AppointmentIndicator } from '../AppointmentIndicator';
-import { Appointment } from '../types';
+import { Appointment } from '../type';
 
 interface MonthViewProps {
   onAppointmentClick: (appointment: Appointment) => void;

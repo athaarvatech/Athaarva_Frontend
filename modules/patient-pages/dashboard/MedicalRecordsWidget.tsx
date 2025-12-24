@@ -1,52 +1,80 @@
-import React from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileText, QrCode, Upload, ChevronRight, Clock, Filter, FilePlus2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import React from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  FileText,
+  QrCode,
+  Upload,
+  ChevronRight,
+  Clock,
+  Filter,
+  FilePlus2,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const MedicalRecordsWidget = () => {
   // Mock recent medical records
   const records = [
     {
       id: 1,
-      title: 'Blood Work Results',
-      provider: 'General Hospital',
-      date: 'June 4, 2023',
-      type: 'lab',
-      new: true
+      title: "Blood Work Results",
+      provider: "General Hospital",
+      date: "June 4, 2023",
+      type: "lab",
+      new: true,
     },
     {
       id: 2,
-      title: 'Chest X-Ray',
-      provider: 'Radiology Center',
-      date: 'May 22, 2023',
-      type: 'imaging',
-      new: false
+      title: "Chest X-Ray",
+      provider: "Radiology Center",
+      date: "May 22, 2023",
+      type: "imaging",
+      new: false,
     },
     {
       id: 3,
-      title: 'Annual Physical Report',
-      provider: 'Dr. Johnson',
-      date: 'April 15, 2023',
-      type: 'report',
-      new: false
-    }
+      title: "Annual Physical Report",
+      provider: "Dr. Johnson",
+      date: "April 15, 2023",
+      type: "report",
+      new: false,
+    },
   ];
 
   // Helper to get badge for record type
-  const getTypeBadge = (type) => {
+  const getTypeBadge = (type: string) => {
     switch (type) {
-      case 'lab':
-        return <Badge className="bg-purple-100 text-purple-800 border-purple-200">Lab Results</Badge>;
-      case 'imaging':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Imaging</Badge>;
-      case 'report':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Report</Badge>;
-      case 'prescription':
-        return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Prescription</Badge>;
+      case "lab":
+        return (
+          <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+            Lab Results
+          </Badge>
+        );
+      case "imaging":
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            Imaging
+          </Badge>
+        );
+      case "report":
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-200">
+            Report
+          </Badge>
+        );
+      case "prescription":
+        return (
+          <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+            Prescription
+          </Badge>
+        );
       default:
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Document</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            Document
+          </Badge>
+        );
     }
   };
 
@@ -72,12 +100,16 @@ const MedicalRecordsWidget = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">Recent records</div>
-            <Button variant="ghost" size="sm" className="flex items-center text-gray-500 h-8">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center text-gray-500 h-8"
+            >
               <Filter size={14} className="mr-1" />
               Filter
             </Button>
           </div>
-          
+
           {records.length > 0 ? (
             <div className="space-y-2">
               {records.map((record) => (
@@ -88,10 +120,14 @@ const MedicalRecordsWidget = () => {
                         <h3 className="font-medium flex items-center">
                           {record.title}
                           {record.new && (
-                            <Badge className="ml-2 bg-blue-500 text-white">New</Badge>
+                            <Badge className="ml-2 bg-blue-500 text-white">
+                              New
+                            </Badge>
                           )}
                         </h3>
-                        <p className="text-sm text-gray-600">{record.provider}</p>
+                        <p className="text-sm text-gray-600">
+                          {record.provider}
+                        </p>
                       </div>
                       {getTypeBadge(record.type)}
                     </div>
@@ -100,10 +136,18 @@ const MedicalRecordsWidget = () => {
                       {record.date}
                     </div>
                     <div className="mt-2 flex justify-end">
-                      <Button variant="ghost" size="sm" className="text-[#006D77]">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-[#006D77]"
+                      >
                         View
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-[#006D77]">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-[#006D77]"
+                      >
                         Share
                       </Button>
                     </div>
@@ -120,8 +164,11 @@ const MedicalRecordsWidget = () => {
               </Button>
             </div>
           )}
-          
-          <Link href="/patient/records" className="text-sm text-[#006D77] hover:underline flex items-center justify-end">
+
+          <Link
+            href="/patient/records"
+            className="text-sm text-[#006D77] hover:underline flex items-center justify-end"
+          >
             View All Records <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

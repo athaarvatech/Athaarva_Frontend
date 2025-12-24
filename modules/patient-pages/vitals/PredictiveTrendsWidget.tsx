@@ -239,7 +239,17 @@ const PredictiveTrendsWidget: React.FC<PredictiveTrendsWidgetProps> = ({
                       dataKey="value"
                       stroke="#0ea5e9"
                       strokeWidth={2}
-                      dot={(props) => {
+                      dot={(props: {
+                        payload: {
+                          date: string;
+                          risk?: boolean;
+                          warning?: boolean;
+                          prediction?: boolean;
+                        };
+                        cx: number;
+                        cy: number;
+                        stroke: string;
+                      }) => {
                         if (props.payload.risk) {
                           return (
                             <circle
@@ -265,7 +275,15 @@ const PredictiveTrendsWidget: React.FC<PredictiveTrendsWidgetProps> = ({
                             />
                           );
                         } else if (props.payload.prediction) {
-                          return null;
+                          return (
+                            <circle
+                              key={`dot-pred-${props.payload.date}`}
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={0}
+                              fill="transparent"
+                            />
+                          );
                         }
                         return (
                           <circle

@@ -9,7 +9,6 @@ import CalendarView from "@/modules/doctor-pages/calendar/CalendarView";
 import { AppointmentDetailsPanel } from "@/modules/doctor-pages/calendar/AppointmentDetailsPanel";
 import { AISchedulingAssistant } from "@/modules/doctor-pages/calendar/AISchedulingAssistant";
 import { CalendarHeader } from "@/modules/doctor-pages/calendar/CalendarHeader";
-import { LoadingCalendarSkeleton } from "@/modules/doctor-pages/calendar/LoadingCalendarSkeleton";
 import { ConflictResolutionModal } from "@/modules/doctor-pages/calendar/modals/ConflictResolutionModal";
 import { NotificationsPanel } from "@/modules/doctor-pages/calendar/NotificationsPanel";
 
@@ -34,6 +33,7 @@ const CalendarContent = () => {
     }
   }, [selectedAppointment]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleAppointmentDetails = () => {
     if (!appointmentDetailsOpen) {
       setAppointmentDetailsOpen(true);

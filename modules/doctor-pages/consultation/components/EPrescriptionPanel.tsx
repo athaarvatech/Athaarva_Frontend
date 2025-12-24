@@ -71,7 +71,7 @@ interface Prescription {
 }
 
 interface DrugInteraction {
-  severity: "high" | "moderate" | "low";
+  severity: "high" | "medium" | "low";
   description: string;
   medications: string[];
   recommendation: string;
@@ -626,7 +626,7 @@ export function EPrescriptionPanel() {
                       className={`${
                         interaction.severity === "high"
                           ? "border-red-500 text-red-700"
-                          : interaction.severity === "moderate"
+                          : interaction.severity === "medium"
                           ? "border-yellow-500 text-yellow-700"
                           : "border-blue-500 text-blue-700"
                       }`}

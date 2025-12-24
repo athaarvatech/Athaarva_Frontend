@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,12 +6,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import {
   Heart,
   Activity,
@@ -22,22 +22,40 @@ import {
   Bell,
   BellOff,
   AlertTriangle,
-} from 'lucide-react';
+} from "lucide-react";
+
+interface VitalThresholds {
+  [key: string]: {
+    thresholds: {
+      [key: string]: {
+        [key: string]: number;
+      };
+    };
+  };
+}
 
 interface VitalThresholdSettingsProps {
   onClose: () => void;
-  thresholds: any;
-  onSaveThresholds: (thresholds: any) => void;
+  thresholds: VitalThresholds;
+  onSaveThresholds: (thresholds: VitalThresholds) => void;
 }
+
+type VitalType =
+  | "bloodPressure"
+  | "heartRate"
+  | "oxygenSaturation"
+  | "temperature"
+  | "hydrationLevel";
 
 const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
   onClose,
   thresholds,
   onSaveThresholds,
 }) => {
-  const [currentThresholds, setCurrentThresholds] = useState(thresholds);
-  const [activeVital, setActiveVital] = useState('bloodPressure');
-  const [doctorApproved, setDoctorApproved] = useState({
+  const [currentThresholds, setCurrentThresholds] =
+    useState<VitalThresholds>(thresholds);
+  const [activeVital, setActiveVital] = useState<VitalType>("bloodPressure");
+  const [doctorApproved] = useState<Record<VitalType, boolean>>({
     bloodPressure: true,
     heartRate: true,
     oxygenSaturation: true,
@@ -45,29 +63,41 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
     hydrationLevel: false,
   });
 
-  const handleThresholdChange = (vitalType, level, property, value) => {
-    const parsedValue = !isNaN(value) ? parseFloat(value) : value;
+  const handleThresholdChange = (
+    vitalType: string,
+    level: string,
+    property: string,
+    value: string
+  ) => {
+    const parsedValue = parseFloat(value) || 0;
 
-    setCurrentThresholds((prev) => ({
-      ...prev,
-      [vitalType]: {
-        ...prev[vitalType],
-        thresholds: {
-          ...prev[vitalType].thresholds,
-          [level]: {
-            ...prev[vitalType].thresholds[level],
-            [property]: parsedValue,
+    setCurrentThresholds((prev: VitalThresholds) => {
+      const vitalData = prev[vitalType] || { thresholds: {} };
+      const thresholdsData = vitalData.thresholds || {};
+      const levelData = thresholdsData[level] || {};
+
+      return {
+        ...prev,
+        [vitalType]: {
+          ...vitalData,
+          thresholds: {
+            ...thresholdsData,
+            [level]: {
+              ...levelData,
+              [property]: parsedValue,
+            },
           },
         },
-      },
-    }));
+      };
+    });
   };
 
-  const getThresholdInputs = (vitalType) => {
-    const vitalThresholds = currentThresholds[vitalType].thresholds;
+  const getThresholdInputs = (vitalType: string) => {
+    const vitalData = currentThresholds[vitalType];
+    const vitalThresholds = vitalData?.thresholds || {};
 
     switch (vitalType) {
-      case 'bloodPressure':
+      case "bloodPressure":
         return (
           <div className="space-y-4">
             <div>
@@ -82,8 +112,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'systolic',
+                        "warning",
+                        "systolic",
                         e.target.value
                       )
                     }
@@ -99,8 +129,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'diastolic',
+                        "warning",
+                        "diastolic",
                         e.target.value
                       )
                     }
@@ -122,8 +152,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'systolic',
+                        "critical",
+                        "systolic",
                         e.target.value
                       )
                     }
@@ -139,8 +169,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'diastolic',
+                        "critical",
+                        "diastolic",
                         e.target.value
                       )
                     }
@@ -152,7 +182,7 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
           </div>
         );
 
-      case 'heartRate':
+      case "heartRate":
         return (
           <div className="space-y-4">
             <div>
@@ -167,8 +197,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'min',
+                        "warning",
+                        "min",
                         e.target.value
                       )
                     }
@@ -184,8 +214,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'max',
+                        "warning",
+                        "max",
                         e.target.value
                       )
                     }
@@ -207,8 +237,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'min',
+                        "critical",
+                        "min",
                         e.target.value
                       )
                     }
@@ -224,8 +254,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'max',
+                        "critical",
+                        "max",
                         e.target.value
                       )
                     }
@@ -237,7 +267,7 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
           </div>
         );
 
-      case 'oxygenSaturation':
+      case "oxygenSaturation":
         return (
           <div className="space-y-4">
             <div>
@@ -252,8 +282,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'min',
+                        "warning",
+                        "min",
                         e.target.value
                       )
                     }
@@ -275,8 +305,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'min',
+                        "critical",
+                        "min",
                         e.target.value
                       )
                     }
@@ -288,7 +318,7 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
           </div>
         );
 
-      case 'temperature':
+      case "temperature":
         return (
           <div className="space-y-4">
             <div>
@@ -303,14 +333,16 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'min',
+                        "warning",
+                        "min",
                         e.target.value
                       )
                     }
                     step="0.1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Recommended: 97.0</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Recommended: 97.0
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="maxTempWarning">Maximum (°F)</Label>
@@ -321,14 +353,16 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'max',
+                        "warning",
+                        "max",
                         e.target.value
                       )
                     }
                     step="0.1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Recommended: 99.5</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Recommended: 99.5
+                  </p>
                 </div>
               </div>
             </div>
@@ -345,14 +379,16 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'min',
+                        "critical",
+                        "min",
                         e.target.value
                       )
                     }
                     step="0.1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Recommended: 96.0</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Recommended: 96.0
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="maxTempCritical">Maximum (°F)</Label>
@@ -363,21 +399,23 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'max',
+                        "critical",
+                        "max",
                         e.target.value
                       )
                     }
                     step="0.1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Recommended: 100.4</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Recommended: 100.4
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         );
 
-      case 'hydrationLevel':
+      case "hydrationLevel":
         return (
           <div className="space-y-4">
             <div>
@@ -392,8 +430,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'warning',
-                        'min',
+                        "warning",
+                        "min",
                         e.target.value
                       )
                     }
@@ -415,8 +453,8 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                     onChange={(e) =>
                       handleThresholdChange(
                         vitalType,
-                        'critical',
-                        'min',
+                        "critical",
+                        "min",
                         e.target.value
                       )
                     }
@@ -433,35 +471,35 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
     }
   };
 
-  const getVitalIcon = (vitalType) => {
+  const getVitalIcon = (vitalType: string) => {
     switch (vitalType) {
-      case 'bloodPressure':
+      case "bloodPressure":
         return <Heart className="h-4 w-4 text-rose-500" />;
-      case 'heartRate':
+      case "heartRate":
         return <Activity className="h-4 w-4 text-purple-500" />;
-      case 'oxygenSaturation':
+      case "oxygenSaturation":
         return <Zap className="h-4 w-4 text-blue-500" />;
-      case 'temperature':
+      case "temperature":
         return <Thermometer className="h-4 w-4 text-amber-500" />;
-      case 'hydrationLevel':
+      case "hydrationLevel":
         return <Droplets className="h-4 w-4 text-blue-400" />;
       default:
         return null;
     }
   };
 
-  const getVitalName = (vitalType) => {
+  const getVitalName = (vitalType: string) => {
     switch (vitalType) {
-      case 'bloodPressure':
-        return 'Blood Pressure';
-      case 'heartRate':
-        return 'Heart Rate';
-      case 'oxygenSaturation':
-        return 'Oxygen Saturation';
-      case 'temperature':
-        return 'Temperature';
-      case 'hydrationLevel':
-        return 'Hydration Level';
+      case "bloodPressure":
+        return "Blood Pressure";
+      case "heartRate":
+        return "Heart Rate";
+      case "oxygenSaturation":
+        return "Oxygen Saturation";
+      case "temperature":
+        return "Temperature";
+      case "hydrationLevel":
+        return "Hydration Level";
       default:
         return vitalType;
     }
@@ -486,10 +524,10 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                   key={vitalType}
                   className={`flex items-center p-2 rounded-md cursor-pointer ${
                     activeVital === vitalType
-                      ? 'bg-[#F0F9FA] border border-[#006D77]/20'
-                      : 'hover:bg-gray-50'
+                      ? "bg-[#F0F9FA] border border-[#006D77]/20"
+                      : "hover:bg-gray-50"
                   }`}
-                  onClick={() => setActiveVital(vitalType)}
+                  onClick={() => setActiveVital(vitalType as VitalType)}
                 >
                   <div className="mr-2">{getVitalIcon(vitalType)}</div>
                   <div className="flex-grow">
@@ -497,7 +535,7 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
                       {getVitalName(vitalType)}
                     </div>
                   </div>
-                  {doctorApproved[vitalType] && (
+                  {doctorApproved[vitalType as VitalType] && (
                     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
                       <span className="text-[10px]">Dr. Approved</span>
                     </Badge>
@@ -546,7 +584,9 @@ const VitalThresholdSettings: React.FC<VitalThresholdSettingsProps> = ({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium flex items-center">
                 {getVitalIcon(activeVital)}
-                <span className="ml-2">{getVitalName(activeVital)} Thresholds</span>
+                <span className="ml-2">
+                  {getVitalName(activeVital)} Thresholds
+                </span>
               </h2>
 
               {doctorApproved[activeVital] ? (

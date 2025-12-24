@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Patient, PatientStatus } from "@/types/patient";
+import { Patient, PatientStatus } from "./patient";
 import {
   Calendar,
   MessageCircle,
@@ -550,20 +550,24 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                                   .map((test, index) => {
                                     let isNormal = true;
                                     let alertLevel = "normal";
+                                    const numValue =
+                                      typeof test.value === "number"
+                                        ? test.value
+                                        : parseFloat(String(test.value));
 
                                     if (test.name === "Blood Sugar") {
                                       isNormal =
-                                        test.value >= 70 && test.value <= 120;
+                                        numValue >= 70 && numValue <= 120;
                                       alertLevel = !isNormal
                                         ? "warning"
                                         : "normal";
                                     } else if (test.name === "HbA1c") {
-                                      isNormal = test.value < 6.5;
+                                      isNormal = numValue < 6.5;
                                       alertLevel = !isNormal
                                         ? "critical"
                                         : "normal";
                                     } else if (test.name === "Cholesterol") {
-                                      isNormal = test.value < 200;
+                                      isNormal = numValue < 200;
                                       alertLevel = !isNormal
                                         ? "warning"
                                         : "normal";
@@ -1037,13 +1041,17 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                                   {patient.testResults &&
                                     patient.testResults.map((test, index) => {
                                       let isNormal = true;
+                                      const numValue =
+                                        typeof test.value === "number"
+                                          ? test.value
+                                          : parseFloat(String(test.value));
                                       if (test.name === "Blood Sugar") {
                                         isNormal =
-                                          test.value >= 70 && test.value <= 120;
+                                          numValue >= 70 && numValue <= 120;
                                       } else if (test.name === "HbA1c") {
-                                        isNormal = test.value < 6.5;
+                                        isNormal = numValue < 6.5;
                                       } else if (test.name === "Cholesterol") {
-                                        isNormal = test.value < 200;
+                                        isNormal = numValue < 200;
                                       } else if (
                                         test.name === "Blood Pressure"
                                       ) {

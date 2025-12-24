@@ -104,15 +104,26 @@ const MOCK_TEMPLATES: TemplateData[] = [
     ],
   },
   {
-    id: 'yashoda-inspired',
-    name: 'Super Specialty Medicity',
-    version: '4.0',
-    preview_snapshot_url: '/templates/yashoda-medicity.jpg',
-    thumbnail_url: '/templates/yashoda-medicity-thumb.jpg',
+    id: "yashoda-inspired",
+    name: "Super Specialty Medicity",
+    version: "4.0",
+    preview_snapshot_url: "/templates/yashoda-medicity.jpg",
+    thumbnail_url: "/templates/yashoda-medicity-thumb.jpg",
     description:
-      'Premium multi-super specialty design inspired by leading hospital chains. Features stats strip, centers of excellence, doctor profiles with booking, international patient services, and breakthrough cases.',
-    supported_modules: ['Centers of Excellence', 'International Patients', 'Robotic Surgery', 'Health Checkups', 'Emergency Services'],
-    recommended_for: ['Super Specialty Hospitals', 'Medical Tourism', 'Corporate Hospitals', 'Multi-chain Networks'],
+      "Premium multi-super specialty design inspired by leading hospital chains. Features stats strip, centers of excellence, doctor profiles with booking, international patient services, and breakthrough cases.",
+    supported_modules: [
+      "Centers of Excellence",
+      "International Patients",
+      "Robotic Surgery",
+      "Health Checkups",
+      "Emergency Services",
+    ],
+    recommended_for: [
+      "Super Specialty Hospitals",
+      "Medical Tourism",
+      "Corporate Hospitals",
+      "Multi-chain Networks",
+    ],
   },
 ];
 
@@ -545,9 +556,41 @@ function TemplatePreviewModal({
 
   // Select handler - passes the customized data up
   const handleSelect = () => {
+    // Normalize the blueprint to ensure all fields match CustomizedTemplateData requirements
+    const normalizedBlueprint = editedBlueprint
+      ? {
+          id: editedBlueprint.id,
+          hero: editedBlueprint.hero,
+          palette: editedBlueprint.palette,
+          typography: editedBlueprint.typography,
+          specialties: editedBlueprint.specialties.map((s) => ({
+            icon: s.icon,
+            title: s.title || s.name || "",
+            description: s.description,
+          })),
+          differentiators: editedBlueprint.differentiators,
+          doctors: editedBlueprint.doctors,
+          testimonials: editedBlueprint.testimonials.map((t) => ({
+            quote: t.quote,
+            patient: t.patient || t.name || "",
+            procedure: t.procedure || "",
+          })),
+          facilityHighlights: editedBlueprint.facilityHighlights,
+          programs: editedBlueprint.programs,
+          footer: {
+            contact: editedBlueprint.footer.contact || {
+              phone: "",
+              email: "",
+              location: "",
+            },
+            quickLinks: editedBlueprint.footer.quickLinks || [],
+          },
+        }
+      : undefined;
+
     const customizedData: CustomizedTemplateData = {
       ...template,
-      customizedBlueprint: editedBlueprint || undefined,
+      customizedBlueprint: normalizedBlueprint,
     };
     onSelect(customizedData);
   };

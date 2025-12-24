@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useCalendar } from '../CalendarContext';
-import { Appointment } from '../types';
+import { Appointment } from '../type';
 import { addDays, addWeeks, addMonths, format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 

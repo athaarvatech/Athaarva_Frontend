@@ -39,7 +39,6 @@ import {
   UserPlus,
   Users,
   Eye,
-  MoreHorizontal,
   Shield,
   ShieldOff,
   Loader2,
@@ -48,7 +47,6 @@ import {
   Clock,
   RefreshCw,
 } from "lucide-react";
-import Link from "next/link";
 import { useHospitalStaff } from "@/hooks/useHospitalAdmin";
 import { StaffMember } from "@/lib/api/hospital-admin";
 
@@ -68,14 +66,14 @@ const ManageStaffPage = () => {
   const [isInviting, setIsInviting] = useState(false);
 
   // Use real API hook
-  const { 
-    staff, 
-    isLoading, 
-    error, 
-    refetch, 
-    inviteStaff, 
-    updateStaff, 
-    removeStaff 
+  const {
+    staff,
+    isLoading,
+    error,
+    refetch,
+    inviteStaff,
+    updateStaff,
+    removeStaff,
   } = useHospitalStaff();
 
   const roles = [
@@ -152,7 +150,9 @@ const ManageStaffPage = () => {
     const result = await updateStaff(staffMember.id, { status: newStatus });
     if (result.success) {
       toast.success(
-        `Staff member ${newStatus === "active" ? "activated" : "suspended"} successfully`
+        `Staff member ${
+          newStatus === "active" ? "activated" : "suspended"
+        } successfully`
       );
     } else {
       toast.error(result.error || "Failed to update staff status");
@@ -253,7 +253,7 @@ const ManageStaffPage = () => {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button 
+          <Button
             className="bg-[#20B2AA] hover:bg-[#1a9a91]"
             onClick={() => setInviteDialogOpen(true)}
           >
@@ -414,7 +414,9 @@ const ManageStaffPage = () => {
                         <p className="font-medium">{member.full_name}</p>
                         <p className="text-sm text-gray-500">{member.email}</p>
                         {member.phone && (
-                          <p className="text-sm text-gray-500">{member.phone}</p>
+                          <p className="text-sm text-gray-500">
+                            {member.phone}
+                          </p>
                         )}
                       </div>
                     </TableCell>
@@ -424,7 +426,9 @@ const ManageStaffPage = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {member.department || <span className="text-gray-400">—</span>}
+                      {member.department || (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
                     <TableCell>
@@ -434,7 +438,11 @@ const ManageStaffPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={!member.last_active_at ? "text-gray-400" : ""}>
+                      <span
+                        className={
+                          !member.last_active_at ? "text-gray-400" : ""
+                        }
+                      >
                         {formatDate(member.last_active_at)}
                       </span>
                     </TableCell>
@@ -497,7 +505,8 @@ const ManageStaffPage = () => {
           <DialogHeader>
             <DialogTitle>Invite Staff Member</DialogTitle>
             <DialogDescription>
-              Send an invitation email to add a new staff member to your hospital.
+              Send an invitation email to add a new staff member to your
+              hospital.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -536,11 +545,13 @@ const ManageStaffPage = () => {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.filter(r => r !== "all").map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {roleLabels[role] || role}
-                    </SelectItem>
-                  ))}
+                  {roles
+                    .filter((r) => r !== "all")
+                    .map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {roleLabels[role] || role}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -564,7 +575,7 @@ const ManageStaffPage = () => {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleInviteStaff}
               className="bg-[#20B2AA] hover:bg-[#1a9a91]"
               disabled={isInviting}

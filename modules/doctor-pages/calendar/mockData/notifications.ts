@@ -1,4 +1,4 @@
-import { Notification } from '../types';
+import { Notification } from '../type';
 import { addMinutes, addHours, addDays, subHours } from 'date-fns';
 
 // Current date for reference

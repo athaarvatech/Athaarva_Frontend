@@ -6,7 +6,7 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import { ViewType, Appointment, Notification, AIRecommendation } from "./types";
+import { ViewType, Appointment, Notification, AIRecommendation } from "./type";
 import {
   getDateRangeForView,
   getNextDate,
@@ -183,7 +183,7 @@ export const CalendarProvider: React.FC<{ children: ReactNode }> = ({
         )} has been scheduled.`,
         timestamp: new Date(),
         read: false,
-        priority: "normal",
+        priority: "routine",
         type: "appointment",
       };
 
@@ -197,7 +197,7 @@ export const CalendarProvider: React.FC<{ children: ReactNode }> = ({
           message: newNotification.message,
           timestamp: newNotification.timestamp,
           read: newNotification.read,
-          priority: "normal",
+          priority: "medium",
           type: "appointment",
           relatedItemId: newAppointment.id,
           actionUrl: `/doctor/calendar?appointmentId=${newAppointment.id}`,
@@ -246,7 +246,7 @@ export const CalendarProvider: React.FC<{ children: ReactNode }> = ({
             message: newNotification.message,
             timestamp: newNotification.timestamp,
             read: newNotification.read,
-            priority: "important",
+            priority: "high",
             type: "appointment",
             relatedItemId: appointment.id,
             actionUrl: `/doctor/calendar?appointmentId=${appointment.id}`,

@@ -1,8 +1,7 @@
 "use client";
 
-import React from 'react';
-import PatientSidebar from '@/modules/patient-pages/PatientSidebar';
-import VitalsTrackingDashboard from '@/modules/patient-pages/vitals/VitalsTrackingDashboard';
+import React from "react";
+import VitalsTrackingDashboard from "@/modules/patient-pages/vitals/VitalsTrackingDashboard";
 
 export default function VitalsPage() {
   return (

@@ -2,10 +2,10 @@
 
 /**
  * Hospital Onboarding Page v2 - 12-Step Comprehensive Wizard
- * 
+ *
  * This is the refactored version integrating HospitalOnboardingContextV2
  * with all 12 steps. Rename this file to page.tsx to activate.
- * 
+ *
  * Features:
  * - Token-gated invitation validation
  * - 12-step comprehensive wizard
@@ -17,7 +17,7 @@
  * - Draft saving and resumption
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -221,20 +221,21 @@ function HospitalOnboardingWrapper() {
   useEffect(() => {
     const validateToken = async () => {
       // 🔥 DEVELOPMENT BYPASS: Skip token validation in development mode
-      const isDevelopment = process.env.NODE_ENV === 'development' || 
-                            window.location.hostname === 'localhost';
-      
+      const isDevelopment =
+        process.env.NODE_ENV === "development" ||
+        window.location.hostname === "localhost";
+
       if (isDevelopment && !token) {
-        console.log('🚀 Development mode: Token validation bypassed');
+        console.log("🚀 Development mode: Token validation bypassed");
         setValidationState({
           loading: false,
           valid: true,
           data: {
             valid: true,
-            invitation_id: 'dev-bypass-invitation',
-            email: 'dev@hospital.com',
-            hospital_name: 'Development Hospital',
-            message: 'Development mode - Token validation bypassed',
+            invitation_id: "dev-bypass-invitation",
+            email: "dev@hospital.com",
+            hospital_name: "Development Hospital",
+            message: "Development mode - Token validation bypassed",
           },
         });
         return;
@@ -263,7 +264,7 @@ function HospitalOnboardingWrapper() {
               invitation_id: undefined, // Will be set after accept
               email: response.email || undefined,
               expires_at: response.expires_at || undefined,
-              hospital_name: response.hospital_name || '',
+              hospital_name: response.hospital_name || "",
               message: response.message,
             },
           });
@@ -279,7 +280,10 @@ function HospitalOnboardingWrapper() {
         setValidationState({
           loading: false,
           valid: false,
-          error: error instanceof Error ? error.message : "Failed to validate invitation token",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to validate invitation token",
         });
       }
     };
@@ -428,13 +432,13 @@ function HospitalOnboardingContent({
     try {
       // Build payload for reference (context has it)
       const payload = buildSubmissionPayload();
-      
+
       // TODO: For testing, skip API call and just redirect
       console.log("TESTING: Would submit payload:", payload);
 
       // TESTING BYPASS: Comment out the API call and fake success
       // const result = await onboardingAPI.submitForReview();
-      
+
       // If we get here without throwing, submission was successful
       // The session status should now be 'submitted' or 'pending_review'
 
@@ -444,37 +448,43 @@ function HospitalOnboardingContent({
           `hospital-onboarding-${validationData.invitation_id}`
         );
       }
-      
+
       // Get the hospital subdomain from organization profile or generate from hospital code
-      const hospitalSubdomain = data.organizationProfile.legal_name
-        ?.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
-        .substring(0, 32) || 'hospital';
+      const hospitalSubdomain =
+        data.organizationProfile.legal_name
+          ?.toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "")
+          .substring(0, 32) || "hospital";
 
       // Store hospital info for the admin dashboard
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const sessionInfo = onboardingAPI.getStoredSessionInfo();
         if (sessionInfo.tenantId) {
-          localStorage.setItem('hospital_admin_tenant_id', sessionInfo.tenantId);
+          localStorage.setItem(
+            "hospital_admin_tenant_id",
+            sessionInfo.tenantId
+          );
         }
-        localStorage.setItem('hospital_subdomain', hospitalSubdomain);
+        localStorage.setItem("hospital_subdomain", hospitalSubdomain);
       }
-      
+
       // Clear onboarding session tokens (but keep the main auth token for admin access)
-      const mainAuthToken = localStorage.getItem('onboarding_token');
+      const mainAuthToken = localStorage.getItem("onboarding_token");
       onboardingAPI.clearSession();
-      
+
       // Migrate the auth token for continued admin access
       if (mainAuthToken) {
-        localStorage.setItem('hospital_admin_token', mainAuthToken);
+        localStorage.setItem("hospital_admin_token", mainAuthToken);
       }
 
       // Redirect to hospital admin dashboard
       router.push(`/hospital/${hospitalSubdomain}/admin`);
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
-      setSubmitError((error as Error)?.message || "Failed to submit onboarding");
+      setSubmitError(
+        (error as Error)?.message || "Failed to submit onboarding"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -497,7 +507,7 @@ function HospitalOnboardingContent({
     router.push("/");
   };
 
-  const progressPercentage = ((currentStep) / (STEP_CONFIGS.length - 1)) * 100;
+  const progressPercentage = (currentStep / (STEP_CONFIGS.length - 1)) * 100;
   const completedSteps = currentStep;
   const totalMinutes = STEP_CONFIGS.reduce(
     (sum, step) => sum + step.estimatedMinutes,
@@ -811,7 +821,9 @@ function HospitalOnboardingContent({
                       {isSubmitting ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span className="hidden sm:inline">Submitting...</span>
+                          <span className="hidden sm:inline">
+                            Submitting...
+                          </span>
                         </>
                       ) : currentStep === 11 ? (
                         <>
@@ -936,10 +948,24 @@ function HospitalOnboardingContent({
   );
 }
 
+// Loading fallback for Suspense
+function HospitalOnboardingLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-gray-600">Loading hospital onboarding...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function HospitalOnboardingPage() {
   return (
-    <HospitalOnboardingProvider>
-      <HospitalOnboardingWrapper />
-    </HospitalOnboardingProvider>
+    <Suspense fallback={<HospitalOnboardingLoading />}>
+      <HospitalOnboardingProvider>
+        <HospitalOnboardingWrapper />
+      </HospitalOnboardingProvider>
+    </Suspense>
   );
 }

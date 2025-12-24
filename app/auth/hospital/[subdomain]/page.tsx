@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import {
   Building2,
   ArrowLeft,
@@ -202,7 +201,10 @@ export default function HospitalAuthPage() {
       // For hospital admin, also store the admin token for dashboard access
       if (data.user.user_type === "hospital_admin") {
         localStorage.setItem("hospital_admin_token", data.access_token);
-        localStorage.setItem("hospital_admin_tenant_id", data.user.tenant_id || data.user.hospital_id || "");
+        localStorage.setItem(
+          "hospital_admin_tenant_id",
+          data.user.tenant_id || data.user.hospital_id || ""
+        );
         localStorage.setItem("hospital_subdomain", subdomain);
       }
 
@@ -540,8 +542,9 @@ export default function HospitalAuthPage() {
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
                         Complete a quick onboarding process to register as a
-                        patient at {hospital?.hospital_name}. You'll be able to
-                        book appointments, access medical records, and more.
+                        patient at {hospital?.hospital_name}. You&apos;ll be
+                        able to book appointments, access medical records, and
+                        more.
                       </p>
                       <ul className="text-sm text-gray-600 space-y-2 mb-4">
                         <li className="flex items-center">

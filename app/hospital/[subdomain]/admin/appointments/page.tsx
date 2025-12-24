@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -20,7 +19,6 @@ import {
   Edit2,
   X,
   CheckCircle,
-  AlertCircle,
   CalendarDays,
   List,
   Grid3X3,
@@ -30,12 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -165,13 +158,17 @@ const typeIcons = {
 };
 
 export default function AppointmentsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const params = useParams();
-  const [viewMode, setViewMode] = useState<"list" | "calendar" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "calendar" | "grid">(
+    "list"
+  );
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
   // Get week dates for calendar view
@@ -184,7 +181,8 @@ export default function AppointmentsPage() {
       apt.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       apt.doctorName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || apt.status === statusFilter;
-    const matchesDepartment = departmentFilter === "all" || apt.department === departmentFilter;
+    const matchesDepartment =
+      departmentFilter === "all" || apt.department === departmentFilter;
     return matchesSearch && matchesStatus && matchesDepartment;
   });
 
@@ -200,9 +198,12 @@ export default function AppointmentsPage() {
   );
   const stats = {
     total: todayAppointments.length,
-    scheduled: todayAppointments.filter((apt) => apt.status === "scheduled").length,
-    completed: todayAppointments.filter((apt) => apt.status === "completed").length,
-    cancelled: todayAppointments.filter((apt) => apt.status === "cancelled").length,
+    scheduled: todayAppointments.filter((apt) => apt.status === "scheduled")
+      .length,
+    completed: todayAppointments.filter((apt) => apt.status === "completed")
+      .length,
+    cancelled: todayAppointments.filter((apt) => apt.status === "cancelled")
+      .length,
   };
 
   const TypeIcon = ({ type }: { type: keyof typeof typeIcons }) => {
@@ -216,7 +217,9 @@ export default function AppointmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-          <p className="text-gray-600">Manage and schedule patient appointments</p>
+          <p className="text-gray-600">
+            Manage and schedule patient appointments
+          </p>
         </div>
         <Button className="bg-teal-600 hover:bg-teal-700">
           <Plus className="h-4 w-4 mr-2" />
@@ -231,7 +234,9 @@ export default function AppointmentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Today&apos;s Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.total}
+                </p>
               </div>
               <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Calendar className="h-5 w-5 text-blue-600" />
@@ -244,7 +249,9 @@ export default function AppointmentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Scheduled</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.scheduled}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {stats.scheduled}
+                </p>
               </div>
               <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-5 w-5 text-blue-600" />
@@ -257,7 +264,9 @@ export default function AppointmentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.completed}
+                </p>
               </div>
               <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <CheckCircle className="h-5 w-5 text-green-600" />
@@ -270,7 +279,9 @@ export default function AppointmentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Cancelled</p>
-                <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {stats.cancelled}
+                </p>
               </div>
               <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
                 <X className="h-5 w-5 text-red-600" />
@@ -311,7 +322,10 @@ export default function AppointmentsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <Select
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+              >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
@@ -324,7 +338,10 @@ export default function AppointmentsPage() {
               </Select>
 
               {/* View Toggle */}
-              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
+              <Tabs
+                value={viewMode}
+                onValueChange={(v) => setViewMode(v as typeof viewMode)}
+              >
                 <TabsList>
                   <TabsTrigger value="list" className="px-3">
                     <List className="h-4 w-4" />
@@ -355,7 +372,8 @@ export default function AppointmentsPage() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <h3 className="font-semibold">
-                {format(weekStart, "MMMM d")} - {format(addDays(weekStart, 6), "MMMM d, yyyy")}
+                {format(weekStart, "MMMM d")} -{" "}
+                {format(addDays(weekStart, 6), "MMMM d, yyyy")}
               </h3>
               <Button
                 variant="outline"
@@ -372,11 +390,15 @@ export default function AppointmentsPage() {
                 <div
                   key={day.toISOString()}
                   className={`border rounded-lg p-2 min-h-[200px] ${
-                    isSameDay(day, new Date()) ? "bg-teal-50 border-teal-200" : ""
+                    isSameDay(day, new Date())
+                      ? "bg-teal-50 border-teal-200"
+                      : ""
                   }`}
                 >
                   <div className="text-center mb-2">
-                    <p className="text-xs text-gray-500">{format(day, "EEE")}</p>
+                    <p className="text-xs text-gray-500">
+                      {format(day, "EEE")}
+                    </p>
                     <p
                       className={`text-lg font-semibold ${
                         isSameDay(day, new Date()) ? "text-teal-600" : ""
@@ -386,19 +408,23 @@ export default function AppointmentsPage() {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    {getAppointmentsForDay(day).slice(0, 3).map((apt) => (
-                      <div
-                        key={apt.id}
-                        onClick={() => {
-                          setSelectedAppointment(apt);
-                          setShowDetails(true);
-                        }}
-                        className="text-xs p-1.5 rounded bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
-                      >
-                        <p className="font-medium truncate">{apt.time}</p>
-                        <p className="text-gray-600 truncate">{apt.patientName}</p>
-                      </div>
-                    ))}
+                    {getAppointmentsForDay(day)
+                      .slice(0, 3)
+                      .map((apt) => (
+                        <div
+                          key={apt.id}
+                          onClick={() => {
+                            setSelectedAppointment(apt);
+                            setShowDetails(true);
+                          }}
+                          className="text-xs p-1.5 rounded bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
+                        >
+                          <p className="font-medium truncate">{apt.time}</p>
+                          <p className="text-gray-600 truncate">
+                            {apt.patientName}
+                          </p>
+                        </div>
+                      ))}
                     {getAppointmentsForDay(day).length > 3 && (
                       <p className="text-xs text-gray-500 text-center">
                         +{getAppointmentsForDay(day).length - 3} more
@@ -427,17 +453,27 @@ export default function AppointmentsPage() {
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={appointment.patientPhoto} />
                         <AvatarFallback className="bg-teal-100 text-teal-700">
-                          {appointment.patientName.split(" ").map((n) => n[0]).join("")}
+                          {appointment.patientName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900">{appointment.patientName}</p>
-                          <Badge variant="outline" className={statusColors[appointment.status]}>
+                          <p className="font-medium text-gray-900">
+                            {appointment.patientName}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={statusColors[appointment.status]}
+                          >
                             {appointment.status.replace("-", " ")}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-500">{appointment.reason}</p>
+                        <p className="text-sm text-gray-500">
+                          {appointment.reason}
+                        </p>
                       </div>
                     </div>
 
@@ -446,17 +482,25 @@ export default function AppointmentsPage() {
                         <p className="text-sm font-medium text-gray-900">
                           {format(parseISO(appointment.date), "MMM d, yyyy")}
                         </p>
-                        <p className="text-sm text-gray-500">{appointment.time}</p>
+                        <p className="text-sm text-gray-500">
+                          {appointment.time}
+                        </p>
                       </div>
 
                       <div className="hidden md:flex items-center gap-2 text-gray-500">
                         <TypeIcon type={appointment.type} />
-                        <span className="text-sm capitalize">{appointment.type}</span>
+                        <span className="text-sm capitalize">
+                          {appointment.type}
+                        </span>
                       </div>
 
                       <div className="hidden lg:block text-right">
-                        <p className="text-sm font-medium text-gray-900">{appointment.doctorName}</p>
-                        <p className="text-sm text-gray-500">{appointment.department}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {appointment.doctorName}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {appointment.department}
+                        </p>
                       </div>
 
                       <DropdownMenu>
@@ -493,8 +537,12 @@ export default function AppointmentsPage() {
               {filteredAppointments.length === 0 && (
                 <div className="p-8 text-center">
                   <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">No appointments found</h3>
-                  <p className="text-gray-500">Try adjusting your filters or search query</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                    No appointments found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your filters or search query
+                  </p>
                 </div>
               )}
             </div>
@@ -506,10 +554,16 @@ export default function AppointmentsPage() {
       {viewMode === "grid" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAppointments.map((appointment) => (
-            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={appointment.id}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <Badge variant="outline" className={statusColors[appointment.status]}>
+                  <Badge
+                    variant="outline"
+                    className={statusColors[appointment.status]}
+                  >
                     {appointment.status.replace("-", " ")}
                   </Badge>
                   <DropdownMenu>
@@ -539,19 +593,27 @@ export default function AppointmentsPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar>
                     <AvatarFallback className="bg-teal-100 text-teal-700">
-                      {appointment.patientName.split(" ").map((n) => n[0]).join("")}
+                      {appointment.patientName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-gray-900">{appointment.patientName}</p>
-                    <p className="text-sm text-gray-500">{appointment.reason}</p>
+                    <p className="font-medium text-gray-900">
+                      {appointment.patientName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {appointment.reason}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {format(parseISO(appointment.date), "MMM d, yyyy")} at {appointment.time}
+                    {format(parseISO(appointment.date), "MMM d, yyyy")} at{" "}
+                    {appointment.time}
                   </div>
                   <div className="flex items-center text-gray-600">
                     <User className="h-4 w-4 mr-2" />
@@ -580,15 +642,25 @@ export default function AppointmentsPage() {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-teal-100 text-teal-700 text-lg">
-                      {selectedAppointment.patientName.split(" ").map((n) => n[0]).join("")}
+                      {selectedAppointment.patientName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-lg">{selectedAppointment.patientName}</p>
-                    <p className="text-sm text-gray-500">{selectedAppointment.reason}</p>
+                    <p className="font-semibold text-lg">
+                      {selectedAppointment.patientName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {selectedAppointment.reason}
+                    </p>
                   </div>
                 </div>
-                <Badge variant="outline" className={statusColors[selectedAppointment.status]}>
+                <Badge
+                  variant="outline"
+                  className={statusColors[selectedAppointment.status]}
+                >
                   {selectedAppointment.status.replace("-", " ")}
                 </Badge>
               </div>
@@ -600,23 +672,30 @@ export default function AppointmentsPage() {
                     {format(parseISO(selectedAppointment.date), "MMMM d, yyyy")}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {selectedAppointment.time} ({selectedAppointment.duration} min)
+                    {selectedAppointment.time} ({selectedAppointment.duration}{" "}
+                    min)
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Type</p>
                   <div className="flex items-center gap-2">
                     <TypeIcon type={selectedAppointment.type} />
-                    <span className="font-medium capitalize">{selectedAppointment.type}</span>
+                    <span className="font-medium capitalize">
+                      {selectedAppointment.type}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Doctor</p>
-                  <p className="font-medium">{selectedAppointment.doctorName}</p>
+                  <p className="font-medium">
+                    {selectedAppointment.doctorName}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Department</p>
-                  <p className="font-medium">{selectedAppointment.department}</p>
+                  <p className="font-medium">
+                    {selectedAppointment.department}
+                  </p>
                 </div>
               </div>
             </div>

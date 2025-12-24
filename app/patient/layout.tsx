@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import PatientSidebar from "@/modules/patient-pages/PatientSidebar";
 import { AppointmentProvider } from "../../contexts/AppointmentContext";
 
 export default function PatientLayout({

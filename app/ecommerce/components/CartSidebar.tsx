@@ -27,6 +27,8 @@ export default function CartSidebar() {
     clearCart,
     isUpdating,
     getCheckoutUrl,
+    updateQuantity,
+    removeItem,
   } = useCart();
 
   const handleCheckout = () => {
@@ -47,7 +49,7 @@ export default function CartSidebar() {
   };
 
   // Calculate totals from Shopify cart if available, otherwise use legacy calculation
-  const subtotal = shopifyCart 
+  const subtotal = shopifyCart
     ? parseFloat(shopifyCart.cost.subtotalAmount.amount)
     : total;
   const tax = subtotal * 0.18; // 18% GST
@@ -55,7 +57,7 @@ export default function CartSidebar() {
   const finalTotal = subtotal + tax + shipping;
 
   // Get currency code from Shopify cart
-  const currencyCode = shopifyCart?.cost.totalAmount.currencyCode || 'INR';
+  const currencyCode = shopifyCart?.cost.totalAmount.currencyCode || "INR";
 
   return (
     <Sheet open={isOpen} onOpenChange={closeCart}>
@@ -129,192 +131,214 @@ export default function CartSidebar() {
 
               {/* Cart Items */}
               <AnimatePresence>
-                {shopifyCart ? (
-                  // Render Shopify cart items
-                  shopifyCart.lines.edges.map(({ node: line }) => (
-                    <motion.div
-                      key={line.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Product Image */}
-                        <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {line.merchandise.product.featuredImage ? (
-                            <img
-                              src={line.merchandise.product.featuredImage.url}
-                              alt={line.merchandise.product.featuredImage.altText || line.merchandise.product.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="text-xs text-gray-400">IMG</div>
-                          )}
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 mb-1 line-clamp-2">
-                            {line.merchandise.product.title}
-                          </h4>
-                          {line.merchandise.title !== 'Default Title' && (
-                            <p className="text-sm text-gray-600 mb-2">
-                              {line.merchandise.title}
-                            </p>
-                          )}
-
-                          {/* Price */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="font-bold text-[#1E3E72]">
-                              {currencyCode === 'INR' ? '₹' : currencyCode}{parseFloat(line.merchandise.price.amount).toLocaleString()}
-                            </span>
-                          </div>
-
-                          {/* Quantity Controls */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleQuantityUpdate(line.id, line.quantity - 1)}
-                                className="w-8 h-8 p-0"
-                                disabled={isUpdating}
-                              >
-                                <Minus className="w-3 h-3" />
-                              </Button>
-                              <span className="w-8 text-center font-medium">
-                                {line.quantity}
-                              </span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleQuantityUpdate(line.id, line.quantity + 1)}
-                                className="w-8 h-8 p-0"
-                                disabled={isUpdating}
-                              >
-                                <Plus className="w-3 h-3" />
-                              </Button>
-                            </div>
-
-                            {/* Remove Button */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleRemoveItem(line.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              disabled={isUpdating}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Item Total */}
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                        <span className="text-sm text-gray-600">
-                          {line.quantity} × {currencyCode === 'INR' ? '₹' : currencyCode}{parseFloat(line.merchandise.price.amount).toLocaleString()}
-                        </span>
-                        <span className="font-semibold text-[#1E3E72]">
-                          {currencyCode === 'INR' ? '₹' : currencyCode}{(parseFloat(line.merchandise.price.amount) * line.quantity).toLocaleString()}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  // Fallback to legacy cart items for backward compatibility
-                  items.map((item) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Product Image */}
-                        <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <div className="text-xs text-gray-400">IMG</div>
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 mb-1 line-clamp-2">
-                            {item.name}
-                          </h4>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-[#1E3E72] font-medium">
-                              {item.brand}
-                            </span>
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                              {item.category}
-                            </span>
-                          </div>
-
-                          {/* Price */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="font-bold text-[#1E3E72]">
-                              ₹{item.price.toLocaleString()}
-                            </span>
-                            {item.originalPrice && (
-                              <span className="text-sm text-gray-500 line-through">
-                                ₹{item.originalPrice.toLocaleString()}
-                              </span>
+                {shopifyCart
+                  ? // Render Shopify cart items
+                    shopifyCart.lines.edges.map(({ node: line }) => (
+                      <motion.div
+                        key={line.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Product Image */}
+                          <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {line.merchandise.product.featuredImage ? (
+                              <img
+                                src={line.merchandise.product.featuredImage.url}
+                                alt={
+                                  line.merchandise.product.featuredImage
+                                    .altText || line.merchandise.product.title
+                                }
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="text-xs text-gray-400">IMG</div>
                             )}
                           </div>
 
-                          {/* Quantity Controls */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
-                                }
-                                className="w-8 h-8 p-0"
-                              >
-                                <Minus className="w-3 h-3" />
-                              </Button>
-                              <span className="w-8 text-center font-medium">
-                                {item.quantity}
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                              {line.merchandise.product.title}
+                            </h4>
+                            {line.merchandise.title !== "Default Title" && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                {line.merchandise.title}
+                              </p>
+                            )}
+
+                            {/* Price */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="font-bold text-[#1E3E72]">
+                                {currencyCode === "INR" ? "₹" : currencyCode}
+                                {parseFloat(
+                                  line.merchandise.price.amount
+                                ).toLocaleString()}
                               </span>
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleQuantityUpdate(
+                                      line.id,
+                                      line.quantity - 1
+                                    )
+                                  }
+                                  className="w-8 h-8 p-0"
+                                  disabled={isUpdating}
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </Button>
+                                <span className="w-8 text-center font-medium">
+                                  {line.quantity}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleQuantityUpdate(
+                                      line.id,
+                                      line.quantity + 1
+                                    )
+                                  }
+                                  className="w-8 h-8 p-0"
+                                  disabled={isUpdating}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </Button>
+                              </div>
+
+                              {/* Remove Button */}
                               <Button
                                 size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
-                                }
-                                className="w-8 h-8 p-0"
+                                variant="ghost"
+                                onClick={() => handleRemoveItem(line.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={isUpdating}
                               >
-                                <Plus className="w-3 h-3" />
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Item Total */}
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                          <span className="text-sm text-gray-600">
+                            {line.quantity} ×{" "}
+                            {currencyCode === "INR" ? "₹" : currencyCode}
+                            {parseFloat(
+                              line.merchandise.price.amount
+                            ).toLocaleString()}
+                          </span>
+                          <span className="font-semibold text-[#1E3E72]">
+                            {currencyCode === "INR" ? "₹" : currencyCode}
+                            {(
+                              parseFloat(line.merchandise.price.amount) *
+                              line.quantity
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))
+                  : // Fallback to legacy cart items for backward compatibility
+                    items.map((item) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Product Image */}
+                          <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="text-xs text-gray-400">IMG</div>
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                              {item.name}
+                            </h4>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm text-[#1E3E72] font-medium">
+                                {item.brand}
+                              </span>
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                {item.category}
+                              </span>
+                            </div>
+
+                            {/* Price */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="font-bold text-[#1E3E72]">
+                                ₹{item.price.toLocaleString()}
+                              </span>
+                              {item.originalPrice && (
+                                <span className="text-sm text-gray-500 line-through">
+                                  ₹{item.originalPrice.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity - 1)
+                                  }
+                                  className="w-8 h-8 p-0"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </Button>
+                                <span className="w-8 text-center font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity + 1)
+                                  }
+                                  className="w-8 h-8 p-0"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </Button>
+                              </div>
+
+                              {/* Remove Button */}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeItem(item.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
 
-                            {/* Remove Button */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeItem(item.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-
-                          {/* Line Total */}
-                          <div className="mt-2 text-right">
-                            <span className="font-semibold text-gray-900">
-                              Total: ₹
-                              {(item.price * item.quantity).toLocaleString()}
-                            </span>
+                            {/* Line Total */}
+                            <div className="mt-2 text-right">
+                              <span className="font-semibold text-gray-900">
+                                Total: ₹
+                                {(item.price * item.quantity).toLocaleString()}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
+                      </motion.div>
+                    ))}
               </AnimatePresence>
             </div>
           )}
@@ -327,14 +351,16 @@ export default function CartSidebar() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal:</span>
                 <span className="font-medium">
-                  {currencyCode === 'INR' ? '₹' : currencyCode}{subtotal.toLocaleString()}
+                  {currencyCode === "INR" ? "₹" : currencyCode}
+                  {subtotal.toLocaleString()}
                 </span>
               </div>
 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">GST (18%):</span>
                 <span className="font-medium">
-                  {currencyCode === 'INR' ? '₹' : currencyCode}{Math.round(tax).toLocaleString()}
+                  {currencyCode === "INR" ? "₹" : currencyCode}
+                  {Math.round(tax).toLocaleString()}
                 </span>
               </div>
 
@@ -344,7 +370,7 @@ export default function CartSidebar() {
                   {shipping === 0 ? (
                     <span className="text-green-600">FREE</span>
                   ) : (
-                    `${currencyCode === 'INR' ? '₹' : currencyCode}${shipping}`
+                    `${currencyCode === "INR" ? "₹" : currencyCode}${shipping}`
                   )}
                 </span>
               </div>
@@ -354,7 +380,8 @@ export default function CartSidebar() {
               <div className="flex justify-between font-semibold text-lg">
                 <span className="text-gray-900">Total:</span>
                 <span className="text-[#1E3E72]">
-                  {currencyCode === 'INR' ? '₹' : currencyCode}{Math.round(finalTotal).toLocaleString()}
+                  {currencyCode === "INR" ? "₹" : currencyCode}
+                  {Math.round(finalTotal).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -363,8 +390,8 @@ export default function CartSidebar() {
             {shipping > 0 && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-700">
-                  Add {currencyCode === 'INR' ? '₹' : currencyCode}{(5000 - subtotal).toLocaleString()} more for free
-                  shipping!
+                  Add {currencyCode === "INR" ? "₹" : currencyCode}
+                  {(5000 - subtotal).toLocaleString()} more for free shipping!
                 </p>
               </div>
             )}
@@ -376,7 +403,9 @@ export default function CartSidebar() {
                 className="w-full bg-[#F37336] hover:bg-[#e5642a] text-white py-3 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 disabled={!getCheckoutUrl()}
               >
-                {getCheckoutUrl() ? 'Proceed to Shopify Checkout' : 'Proceed to Checkout'}
+                {getCheckoutUrl()
+                  ? "Proceed to Shopify Checkout"
+                  : "Proceed to Checkout"}
               </Button>
 
               <Button

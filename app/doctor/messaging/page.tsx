@@ -1,6 +1,5 @@
-import React from 'react';
-import MessagingPage from '@/modules/doctor-pages/messaging/MessagingPage';
+import MessagingPage from "@/modules/doctor-pages/messaging/MessagingPage";
 
 export default function DoctorMessagingPage() {
-  return ;
+  return <MessagingPage />;
 }

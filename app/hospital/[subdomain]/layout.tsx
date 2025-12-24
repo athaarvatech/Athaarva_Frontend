@@ -1,30 +1,9 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { HospitalService, HospitalProfile } from "@/lib/hospital-service";
-
-interface HospitalContextType {
-  hospital: HospitalProfile | null;
-  loading: boolean;
-  error: string | null;
-  theme: {
-    primaryColor: string;
-    secondaryColor: string;
-  };
-}
-
-const HospitalContext = createContext<HospitalContextType>({
-  hospital: null,
-  loading: true,
-  error: null,
-  theme: {
-    primaryColor: "#007C7C",
-    secondaryColor: "#20B2AA",
-  },
-});
-
-export const useHospital = () => useContext(HospitalContext);
+import { HospitalContext } from "./HospitalContext";
 
 export default function HospitalSubdomainLayout({
   children,
@@ -47,7 +26,9 @@ export default function HospitalSubdomainLayout({
       }
 
       try {
-        const hospitalData = await HospitalService.getHospitalBySubdomain(subdomain);
+        const hospitalData = await HospitalService.getHospitalBySubdomain(
+          subdomain
+        );
 
         if (!hospitalData) {
           setError("Hospital not found");

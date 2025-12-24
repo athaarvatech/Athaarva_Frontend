@@ -11,23 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PatientCard from "@/modules/doctor-pages/patients/PatientCard";
 import PatientDetailModal from "@/modules/doctor-pages/patients/PatientDetailModal";
 import ScheduleAppointmentModal from "@/modules/doctor-pages/patients/ScheduleAppointmentModal";
-import {
-  Search,
-  Filter,
-  SlidersHorizontal,
-  LayoutGrid,
-  List,
-  Bell,
-  X,
-} from "lucide-react";
+import { Search, LayoutGrid, List, X } from "lucide-react";
 import { Patient } from "@/modules/doctor-pages/patients/patient";
 import { cn, formatDate } from "@/lib/utils";
 import SendMessageModal from "@/modules/doctor-pages/patients/SendMessageModal";
-import AddPatientModal from "@/modules/doctor-pages/patients/AddPatientModal";
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -37,7 +27,9 @@ export default function PatientsPage() {
   const [conditionFilter, setConditionFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState<string>("name-asc");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentDate, setCurrentDate] = useState<string>("2025-03-26");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentTime, setCurrentTime] = useState<string>("06:03:20");
 
   // State for modals
@@ -647,7 +639,12 @@ export default function PatientsPage() {
   };
 
   // Handle appointment scheduling submission
-  const handleScheduleSubmit = (appointmentData: any) => {
+  const handleScheduleSubmit = (appointmentData: {
+    date: string;
+    time: string;
+    type: string;
+    doctor: string;
+  }) => {
     if (!selectedPatient) return;
 
     const newAppointmentId = `U${Math.floor(Math.random() * 1000)
@@ -683,7 +680,11 @@ export default function PatientsPage() {
   };
 
   // Handle message send
-  const handleMessageSend = (messageData: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleMessageSend = (_messageData: {
+    subject: string;
+    message: string;
+  }) => {
     if (!selectedPatient) return;
     setIsMessageModalOpen(false);
     showSuccessMessage(`Message sent to ${selectedPatient.name}`);

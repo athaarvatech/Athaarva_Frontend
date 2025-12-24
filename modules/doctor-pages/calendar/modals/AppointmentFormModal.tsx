@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useCalendar } from '../CalendarContext';
 import { PatientSearchCombobox } from '../PatientSearchCombobox';
-import { Appointment } from '../types';
+import { Appointment } from '../type';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AppointmentFormModalProps {

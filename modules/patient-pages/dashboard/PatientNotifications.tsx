@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+interface Notification {
+  message: string;
+}
+
 const PatientNotifications = () => {
   const [activeFilter, setActiveFilter] = useState("all");
-  const notifications = []; // Replace with actual notifications data
+  const notifications: Notification[] = []; // Replace with actual notifications data
 
   return (
     <Card className="w-full">

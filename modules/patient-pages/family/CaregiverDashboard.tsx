@@ -1,13 +1,19 @@
-import React from 'react';
-import { Tabs, TabsContent } from '@components/Tabs';
-import { Card, CardContent } from '@components/Card';
-import { Button } from '@components/Button';
+import React from "react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+interface DataItem {
+  isActive: boolean;
+}
+
+const data: DataItem[] = [];
 
 const CaregiverDashboard: React.FC = () => {
   return (
     <div>
-      <Tabs>
-        <TabsContent>
+      <Tabs defaultValue="schedule">
+        <TabsContent value="schedule">
           <div>
             <Card>
               <CardContent>
@@ -17,7 +23,10 @@ const CaregiverDashboard: React.FC = () => {
                       {item.isActive && (
                         <div>
                           <div>
-                            <Button size="sm" className="h-7 text-xs bg-[#006D77] hover:bg-[#00585F]">
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-[#006D77] hover:bg-[#00585F]"
+                            >
                               Schedule
                             </Button>
                           </div>

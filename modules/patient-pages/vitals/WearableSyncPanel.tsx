@@ -1,105 +1,121 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Smartphone, 
-  Watch, 
-  RefreshCw, 
-  Check, 
-  X, 
-  AlertCircle, 
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Smartphone,
+  Watch,
+  RefreshCw,
+  Check,
+  X,
+  AlertCircle,
   Loader2,
   Wifi,
-  WifiOff
-} from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format } from 'date-fns';
+  WifiOff,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
 
 // Mock data for available devices
 const availableDevices = [
-  { 
-    id: 'dev2', 
-    name: 'Fitbit Sense', 
-    type: 'watch',
+  {
+    id: "dev2",
+    name: "Fitbit Sense",
+    type: "watch",
     supported: true,
-    metrics: ['heart-rate', 'spo2', 'temperature']
+    metrics: ["heart-rate", "spo2", "temperature"],
   },
-  { 
-    id: 'dev3', 
-    name: 'Samsung Galaxy Watch 5', 
-    type: 'watch',
-    supported: true, 
-    metrics: ['heart-rate', 'spo2', 'ecg', 'blood-pressure']
-  },
-  { 
-    id: 'dev4', 
-    name: 'Oura Ring', 
-    type: 'ring',
+  {
+    id: "dev3",
+    name: "Samsung Galaxy Watch 5",
+    type: "watch",
     supported: true,
-    metrics: ['heart-rate', 'temperature', 'sleep']
+    metrics: ["heart-rate", "spo2", "ecg", "blood-pressure"],
   },
-  { 
-    id: 'dev5', 
-    name: 'Withings ScanWatch', 
-    type: 'watch',
+  {
+    id: "dev4",
+    name: "Oura Ring",
+    type: "ring",
     supported: true,
-    metrics: ['heart-rate', 'spo2', 'ecg']
+    metrics: ["heart-rate", "temperature", "sleep"],
   },
-  { 
-    id: 'dev6', 
-    name: 'Garmin Forerunner', 
-    type: 'watch',
+  {
+    id: "dev5",
+    name: "Withings ScanWatch",
+    type: "watch",
     supported: true,
-    metrics: ['heart-rate', 'spo2', 'stress']
-  }
+    metrics: ["heart-rate", "spo2", "ecg"],
+  },
+  {
+    id: "dev6",
+    name: "Garmin Forerunner",
+    type: "watch",
+    supported: true,
+    metrics: ["heart-rate", "spo2", "stress"],
+  },
 ];
+
+interface Device {
+  id: string;
+  name: string;
+  type: string;
+  supported: boolean;
+  metrics: string[];
+  status?: string;
+  lastSync?: Date;
+}
 
 interface WearableSyncPanelProps {
   onClose: () => void;
-  connectedDevices: any[];
-  onDeviceConnect: (device: any) => void;
+  connectedDevices: Device[];
+  onDeviceConnect: (device: Device) => void;
 }
 
-const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({ 
-  onClose, 
+const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
+  onClose,
   connectedDevices,
-  onDeviceConnect
+  onDeviceConnect,
 }) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [discoveredDevices, setDiscoveredDevices] = useState<any[]>([]);
-  const [connectingDeviceId, setConnectingDeviceId] = useState<string | null>(null);
+  const [discoveredDevices, setDiscoveredDevices] = useState<Device[]>([]);
+  const [connectingDeviceId, setConnectingDeviceId] = useState<string | null>(
+    null
+  );
   const [syncingDeviceId, setSyncingDeviceId] = useState<string | null>(null);
   const [syncProgress, setSyncProgress] = useState(0);
   const [offlineCache, setOfflineCache] = useState({
     enabled: true,
     lastBackup: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-    pendingUploads: 2
+    pendingUploads: 2,
   });
 
   // Simulate scanning for new devices
   const scanForDevices = () => {
     setIsScanning(true);
     setDiscoveredDevices([]);
-    
+
     // Simulate discovering devices over time
     setTimeout(() => {
       setDiscoveredDevices([availableDevices[0]]);
-      
+
       setTimeout(() => {
         setDiscoveredDevices([availableDevices[0], availableDevices[1]]);
-        
+
         setTimeout(() => {
-          setDiscoveredDevices([availableDevices[0], availableDevices[1], availableDevices[2]]);
+          setDiscoveredDevices([
+            availableDevices[0],
+            availableDevices[1],
+            availableDevices[2],
+          ]);
           setIsScanning(false);
         }, 1500);
       }, 1200);
@@ -107,38 +123,34 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
   };
 
   // Simulate connecting to a device
-  const connectDevice = (device) => {
+  const connectDevice = (device: Device) => {
     setConnectingDeviceId(device.id);
-    
+
     // Simulate connection process
     setTimeout(() => {
       onDeviceConnect({
         ...device,
-        status: 'connected',
-        lastSync: new Date()
+        status: "connected",
+        lastSync: new Date(),
       });
       setConnectingDeviceId(null);
     }, 2000);
   };
 
   // Simulate syncing a device
-  const syncDevice = (deviceId) => {
+  const syncDevice = (deviceId: string) => {
     setSyncingDeviceId(deviceId);
     setSyncProgress(0);
-    
+
     // Simulate progress
     const interval = setInterval(() => {
-      setSyncProgress(prev => {
+      setSyncProgress((prev) => {
         const newProgress = prev + 20;
         if (newProgress >= 100) {
           clearInterval(interval);
           setTimeout(() => {
             setSyncingDeviceId(null);
-            // Update last sync time
-            const updatedDevices = connectedDevices.map(d => 
-              d.id === deviceId ? {...d, lastSync: new Date()} : d
-            );
-            // This would update state in the parent component
+            // Update last sync time - would be handled by parent component
           }, 500);
           return 100;
         }
@@ -148,19 +160,29 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
   };
 
   // Format device metrics for display
-  const formatMetrics = (metrics) => {
-    return metrics.map(m => {
-      switch(m) {
-        case 'heart-rate': return 'Heart Rate';
-        case 'spo2': return 'Blood Oxygen';
-        case 'ecg': return 'ECG';
-        case 'blood-pressure': return 'Blood Pressure';
-        case 'temperature': return 'Temperature';
-        case 'sleep': return 'Sleep';
-        case 'stress': return 'Stress';
-        default: return m;
-      }
-    }).join(', ');
+  const formatMetrics = (metrics: string[]) => {
+    return metrics
+      .map((m: string) => {
+        switch (m) {
+          case "heart-rate":
+            return "Heart Rate";
+          case "spo2":
+            return "Blood Oxygen";
+          case "ecg":
+            return "ECG";
+          case "blood-pressure":
+            return "Blood Pressure";
+          case "temperature":
+            return "Temperature";
+          case "sleep":
+            return "Sleep";
+          case "stress":
+            return "Stress";
+          default:
+            return m;
+        }
+      })
+      .join(", ");
   };
 
   return (
@@ -169,7 +191,8 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
         <DialogHeader>
           <DialogTitle className="text-xl">Wearable Device Sync</DialogTitle>
           <DialogDescription>
-            Connect and sync your wearable devices to automatically track vital signs
+            Connect and sync your wearable devices to automatically track vital
+            signs
           </DialogDescription>
         </DialogHeader>
 
@@ -179,15 +202,15 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
             <TabsTrigger value="discover">Discover Devices</TabsTrigger>
             <TabsTrigger value="settings">Sync Settings</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="connected">
             <div className="space-y-4">
               {connectedDevices.length === 0 ? (
                 <div className="text-center py-6 text-gray-500">
                   <Smartphone className="h-12 w-12 mx-auto mb-2 opacity-30" />
                   <p>No devices connected yet</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-2"
                     onClick={() => scanForDevices()}
                   >
@@ -196,12 +219,12 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                 </div>
               ) : (
                 <>
-                  {connectedDevices.map(device => (
+                  {connectedDevices.map((device) => (
                     <div key={device.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center">
                           <div className="bg-[#F0F9FA] p-3 rounded-full mr-3">
-                            {device.type === 'watch' ? (
+                            {device.type === "watch" ? (
                               <Watch className="h-6 w-6 text-[#006D77]" />
                             ) : (
                               <Smartphone className="h-6 w-6 text-[#006D77]" />
@@ -210,11 +233,17 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                           <div>
                             <h3 className="font-medium">{device.name}</h3>
                             <div className="flex items-center mt-1">
-                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                              <Badge
+                                variant="outline"
+                                className="bg-emerald-50 text-emerald-700 border-emerald-200"
+                              >
                                 Connected
                               </Badge>
                               <span className="text-xs text-gray-500 ml-2">
-                                Last synced: {format(device.lastSync, 'MMM d, h:mm a')}
+                                Last synced:{" "}
+                                {device.lastSync
+                                  ? format(device.lastSync, "MMM d, h:mm a")
+                                  : "Never"}
                               </span>
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
@@ -222,7 +251,7 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                             </p>
                           </div>
                         </div>
-                        
+
                         <div>
                           {syncingDeviceId === device.id ? (
                             <div className="flex flex-col items-end">
@@ -231,15 +260,15 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                                 <span className="text-sm">{syncProgress}%</span>
                               </div>
                               <div className="w-24 h-1 bg-gray-200 rounded-full mt-1">
-                                <div 
-                                  className="h-1 bg-[#006D77] rounded-full" 
-                                  style={{width: `${syncProgress}%`}}
+                                <div
+                                  className="h-1 bg-[#006D77] rounded-full"
+                                  style={{ width: `${syncProgress}%` }}
                                 ></div>
                               </div>
                             </div>
                           ) : (
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => syncDevice(device.id)}
                             >
@@ -254,24 +283,24 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="discover">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Available Devices</h3>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={scanForDevices}
                   disabled={isScanning}
                 >
                   {isScanning ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" /> 
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Scanning...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2" /> 
+                      <RefreshCw className="h-4 w-4 mr-2" />
                       Scan for Devices
                     </>
                   )}
@@ -282,7 +311,9 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                 <div className="text-center py-8 text-gray-500">
                   <Wifi className="h-12 w-12 mx-auto mb-2 opacity-30" />
                   <p>No devices found nearby</p>
-                  <p className="text-sm mt-1">Make sure your device is in pairing mode</p>
+                  <p className="text-sm mt-1">
+                    Make sure your device is in pairing mode
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -292,13 +323,13 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                       <p>Scanning for nearby devices...</p>
                     </div>
                   )}
-                  
-                  {discoveredDevices.map(device => (
+
+                  {discoveredDevices.map((device) => (
                     <div key={device.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
                           <div className="bg-gray-100 p-3 rounded-full mr-3">
-                            {device.type === 'watch' ? (
+                            {device.type === "watch" ? (
                               <Watch className="h-5 w-5 text-gray-600" />
                             ) : (
                               <Smartphone className="h-5 w-5 text-gray-600" />
@@ -327,10 +358,11 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                         <div>
                           {connectingDeviceId === device.id ? (
                             <Button disabled>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Connecting...
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />{" "}
+                              Connecting...
                             </Button>
                           ) : (
-                            <Button 
+                            <Button
                               onClick={() => connectDevice(device)}
                               className="bg-[#006D77] hover:bg-[#00585F]"
                             >
@@ -345,7 +377,7 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="settings">
             <div className="space-y-5">
               <div className="border rounded-lg p-4">
@@ -353,46 +385,63 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                 <p className="text-sm text-gray-500 mt-1">
                   Store readings locally when internet connection is unavailable
                 </p>
-                
+
                 <div className="flex items-center justify-between mt-3">
                   <div>
                     <div className="flex items-center">
-                      <Badge className={offlineCache.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-700'}>
-                        {offlineCache.enabled ? 'Enabled' : 'Disabled'}
+                      <Badge
+                        className={
+                          offlineCache.enabled
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-gray-100 text-gray-700"
+                        }
+                      >
+                        {offlineCache.enabled ? "Enabled" : "Disabled"}
                       </Badge>
                       {offlineCache.enabled && (
                         <span className="text-xs text-gray-500 ml-2">
-                          Last backup: {format(offlineCache.lastBackup, 'MMM d, h:mm a')}
+                          Last backup:{" "}
+                          {format(offlineCache.lastBackup, "MMM d, h:mm a")}
                         </span>
                       )}
                     </div>
-                    
-                    {offlineCache.enabled && offlineCache.pendingUploads > 0 && (
-                      <div className="flex items-center mt-2 text-amber-600 text-xs">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        {offlineCache.pendingUploads} readings pending upload
-                      </div>
-                    )}
+
+                    {offlineCache.enabled &&
+                      offlineCache.pendingUploads > 0 && (
+                        <div className="flex items-center mt-2 text-amber-600 text-xs">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          {offlineCache.pendingUploads} readings pending upload
+                        </div>
+                      )}
                   </div>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => setOfflineCache(prev => ({ ...prev, enabled: !prev.enabled }))}
+                    onClick={() =>
+                      setOfflineCache((prev) => ({
+                        ...prev,
+                        enabled: !prev.enabled,
+                      }))
+                    }
                   >
-                    {offlineCache.enabled ? 'Disable' : 'Enable'}
+                    {offlineCache.enabled ? "Disable" : "Enable"}
                   </Button>
                 </div>
               </div>
-              
+
               <div className="border rounded-lg p-4">
                 <h3 className="font-medium">Auto-Sync Frequency</h3>
                 <p className="text-sm text-gray-500 mt-1">
                   Control how often connected devices automatically sync data
                 </p>
-                
+
                 <div className="flex space-x-2 mt-3">
-                  <Button variant="outline" size="sm" className="bg-[#F0F9FA] text-[#006D77] border-[#006D77]">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[#F0F9FA] text-[#006D77] border-[#006D77]"
+                  >
                     Real-time
                   </Button>
                   <Button variant="outline" size="sm">
@@ -406,18 +455,22 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
                   </Button>
                 </div>
               </div>
-              
+
               <div className="border rounded-lg p-4">
                 <h3 className="font-medium">Data Accuracy & Battery Usage</h3>
                 <p className="text-sm text-gray-500 mt-1">
                   Balance between accurate readings and device battery life
                 </p>
-                
+
                 <div className="flex space-x-2 mt-3">
                   <Button variant="outline" size="sm">
                     Maximum Accuracy
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-[#F0F9FA] text-[#006D77] border-[#006D77]">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[#F0F9FA] text-[#006D77] border-[#006D77]"
+                  >
                     Balanced
                   </Button>
                   <Button variant="outline" size="sm">
@@ -430,7 +483,9 @@ const WearableSyncPanel: React.FC<WearableSyncPanelProps> = ({
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

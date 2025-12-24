@@ -1,55 +1,79 @@
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  ChevronLeft, User, Users, Calendar, Search, Check, 
-  Shield, Bell, EyeOff, Info, AlertCircle
-} from 'lucide-react';
-import { 
-  Card, CardContent, CardHeader, CardTitle, CardDescription 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '@/components/ui/select';
-import { 
-  RadioGroup, RadioGroupItem 
-} from '@/components/ui/radio-group';
-import { 
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger 
-} from '@/components/ui/tooltip';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Dialog, DialogContent, DialogDescription, DialogFooter, 
-  DialogHeader, DialogTitle, DialogTrigger 
-} from '@/components/ui/dialog';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ChevronLeft,
+  User,
+  Users,
+  Calendar,
+  Search,
+  Check,
+  Shield,
+  Bell,
+  EyeOff,
+  Info,
+  AlertCircle,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format } from 'date-fns';
-import { 
-  Calendar as CalendarComponent, 
-  CalendarCell 
-} from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 const AddFamilyMember = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
-  const [permissionLevel, setPermissionLevel] = useState('moderate');
+  const [permissionLevel, setPermissionLevel] = useState("moderate");
   const [showHealthConditions, setShowHealthConditions] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    relationship: '',
-    birthDate: '',
-    gender: '',
-    address: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    relationship: "",
+    birthDate: "",
+    gender: "",
+    address: "",
     emergencyContact: false,
     shareHealthData: true,
     medications: true,
@@ -57,51 +81,54 @@ const AddFamilyMember = () => {
     testResults: false,
     healthMetrics: true,
     healthReminders: true,
-    specialNeeds: '',
+    specialNeeds: "",
     allergies: [],
-    conditions: []
+    conditions: [],
   });
-  
+
   // Handle form changes
-  const handleChange = (field, value) => {
+  const handleChange = (
+    field: string,
+    value: string | boolean | Date | undefined
+  ) => {
     setFormData({
       ...formData,
-      [field]: value
+      [field]: value,
     });
   };
-  
+
   // Navigate to next or previous step
   const goToNextStep = () => {
     setCurrentStep(currentStep + 1);
   };
-  
+
   const goToPreviousStep = () => {
     setCurrentStep(currentStep - 1);
   };
-  
+
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Submit form data to backend
     // Then navigate to family members page
-    router.push('/patient/family');
+    router.push("/patient/family");
   };
-  
+
   // Permission level descriptions
   const permissionDescriptions = {
     full: "Full access to all health information, similar to your own access",
     moderate: "Access to selected health information with your approval",
     limited: "Basic information only, minimal access to health records",
-    managed: "You manage their health information completely (for dependents)"
+    managed: "You manage their health information completely (for dependents)",
   };
-  
+
   return (
     <div className="container mx-auto p-4 md:p-6">
       <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="mr-2 text-gray-500" 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mr-2 text-gray-500"
           onClick={() => router.back()}
         >
           <ChevronLeft size={16} className="mr-1" />
@@ -109,37 +136,45 @@ const AddFamilyMember = () => {
         </Button>
         <h1 className="text-2xl font-bold text-[#006D77]">Add Family Member</h1>
       </div>
-      
+
       {/* Step indicator */}
       <div className="mb-6">
         <div className="flex items-center">
           {[1, 2, 3].map((step) => (
             <React.Fragment key={step}>
               <div className="relative flex flex-col items-center">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                  currentStep > step 
-                    ? 'bg-[#006D77] text-white' 
-                    : currentStep === step 
-                      ? 'bg-[#E8F3F4] text-[#006D77] border border-[#006D77]' 
-                      : 'bg-gray-100 text-gray-400 border border-gray-200'
-                }`}>
+                <div
+                  className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                    currentStep > step
+                      ? "bg-[#006D77] text-white"
+                      : currentStep === step
+                      ? "bg-[#E8F3F4] text-[#006D77] border border-[#006D77]"
+                      : "bg-gray-100 text-gray-400 border border-gray-200"
+                  }`}
+                >
                   {currentStep > step ? <Check size={16} /> : step}
                 </div>
                 <div className="text-xs mt-1 whitespace-nowrap">
-                  {step === 1 ? 'Basic Info' : step === 2 ? 'Permissions' : 'Health Info'}
+                  {step === 1
+                    ? "Basic Info"
+                    : step === 2
+                    ? "Permissions"
+                    : "Health Info"}
                 </div>
               </div>
-              
+
               {step < 3 && (
-                <div className={`h-0.5 w-12 md:w-24 ${
-                  currentStep > step ? 'bg-[#006D77]' : 'bg-gray-200'
-                }`}></div>
+                <div
+                  className={`h-0.5 w-12 md:w-24 ${
+                    currentStep > step ? "bg-[#006D77]" : "bg-gray-200"
+                  }`}
+                ></div>
               )}
             </React.Fragment>
           ))}
         </div>
       </div>
-      
+
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader className="pb-2">
@@ -147,20 +182,18 @@ const AddFamilyMember = () => {
               {currentStep === 1 && <User className="mr-2 h-5 w-5" />}
               {currentStep === 2 && <Shield className="mr-2 h-5 w-5" />}
               {currentStep === 3 && <Users className="mr-2 h-5 w-5" />}
-              {currentStep === 1 
-                ? 'Basic Information' 
-                : currentStep === 2 
-                  ? 'Access Permissions' 
-                  : 'Health Information'
-              }
+              {currentStep === 1
+                ? "Basic Information"
+                : currentStep === 2
+                ? "Access Permissions"
+                : "Health Information"}
             </CardTitle>
             <CardDescription>
-              {currentStep === 1 
-                ? 'Enter your family member\'s personal information' 
-                : currentStep === 2 
-                  ? 'Configure what health information this person can access' 
-                  : 'Add relevant health details for care coordination'
-              }
+              {currentStep === 1
+                ? "Enter your family member's personal information"
+                : currentStep === 2
+                ? "Configure what health information this person can access"
+                : "Add relevant health details for care coordination"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
@@ -168,9 +201,16 @@ const AddFamilyMember = () => {
             {currentStep === 1 && (
               <div className="space-y-4">
                 <div className="flex justify-end">
-                  <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+                  <Dialog
+                    open={showSearchDialog}
+                    onOpenChange={setShowSearchDialog}
+                  >
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-[#006D77] border-[#006D77]">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-[#006D77] border-[#006D77]"
+                      >
                         <Search size={14} className="mr-1" />
                         Find Existing User
                       </Button>
@@ -179,13 +219,14 @@ const AddFamilyMember = () => {
                       <DialogHeader>
                         <DialogTitle>Find Family Member</DialogTitle>
                         <DialogDescription>
-                          Search for an existing HealthCare user by email or phone number.
+                          Search for an existing HealthCare user by email or
+                          phone number.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <div className="flex gap-2">
-                          <Input 
-                            placeholder="Email or phone number" 
+                          <Input
+                            placeholder="Email or phone number"
                             className="flex-grow"
                           />
                           <Button className="bg-[#006D77] hover:bg-[#00585F]">
@@ -194,12 +235,13 @@ const AddFamilyMember = () => {
                           </Button>
                         </div>
                         <div className="text-center text-sm text-gray-500">
-                          No results found. Enter different search criteria or create a new family member.
+                          No results found. Enter different search criteria or
+                          create a new family member.
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           onClick={() => setShowSearchDialog(false)}
                         >
                           Cancel
@@ -208,48 +250,58 @@ const AddFamilyMember = () => {
                     </DialogContent>
                   </Dialog>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
-                    <Input 
+                    <Label htmlFor="firstName">
+                      First Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => handleChange('firstName', e.target.value)}
+                      onChange={(e) =>
+                        handleChange("firstName", e.target.value)
+                      }
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
-                    <Input 
+                    <Label htmlFor="lastName">
+                      Last Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => handleChange('lastName', e.target.value)}
+                      onChange={(e) => handleChange("lastName", e.target.value)}
                       required
                     />
                   </div>
                   <div>
                     <Label htmlFor="email">Email Address</Label>
-                    <Input 
+                    <Input
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
+                      onChange={(e) => handleChange("email", e.target.value)}
                     />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input 
+                    <Input
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
+                      onChange={(e) => handleChange("phone", e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="relationship">Relationship <span className="text-red-500">*</span></Label>
-                    <Select 
-                      value={formData.relationship} 
-                      onValueChange={(value) => handleChange('relationship', value)}
+                    <Label htmlFor="relationship">
+                      Relationship <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.relationship}
+                      onValueChange={(value) =>
+                        handleChange("relationship", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select relationship" />
@@ -266,7 +318,9 @@ const AddFamilyMember = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="birthDate">Date of Birth <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="birthDate">
+                      Date of Birth <span className="text-red-500">*</span>
+                    </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -274,24 +328,34 @@ const AddFamilyMember = () => {
                           className="w-full justify-start text-left font-normal"
                         >
                           <Calendar className="mr-2 h-4 w-4" />
-                          {formData.birthDate ? format(new Date(formData.birthDate), 'PPP') : <span>Pick a date</span>}
+                          {formData.birthDate ? (
+                            format(new Date(formData.birthDate), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <CalendarComponent
                           mode="single"
                           initialFocus
-                          selected={formData.birthDate ? new Date(formData.birthDate) : undefined}
-                          onSelect={(date) => handleChange('birthDate', date)}
+                          selected={
+                            formData.birthDate
+                              ? new Date(formData.birthDate)
+                              : undefined
+                          }
+                          onSelect={(date) => handleChange("birthDate", date)}
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
                   <div>
-                    <Label>Gender <span className="text-red-500">*</span></Label>
-                    <RadioGroup 
+                    <Label>
+                      Gender <span className="text-red-500">*</span>
+                    </Label>
+                    <RadioGroup
                       value={formData.gender}
-                      onValueChange={(value) => handleChange('gender', value)}
+                      onValueChange={(value) => handleChange("gender", value)}
                       className="flex space-x-4 mt-2"
                     >
                       <div className="flex items-center space-x-2">
@@ -310,54 +374,56 @@ const AddFamilyMember = () => {
                   </div>
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input 
+                    <Input
                       id="address"
                       value={formData.address}
-                      onChange={(e) => handleChange('address', e.target.value)}
+                      onChange={(e) => handleChange("address", e.target.value)}
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-2 mt-4">
-                  <Checkbox 
+                  <Checkbox
                     id="emergencyContact"
                     checked={formData.emergencyContact}
-                    onCheckedChange={(checked) => handleChange('emergencyContact', checked)}
+                    onCheckedChange={(checked) =>
+                      handleChange("emergencyContact", checked)
+                    }
                   />
                   <div>
-                    <Label 
-                      htmlFor="emergencyContact" 
-                      className="font-medium"
-                    >
+                    <Label htmlFor="emergencyContact" className="font-medium">
                       Emergency Contact
                     </Label>
                     <p className="text-sm text-gray-500">
-                      Designate this person as an emergency contact who can be reached if you need help.
+                      Designate this person as an emergency contact who can be
+                      reached if you need help.
                     </p>
                   </div>
                 </div>
               </div>
             )}
-            
+
             {/* Step 2: Access Permissions */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <Alert className="bg-[#F0F9FA] border-[#E8F3F4]">
                   <Info className="h-4 w-4 text-[#006D77]" />
-                  <AlertTitle className="text-[#006D77]">Privacy Information</AlertTitle>
+                  <AlertTitle className="text-[#006D77]">
+                    Privacy Information
+                  </AlertTitle>
                   <AlertDescription className="text-gray-600">
-                    Choose what health information you want to share with this family member.
-                    You can change these settings at any time.
+                    Choose what health information you want to share with this
+                    family member. You can change these settings at any time.
                   </AlertDescription>
                 </Alert>
-                
+
                 <div>
                   <Label className="text-base font-medium">Access Level</Label>
                   <p className="text-sm text-gray-600 mb-3">
                     Select the overall access level for this family member
                   </p>
-                  
-                  <RadioGroup 
+
+                  <RadioGroup
                     value={permissionLevel}
                     onValueChange={setPermissionLevel}
                     className="space-y-3"
@@ -365,51 +431,90 @@ const AddFamilyMember = () => {
                     <div className="flex items-start space-x-2">
                       <RadioGroupItem value="full" id="full" className="mt-1" />
                       <div>
-                        <Label htmlFor="full" className="font-medium">Full Access</Label>
-                        <p className="text-sm text-gray-600">{permissionDescriptions.full}</p>
+                        <Label htmlFor="full" className="font-medium">
+                          Full Access
+                        </Label>
+                        <p className="text-sm text-gray-600">
+                          {permissionDescriptions.full}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <RadioGroupItem value="moderate" id="moderate" className="mt-1" />
+                      <RadioGroupItem
+                        value="moderate"
+                        id="moderate"
+                        className="mt-1"
+                      />
                       <div>
-                        <Label htmlFor="moderate" className="font-medium">Moderate Access</Label>
-                        <p className="text-sm text-gray-600">{permissionDescriptions.moderate}</p>
+                        <Label htmlFor="moderate" className="font-medium">
+                          Moderate Access
+                        </Label>
+                        <p className="text-sm text-gray-600">
+                          {permissionDescriptions.moderate}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <RadioGroupItem value="limited" id="limited" className="mt-1" />
+                      <RadioGroupItem
+                        value="limited"
+                        id="limited"
+                        className="mt-1"
+                      />
                       <div>
-                        <Label htmlFor="limited" className="font-medium">Limited Access</Label>
-                        <p className="text-sm text-gray-600">{permissionDescriptions.limited}</p>
+                        <Label htmlFor="limited" className="font-medium">
+                          Limited Access
+                        </Label>
+                        <p className="text-sm text-gray-600">
+                          {permissionDescriptions.limited}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <RadioGroupItem value="managed" id="managed" className="mt-1" />
+                      <RadioGroupItem
+                        value="managed"
+                        id="managed"
+                        className="mt-1"
+                      />
                       <div>
-                        <Label htmlFor="managed" className="font-medium">Managed (You control their health)</Label>
-                        <p className="text-sm text-gray-600">{permissionDescriptions.managed}</p>
+                        <Label htmlFor="managed" className="font-medium">
+                          Managed (You control their health)
+                        </Label>
+                        <p className="text-sm text-gray-600">
+                          {permissionDescriptions.managed}
+                        </p>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
-                
+
                 <div>
-                  <Label className="text-base font-medium">Shared Information</Label>
+                  <Label className="text-base font-medium">
+                    Shared Information
+                  </Label>
                   <p className="text-sm text-gray-600 mb-3">
                     Customize exactly what information is shared
                   </p>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 border rounded-md bg-gray-50">
                       <div className="flex items-start space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id="shareHealthData"
                           checked={formData.shareHealthData}
-                          onCheckedChange={(checked) => handleChange('shareHealthData', checked)}
+                          onCheckedChange={(checked) =>
+                            handleChange("shareHealthData", checked)
+                          }
                         />
                         <div>
-                          <Label htmlFor="shareHealthData" className="font-medium">Share Health Data</Label>
-                          <p className="text-sm text-gray-600">Enable health data sharing with this person</p>
+                          <Label
+                            htmlFor="shareHealthData"
+                            className="font-medium"
+                          >
+                            Share Health Data
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Enable health data sharing with this person
+                          </p>
                         </div>
                       </div>
                       <TooltipProvider>
@@ -421,60 +526,81 @@ const AddFamilyMember = () => {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="w-[200px] text-xs">
-                              Master toggle for all health data sharing. Turn off to disable all sharing.
+                              Master toggle for all health data sharing. Turn
+                              off to disable all sharing.
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    
+
                     {formData.shareHealthData && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
                         <div className="flex items-start space-x-2">
-                          <Checkbox 
+                          <Checkbox
                             id="medications"
                             checked={formData.medications}
-                            onCheckedChange={(checked) => handleChange('medications', checked)}
+                            onCheckedChange={(checked) =>
+                              handleChange("medications", checked)
+                            }
                           />
-                          <Label htmlFor="medications" className="text-sm">Medications</Label>
+                          <Label htmlFor="medications" className="text-sm">
+                            Medications
+                          </Label>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <Checkbox 
+                          <Checkbox
                             id="appointments"
                             checked={formData.appointments}
-                            onCheckedChange={(checked) => handleChange('appointments', checked)}
+                            onCheckedChange={(checked) =>
+                              handleChange("appointments", checked)
+                            }
                           />
-                          <Label htmlFor="appointments" className="text-sm">Appointments</Label>
+                          <Label htmlFor="appointments" className="text-sm">
+                            Appointments
+                          </Label>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <Checkbox 
+                          <Checkbox
                             id="testResults"
                             checked={formData.testResults}
-                            onCheckedChange={(checked) => handleChange('testResults', checked)}
+                            onCheckedChange={(checked) =>
+                              handleChange("testResults", checked)
+                            }
                           />
-                          <Label htmlFor="testResults" className="text-sm">Test Results</Label>
+                          <Label htmlFor="testResults" className="text-sm">
+                            Test Results
+                          </Label>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <Checkbox 
+                          <Checkbox
                             id="healthMetrics"
                             checked={formData.healthMetrics}
-                            onCheckedChange={(checked) => handleChange('healthMetrics', checked)}
+                            onCheckedChange={(checked) =>
+                              handleChange("healthMetrics", checked)
+                            }
                           />
-                          <Label htmlFor="healthMetrics" className="text-sm">Health Metrics</Label>
+                          <Label htmlFor="healthMetrics" className="text-sm">
+                            Health Metrics
+                          </Label>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="healthReminders"
                     checked={formData.healthReminders}
-                    onCheckedChange={(checked) => handleChange('healthReminders', checked)}
+                    onCheckedChange={(checked) =>
+                      handleChange("healthReminders", checked)
+                    }
                   />
                   <div>
-                    <Label htmlFor="healthReminders" className="font-medium">Health Reminders</Label>
+                    <Label htmlFor="healthReminders" className="font-medium">
+                      Health Reminders
+                    </Label>
                     <p className="text-sm text-gray-600">
                       Send medication and appointment reminders to this person
                     </p>
@@ -482,20 +608,24 @@ const AddFamilyMember = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Step 3: Health Information */}
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
+                    variant="outline"
                     className="text-[#006D77] border-[#006D77]"
-                    onClick={() => setShowHealthConditions(!showHealthConditions)}
+                    onClick={() =>
+                      setShowHealthConditions(!showHealthConditions)
+                    }
                   >
-                    {showHealthConditions ? 'Hide Health Conditions' : 'Add Health Conditions'}
+                    {showHealthConditions
+                      ? "Hide Health Conditions"
+                      : "Add Health Conditions"}
                   </Button>
-                  
+
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -506,23 +636,25 @@ const AddFamilyMember = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="w-[200px] text-xs">
-                          Health information added here is only visible to you and healthcare providers unless you grant explicit access.
+                          Health information added here is only visible to you
+                          and healthcare providers unless you grant explicit
+                          access.
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                
+
                 {showHealthConditions && (
                   <div className="space-y-4 border p-4 rounded-md bg-gray-50">
                     <h3 className="font-medium flex items-center">
                       <AlertCircle size={16} className="mr-2 text-amber-600" />
                       Health Conditions
                     </h3>
-                    
+
                     <div>
                       <Label htmlFor="allergies">Allergies</Label>
-                      <Input 
+                      <Input
                         id="allergies"
                         placeholder="Enter allergies (e.g., Penicillin, Peanuts)"
                       />
@@ -530,10 +662,10 @@ const AddFamilyMember = () => {
                         Separate multiple allergies with commas
                       </p>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="conditions">Medical Conditions</Label>
-                      <Input 
+                      <Input
                         id="conditions"
                         placeholder="Enter medical conditions (e.g., Asthma, Diabetes)"
                       />
@@ -541,28 +673,34 @@ const AddFamilyMember = () => {
                         Separate multiple conditions with commas
                       </p>
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="specialNeeds">Special Needs or Considerations</Label>
-                      <Input 
+                      <Label htmlFor="specialNeeds">
+                        Special Needs or Considerations
+                      </Label>
+                      <Input
                         id="specialNeeds"
                         placeholder="Enter any special needs (e.g., Wheelchair access)"
                         value={formData.specialNeeds}
-                        onChange={(e) => handleChange('specialNeeds', e.target.value)}
+                        onChange={(e) =>
+                          handleChange("specialNeeds", e.target.value)
+                        }
                       />
                     </div>
                   </div>
                 )}
-                
+
                 <Alert className="bg-amber-50 border-amber-200">
                   <AlertCircle className="h-4 w-4 text-amber-800" />
                   <AlertTitle className="text-amber-800">Important</AlertTitle>
                   <AlertDescription className="text-amber-700">
-                    Adding family members to your HealthCare account helps coordinate care across your entire family. 
-                    This person will receive an email invitation to connect if you provided their email address.
+                    Adding family members to your HealthCare account helps
+                    coordinate care across your entire family. This person will
+                    receive an email invitation to connect if you provided their
+                    email address.
                   </AlertDescription>
                 </Alert>
-                
+
                 <div className="border-t pt-4">
                   <Label className="text-base font-medium">Next Steps</Label>
                   <div className="mt-2 space-y-2">
@@ -571,7 +709,8 @@ const AddFamilyMember = () => {
                         1
                       </div>
                       <p className="text-sm text-gray-600">
-                        After adding this family member, you can set up specific health monitoring for them.
+                        After adding this family member, you can set up specific
+                        health monitoring for them.
                       </p>
                     </div>
                     <div className="flex items-start">
@@ -579,7 +718,8 @@ const AddFamilyMember = () => {
                         2
                       </div>
                       <p className="text-sm text-gray-600">
-                        You'll be able to track medications, appointments, and health metrics in one place.
+                        You'll be able to track medications, appointments, and
+                        health metrics in one place.
                       </p>
                     </div>
                     <div className="flex items-start">
@@ -587,19 +727,20 @@ const AddFamilyMember = () => {
                         3
                       </div>
                       <p className="text-sm text-gray-600">
-                        Caregiving features will be available for members you manage.
+                        Caregiving features will be available for members you
+                        manage.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <div className="flex justify-between mt-8">
               {currentStep > 1 ? (
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={goToPreviousStep}
                 >
                   Previous
@@ -607,17 +748,17 @@ const AddFamilyMember = () => {
               ) : (
                 <div></div>
               )}
-              
+
               {currentStep < 3 ? (
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   className="bg-[#006D77] hover:bg-[#00585F]"
                   onClick={goToNextStep}
                 >
                   Continue
                 </Button>
               ) : (
-                <Button 
+                <Button
                   type="submit"
                   className="bg-[#006D77] hover:bg-[#00585F]"
                 >
