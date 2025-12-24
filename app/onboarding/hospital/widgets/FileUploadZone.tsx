@@ -58,28 +58,6 @@ export function FileUploadZone({
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFile(files[0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleFileInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        handleFile(files[0]);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    },
-    []
-  );
-
   const handleFile = useCallback(
     (file: File) => {
       setError(null);
@@ -131,6 +109,29 @@ export function FileUploadZone({
       }
     },
     [accept, maxSizeMB, preview, onFileSelect, onUploadComplete]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    },
+    [handleFile]
+  );
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleFile(files[0]);
+      }
+    },
+    [handleFile]
   );
 
   const handleRemove = useCallback(() => {

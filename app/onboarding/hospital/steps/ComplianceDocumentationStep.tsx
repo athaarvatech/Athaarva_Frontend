@@ -69,12 +69,7 @@ export default function ComplianceDocumentationStep() {
   };
 
   // Consent template management
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const addConsentTemplate = (
-    type: string,
-    fileUrl: string,
-    _fileName: string
-  ) => {
+  const addConsentTemplate = (type: string, fileUrl: string) => {
     const newTemplate: ConsentTemplate = {
       id: `template_${Date.now()}`,
       type,
@@ -284,11 +279,7 @@ export default function ComplianceDocumentationStep() {
               <FileUploadZone
                 onFileSelect={(file) => console.log("File selected:", file)}
                 onUploadComplete={(url) => {
-                  addConsentTemplate(
-                    newTemplateType,
-                    url,
-                    "consent-template.pdf"
-                  );
+                  addConsentTemplate(newTemplateType, url);
                 }}
                 accept=".pdf,.doc,.docx"
                 maxSizeMB={10}
