@@ -1,11 +1,11 @@
 /**
  * File Storage Utility
- * 
+ *
  * Handles file uploads to the backend storage service
  * Supports: images, documents, medical files, branding assets
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface UploadResult {
   url: string;
@@ -15,14 +15,14 @@ export interface UploadResult {
   size: number;
   content_type: string;
   checksum?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UploadOptions {
   /** File to upload */
   file: File;
   /** Upload endpoint type */
-  type: 'image' | 'document' | 'medical' | 'branding';
+  type: "image" | "document" | "medical" | "branding";
   /** Additional parameters based on type */
   params?: Record<string, string>;
   /** Auth token (optional) */
@@ -33,10 +33,10 @@ export interface UploadOptions {
 
 export class StorageError extends Error {
   code: string;
-  
-  constructor(message: string, code: string = 'UPLOAD_ERROR') {
+
+  constructor(message: string, code: string = "UPLOAD_ERROR") {
     super(message);
-    this.name = 'StorageError';
+    this.name = "StorageError";
     this.code = code;
   }
 }
@@ -44,58 +44,62 @@ export class StorageError extends Error {
 /**
  * Upload a file to the storage service
  */
-export async function uploadFile(options: UploadOptions): Promise<UploadResult> {
+export async function uploadFile(
+  options: UploadOptions
+): Promise<UploadResult> {
   const { file, type, params = {}, token, onProgress } = options;
-  
+
   // Build endpoint URL
   let endpoint = `${API_BASE}/api/v1/uploads`;
   switch (type) {
-    case 'image':
-      endpoint += '/images';
+    case "image":
+      endpoint += "/images";
       break;
-    case 'document':
-      endpoint += '/documents';
+    case "document":
+      endpoint += "/documents";
       break;
-    case 'medical':
-      endpoint += '/medical';
+    case "medical":
+      endpoint += "/medical";
       break;
-    case 'branding':
-      endpoint += '/branding';
+    case "branding":
+      endpoint += "/branding";
       break;
   }
-  
+
   // Add query params
   const queryParams = new URLSearchParams(params).toString();
   if (queryParams) {
     endpoint += `?${queryParams}`;
   }
-  
+
   // Create form data
   const formData = new FormData();
-  formData.append('file', file);
-  
+  formData.append("file", file);
+
   // Upload with progress tracking if callback provided
   if (onProgress) {
     return uploadWithProgress(endpoint, formData, token, onProgress);
   }
-  
+
   // Simple upload
   const headers: Record<string, string> = {};
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
-  
+
   const response = await fetch(endpoint, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: formData,
   });
-  
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
-    throw new StorageError(error.detail || 'Upload failed', 'UPLOAD_FAILED');
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Upload failed" }));
+    throw new StorageError(error.detail || "Upload failed", "UPLOAD_FAILED");
   }
-  
+
   return response.json();
 }
 
@@ -110,41 +114,43 @@ function uploadWithProgress(
 ): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    
-    xhr.upload.addEventListener('progress', (event) => {
+
+    xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable && onProgress) {
         const progress = Math.round((event.loaded / event.total) * 100);
         onProgress(progress);
       }
     });
-    
-    xhr.addEventListener('load', () => {
+
+    xhr.addEventListener("load", () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           resolve(JSON.parse(xhr.responseText));
         } catch {
-          reject(new StorageError('Invalid response', 'INVALID_RESPONSE'));
+          reject(new StorageError("Invalid response", "INVALID_RESPONSE"));
         }
       } else {
         try {
           const error = JSON.parse(xhr.responseText);
-          reject(new StorageError(error.detail || 'Upload failed', 'UPLOAD_FAILED'));
+          reject(
+            new StorageError(error.detail || "Upload failed", "UPLOAD_FAILED")
+          );
         } catch {
-          reject(new StorageError('Upload failed', 'UPLOAD_FAILED'));
+          reject(new StorageError("Upload failed", "UPLOAD_FAILED"));
         }
       }
     });
-    
-    xhr.addEventListener('error', () => {
-      reject(new StorageError('Network error', 'NETWORK_ERROR'));
+
+    xhr.addEventListener("error", () => {
+      reject(new StorageError("Network error", "NETWORK_ERROR"));
     });
-    
-    xhr.open('POST', endpoint);
-    
+
+    xhr.open("POST", endpoint);
+
     if (token) {
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     }
-    
+
     xhr.send(formData);
   });
 }
@@ -154,16 +160,16 @@ function uploadWithProgress(
  */
 export async function uploadImage(
   file: File,
-  folder: string = 'general',
+  folder: string = "general",
   prefix?: string,
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
   const params: Record<string, string> = { folder };
   if (prefix) params.prefix = prefix;
-  
+
   return uploadFile({
     file,
-    type: 'image',
+    type: "image",
     params,
     onProgress,
   });
@@ -174,16 +180,16 @@ export async function uploadImage(
  */
 export async function uploadDocument(
   file: File,
-  folder: string = 'general',
+  folder: string = "general",
   prefix?: string,
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
   const params: Record<string, string> = { folder };
   if (prefix) params.prefix = prefix;
-  
+
   return uploadFile({
     file,
-    type: 'document',
+    type: "document",
     params,
     onProgress,
   });
@@ -195,12 +201,12 @@ export async function uploadDocument(
 export async function uploadMedicalFile(
   file: File,
   patientId: string,
-  recordType: string = 'report',
+  recordType: string = "report",
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
   return uploadFile({
     file,
-    type: 'medical',
+    type: "medical",
     params: {
       patient_id: patientId,
       record_type: recordType,
@@ -215,12 +221,12 @@ export async function uploadMedicalFile(
 export async function uploadBrandingAsset(
   file: File,
   tenantId: string,
-  assetType: 'logo' | 'background' | 'favicon' = 'logo',
+  assetType: "logo" | "background" | "favicon" = "logo",
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
   return uploadFile({
     file,
-    type: 'branding',
+    type: "branding",
     params: {
       tenant_id: tenantId,
       asset_type: assetType,
@@ -232,37 +238,45 @@ export async function uploadBrandingAsset(
 /**
  * Delete a file
  */
-export async function deleteFile(url: string, token?: string): Promise<boolean> {
+export async function deleteFile(
+  url: string,
+  token?: string
+): Promise<boolean> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
-  
+
   const response = await fetch(
     `${API_BASE}/api/v1/uploads?url=${encodeURIComponent(url)}`,
     {
-      method: 'DELETE',
+      method: "DELETE",
       headers,
     }
   );
-  
+
   return response.ok;
 }
 
 /**
  * Get a signed URL for temporary access
  */
-export async function getSignedUrl(url: string, expiresIn: number = 3600): Promise<string> {
+export async function getSignedUrl(
+  url: string,
+  expiresIn: number = 3600
+): Promise<string> {
   const response = await fetch(
-    `${API_BASE}/api/v1/uploads/signed-url?url=${encodeURIComponent(url)}&expires_in=${expiresIn}`
+    `${API_BASE}/api/v1/uploads/signed-url?url=${encodeURIComponent(
+      url
+    )}&expires_in=${expiresIn}`
   );
-  
+
   if (!response.ok) {
-    throw new StorageError('Failed to get signed URL', 'SIGNED_URL_FAILED');
+    throw new StorageError("Failed to get signed URL", "SIGNED_URL_FAILED");
   }
-  
+
   const data = await response.json();
   return data.url;
 }
@@ -279,11 +293,11 @@ export async function getFileInfo(url: string): Promise<{
   const response = await fetch(
     `${API_BASE}/api/v1/uploads/info?url=${encodeURIComponent(url)}`
   );
-  
+
   if (!response.ok) {
     return null;
   }
-  
+
   return response.json();
 }
 
@@ -303,15 +317,18 @@ export function validateFile(
     allowedTypes,
     allowedExtensions,
   } = options;
-  
+
   // Check size
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: `File size exceeds maximum allowed (${(maxSize / (1024 * 1024)).toFixed(1)}MB)`,
+      error: `File size exceeds maximum allowed (${(
+        maxSize /
+        (1024 * 1024)
+      ).toFixed(1)}MB)`,
     };
   }
-  
+
   // Check type
   if (allowedTypes && allowedTypes.length > 0) {
     if (!allowedTypes.includes(file.type)) {
@@ -321,10 +338,10 @@ export function validateFile(
       };
     }
   }
-  
+
   // Check extension
   if (allowedExtensions && allowedExtensions.length > 0) {
-    const ext = file.name.split('.').pop()?.toLowerCase();
+    const ext = file.name.split(".").pop()?.toLowerCase();
     if (!ext || !allowedExtensions.includes(ext)) {
       return {
         valid: false,
@@ -332,7 +349,7 @@ export function validateFile(
       };
     }
   }
-  
+
   return { valid: true };
 }
 
@@ -340,30 +357,31 @@ export function validateFile(
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
  * Get file icon based on type
  */
 export function getFileIcon(contentType: string): string {
-  if (contentType.startsWith('image/')) return '🖼️';
-  if (contentType.startsWith('video/')) return '🎬';
-  if (contentType.startsWith('audio/')) return '🎵';
-  if (contentType === 'application/pdf') return '📄';
-  if (contentType.includes('word')) return '📝';
-  if (contentType.includes('excel') || contentType.includes('spreadsheet')) return '📊';
-  if (contentType.includes('presentation')) return '📽️';
-  return '📁';
+  if (contentType.startsWith("image/")) return "🖼️";
+  if (contentType.startsWith("video/")) return "🎬";
+  if (contentType.startsWith("audio/")) return "🎵";
+  if (contentType === "application/pdf") return "📄";
+  if (contentType.includes("word")) return "📝";
+  if (contentType.includes("excel") || contentType.includes("spreadsheet"))
+    return "📊";
+  if (contentType.includes("presentation")) return "📽️";
+  return "📁";
 }
 
-export default {
+const storageUtils = {
   uploadFile,
   uploadImage,
   uploadDocument,
@@ -376,3 +394,5 @@ export default {
   formatFileSize,
   getFileIcon,
 };
+
+export default storageUtils;

@@ -5,9 +5,6 @@ import {
   Building2,
   Search,
   Filter,
-  ChevronRight,
-  Users,
-  Calendar,
   Plus,
   MoreHorizontal,
   CheckCircle2,
@@ -17,12 +14,9 @@ import {
   RefreshCw,
   Loader2,
   ExternalLink,
-  Mail,
-  Phone,
-  Globe,
   Settings,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -61,26 +55,29 @@ import { superAdminAPI, type TenantResponse } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 // Status badge styles
-const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-  active: { 
-    label: "Active", 
+const statusConfig: Record<
+  string,
+  { label: string; className: string; icon: React.ReactNode }
+> = {
+  active: {
+    label: "Active",
     className: "bg-emerald-500/20 text-emerald-200 border-emerald-500/20",
-    icon: <CheckCircle2 className="h-3.5 w-3.5" />
+    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
   },
-  pending: { 
-    label: "Pending", 
+  pending: {
+    label: "Pending",
     className: "bg-yellow-500/20 text-yellow-200 border-yellow-500/20",
-    icon: <Clock className="h-3.5 w-3.5" />
+    icon: <Clock className="h-3.5 w-3.5" />,
   },
-  suspended: { 
-    label: "Suspended", 
+  suspended: {
+    label: "Suspended",
     className: "bg-red-500/20 text-red-200 border-red-500/20",
-    icon: <AlertTriangle className="h-3.5 w-3.5" />
+    icon: <AlertTriangle className="h-3.5 w-3.5" />,
   },
-  inactive: { 
-    label: "Inactive", 
+  inactive: {
+    label: "Inactive",
     className: "bg-slate-500/20 text-slate-200 border-slate-500/20",
-    icon: <XCircle className="h-3.5 w-3.5" />
+    icon: <XCircle className="h-3.5 w-3.5" />,
   },
 };
 
@@ -91,8 +88,10 @@ export default function TenantsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedTenant, setSelectedTenant] = useState<TenantResponse | null>(null);
-  const [actionDialog, setActionDialog] = useState<{ type: "suspend" | "activate" | "archive" | null; tenant: TenantResponse | null }>({
+  const [actionDialog, setActionDialog] = useState<{
+    type: "suspend" | "activate" | "archive" | null;
+    tenant: TenantResponse | null;
+  }>({
     type: null,
     tenant: null,
   });
@@ -132,7 +131,10 @@ export default function TenantsPage() {
   });
 
   // Handle tenant actions
-  const handleAction = async (action: "suspend" | "activate" | "archive", tenant: TenantResponse) => {
+  const handleAction = async (
+    action: "suspend" | "activate" | "archive",
+    tenant: TenantResponse
+  ) => {
     try {
       if (action === "archive") {
         await superAdminAPI.archiveTenant(tenant.id);
@@ -190,7 +192,9 @@ export default function TenantsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Active</p>
-                <p className="text-2xl font-semibold text-emerald-300">{stats.active}</p>
+                <p className="text-2xl font-semibold text-emerald-300">
+                  {stats.active}
+                </p>
               </div>
               <CheckCircle2 className="h-8 w-8 text-emerald-300/40" />
             </div>
@@ -201,7 +205,9 @@ export default function TenantsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Pending</p>
-                <p className="text-2xl font-semibold text-yellow-300">{stats.pending}</p>
+                <p className="text-2xl font-semibold text-yellow-300">
+                  {stats.pending}
+                </p>
               </div>
               <Clock className="h-8 w-8 text-yellow-300/40" />
             </div>
@@ -212,7 +218,9 @@ export default function TenantsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Suspended</p>
-                <p className="text-2xl font-semibold text-red-300">{stats.suspended}</p>
+                <p className="text-2xl font-semibold text-red-300">
+                  {stats.suspended}
+                </p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-300/40" />
             </div>
@@ -246,12 +254,14 @@ export default function TenantsPage() {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={fetchTenants}
               className="border-white/20"
             >
-              <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+              <RefreshCw
+                className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+              />
               Refresh
             </Button>
           </div>
@@ -275,7 +285,12 @@ export default function TenantsPage() {
             <AlertTriangle className="h-6 w-6 text-red-400" />
             <div>
               <h3 className="font-semibold text-red-200">{error}</h3>
-              <Button variant="outline" size="sm" onClick={fetchTenants} className="mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchTenants}
+                className="mt-2"
+              >
                 Try Again
               </Button>
             </div>
@@ -290,7 +305,9 @@ export default function TenantsPage() {
             <Building2 className="h-12 w-12 text-white/40 mx-auto" />
             <h3 className="text-lg font-semibold">No Tenants Found</h3>
             <p className="text-white/60">
-              {searchTerm ? "Try adjusting your search criteria" : "Send an invitation to onboard your first hospital"}
+              {searchTerm
+                ? "Try adjusting your search criteria"
+                : "Send an invitation to onboard your first hospital"}
             </p>
           </div>
         </Card>
@@ -307,15 +324,19 @@ export default function TenantsPage() {
                 <TableHead className="text-white/60">Status</TableHead>
                 <TableHead className="text-white/60">Onboarding</TableHead>
                 <TableHead className="text-white/60">Created</TableHead>
-                <TableHead className="text-white/60 text-right">Actions</TableHead>
+                <TableHead className="text-white/60 text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTenants.map((tenant) => (
-                <TableRow 
-                  key={tenant.id} 
+                <TableRow
+                  key={tenant.id}
                   className="border-white/10 hover:bg-white/5 cursor-pointer"
-                  onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  onClick={() =>
+                    router.push(`/super-admin/tenants/${tenant.id}`)
+                  }
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -330,18 +351,30 @@ export default function TenantsPage() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{tenant.contact_name || "—"}</p>
-                      <p className="text-sm text-white/50">{tenant.contact_email}</p>
+                      <p className="font-medium">
+                        {tenant.contact_name || "—"}
+                      </p>
+                      <p className="text-sm text-white/50">
+                        {tenant.contact_email}
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={cn("gap-1.5", statusConfig[tenant.status]?.className)}>
+                    <Badge
+                      className={cn(
+                        "gap-1.5",
+                        statusConfig[tenant.status]?.className
+                      )}
+                    >
                       {statusConfig[tenant.status]?.icon}
                       {statusConfig[tenant.status]?.label || tenant.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="border-white/20 text-white/70">
+                    <Badge
+                      variant="outline"
+                      className="border-white/20 text-white/70"
+                    >
                       {tenant.onboarding_stage || "Not Started"}
                     </Badge>
                   </TableCell>
@@ -350,13 +383,20 @@ export default function TenantsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <DropdownMenuTrigger
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(`/super-admin/tenants/${tenant.id}`);
@@ -365,10 +405,12 @@ export default function TenantsPage() {
                           <ExternalLink className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
-                            router.push(`/super-admin/tenants/${tenant.id}/settings`);
+                            router.push(
+                              `/super-admin/tenants/${tenant.id}/settings`
+                            );
                           }}
                         >
                           <Settings className="h-4 w-4 mr-2" />
@@ -376,7 +418,7 @@ export default function TenantsPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {tenant.status === "active" && (
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-yellow-400"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -388,7 +430,7 @@ export default function TenantsPage() {
                           </DropdownMenuItem>
                         )}
                         {tenant.status === "suspended" && (
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-emerald-400"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -399,7 +441,7 @@ export default function TenantsPage() {
                             Reactivate Tenant
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-400"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -420,7 +462,12 @@ export default function TenantsPage() {
       )}
 
       {/* Action Confirmation Dialog */}
-      <Dialog open={!!actionDialog.type} onOpenChange={(open) => !open && setActionDialog({ type: null, tenant: null })}>
+      <Dialog
+        open={!!actionDialog.type}
+        onOpenChange={(open) =>
+          !open && setActionDialog({ type: null, tenant: null })
+        }
+      >
         <DialogContent className="bg-slate-900 border-white/10">
           <DialogHeader>
             <DialogTitle>
@@ -429,17 +476,17 @@ export default function TenantsPage() {
               {actionDialog.type === "archive" && "Archive Tenant"}
             </DialogTitle>
             <DialogDescription className="text-white/60">
-              {actionDialog.type === "suspend" && 
+              {actionDialog.type === "suspend" &&
                 `Are you sure you want to suspend ${actionDialog.tenant?.display_name}? Users will not be able to access the platform.`}
-              {actionDialog.type === "activate" && 
+              {actionDialog.type === "activate" &&
                 `Are you sure you want to reactivate ${actionDialog.tenant?.display_name}? Users will regain access to the platform.`}
-              {actionDialog.type === "archive" && 
+              {actionDialog.type === "archive" &&
                 `Are you sure you want to archive ${actionDialog.tenant?.display_name}? This action cannot be undone.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setActionDialog({ type: null, tenant: null })}
               className="border-white/20"
             >
@@ -447,11 +494,18 @@ export default function TenantsPage() {
             </Button>
             <Button
               className={cn(
-                actionDialog.type === "archive" && "bg-red-600 hover:bg-red-700",
-                actionDialog.type === "suspend" && "bg-yellow-600 hover:bg-yellow-700",
-                actionDialog.type === "activate" && "bg-emerald-600 hover:bg-emerald-700"
+                actionDialog.type === "archive" &&
+                  "bg-red-600 hover:bg-red-700",
+                actionDialog.type === "suspend" &&
+                  "bg-yellow-600 hover:bg-yellow-700",
+                actionDialog.type === "activate" &&
+                  "bg-emerald-600 hover:bg-emerald-700"
               )}
-              onClick={() => actionDialog.tenant && actionDialog.type && handleAction(actionDialog.type, actionDialog.tenant)}
+              onClick={() =>
+                actionDialog.tenant &&
+                actionDialog.type &&
+                handleAction(actionDialog.type, actionDialog.tenant)
+              }
             >
               {actionDialog.type === "suspend" && "Suspend"}
               {actionDialog.type === "activate" && "Reactivate"}

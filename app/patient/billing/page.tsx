@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency, getStatusBadge } from "@/utils/helpers";
+import { formatCurrency } from "@/utils/helpers";
 import { Input } from "@/components/ui/input";
 import {
   CreditCard,
@@ -37,30 +37,40 @@ export default function BillingPage() {
   const [showClaimSubmission, setShowClaimSubmission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Data state
   const [payments, setPayments] = useState<Payment[]>([]);
   const [upcomingBills, setUpcomingBills] = useState<Invoice[]>([]);
   const [claims, setClaims] = useState<InsuranceClaim[]>([]);
   const [insurancePlans, setInsurancePlans] = useState<InsurancePolicy[]>([]);
-  const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(null);
-  
+  const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(
+    null
+  );
+
   // Search and filter
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  
+
   // Get patient ID from localStorage
   const getPatientId = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('user_id') || '';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("user_id") || "";
     }
-    return '';
+    return "";
   };
 
   // Filter items based on search term
-  const filterItems = <T extends { id?: string; payment_number?: string; claim_number?: string; invoice_number?: string }>(items: T[]): T[] => {
+  const filterItems = <
+    T extends {
+      id?: string;
+      payment_number?: string;
+      claim_number?: string;
+      invoice_number?: string;
+    }
+  >(
+    items: T[]
+  ): T[] => {
     if (!searchTerm) return items;
-    return items.filter(item => {
+    return items.filter((item) => {
       const searchString = searchTerm.toLowerCase();
       return (
         item.id?.toLowerCase().includes(searchString) ||
@@ -75,7 +85,7 @@ export default function BillingPage() {
   const fetchBillingData = useCallback(async () => {
     const patientId = getPatientId();
     if (!patientId) {
-      setError('Please log in to view billing information');
+      setError("Please log in to view billing information");
       setIsLoading(false);
       return;
     }
@@ -99,29 +109,28 @@ export default function BillingPage() {
         PatientBillingService.getInsurancePolicies(patientId),
       ]);
 
-      if (summaryResult.status === 'fulfilled') {
+      if (summaryResult.status === "fulfilled") {
         setBillingSummary(summaryResult.value);
       }
-      
-      if (paymentsResult.status === 'fulfilled') {
+
+      if (paymentsResult.status === "fulfilled") {
         setPayments(paymentsResult.value.payments || []);
       }
-      
-      if (upcomingResult.status === 'fulfilled') {
+
+      if (upcomingResult.status === "fulfilled") {
         setUpcomingBills(upcomingResult.value || []);
       }
-      
-      if (claimsResult.status === 'fulfilled') {
+
+      if (claimsResult.status === "fulfilled") {
         setClaims(claimsResult.value.claims || []);
       }
-      
-      if (policiesResult.status === 'fulfilled') {
+
+      if (policiesResult.status === "fulfilled") {
         setInsurancePlans(policiesResult.value || []);
       }
-
     } catch (err) {
-      console.error('Error fetching billing data:', err);
-      setError('Failed to load billing data. Please try again.');
+      console.error("Error fetching billing data:", err);
+      setError("Failed to load billing data. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +145,7 @@ export default function BillingPage() {
     try {
       await PatientBillingService.downloadReceipt(paymentId);
     } catch (err) {
-      console.error('Error downloading receipt:', err);
+      console.error("Error downloading receipt:", err);
     }
   };
 
@@ -145,7 +154,7 @@ export default function BillingPage() {
     try {
       await PatientBillingService.downloadInvoicePDF(invoiceId);
     } catch (err) {
-      console.error('Error downloading invoice:', err);
+      console.error("Error downloading invoice:", err);
     }
   };
 
@@ -174,9 +183,10 @@ export default function BillingPage() {
   const yearToDateTotal = billingSummary?.year_to_date?.total_billed || 0;
   const insuranceCovered = billingSummary?.year_to_date?.insurance_covered || 0;
   const outOfPocket = billingSummary?.year_to_date?.out_of_pocket || 0;
-  
+
   // Get primary insurance for deductible display
-  const primaryInsurance = insurancePlans.find(p => p.is_primary) || insurancePlans[0];
+  const primaryInsurance =
+    insurancePlans.find((p) => p.is_primary) || insurancePlans[0];
   const deductibleMet = primaryInsurance?.deductible_met || 0;
   const deductibleTotal = primaryInsurance?.deductible || 1500;
   const deductiblePercent = Math.round((deductibleMet / deductibleTotal) * 100);
@@ -188,7 +198,10 @@ export default function BillingPage() {
       {/* Search Bar */}
       <div className="mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <Input
             placeholder="Search by ID, invoice number, or claim number..."
             value={searchTerm}
@@ -204,7 +217,9 @@ export default function BillingPage() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-gray-500 text-sm">Total Unpaid</p>
-                <p className="text-2xl font-bold">{formatCurrency(totalUnpaid)}</p>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(totalUnpaid)}
+                </p>
               </div>
               <CreditCard className="h-10 w-10 text-amber-500 p-2 bg-amber-100 rounded-full" />
             </div>
@@ -219,18 +234,24 @@ export default function BillingPage() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-gray-500 text-sm">Year-to-Date</p>
-                <p className="text-2xl font-bold">{formatCurrency(yearToDateTotal)}</p>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(yearToDateTotal)}
+                </p>
               </div>
               <ReceiptText className="h-10 w-10 text-purple-500 p-2 bg-purple-100 rounded-full" />
             </div>
             <div className="mt-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Insurance Covered:</span>
-                <span className="font-medium">{formatCurrency(insuranceCovered)}</span>
+                <span className="font-medium">
+                  {formatCurrency(insuranceCovered)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Out-of-Pocket:</span>
-                <span className="font-medium">{formatCurrency(outOfPocket)}</span>
+                <span className="font-medium">
+                  {formatCurrency(outOfPocket)}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -242,7 +263,8 @@ export default function BillingPage() {
               <div>
                 <p className="text-gray-500 text-sm">Deductible Progress</p>
                 <p className="text-2xl font-bold">
-                  {formatCurrency(deductibleMet)}/{formatCurrency(deductibleTotal)}
+                  {formatCurrency(deductibleMet)}/
+                  {formatCurrency(deductibleTotal)}
                 </p>
               </div>
               <FileText className="h-10 w-10 text-blue-500 p-2 bg-blue-100 rounded-full" />
@@ -293,31 +315,42 @@ export default function BillingPage() {
                         >
                           <td className="px-4 py-3">
                             <div className="font-medium">
-                              {new Date(payment.payment_date).toLocaleDateString()}
+                              {new Date(
+                                payment.payment_date
+                              ).toLocaleDateString()}
                             </div>
                             <div className="text-xs text-gray-500">
                               {payment.id}
                             </div>
                           </td>
-                          <td className="px-4 py-3">{payment.payment_number}</td>
+                          <td className="px-4 py-3">
+                            {payment.payment_number}
+                          </td>
                           <td className="px-4 py-3 font-medium">
                             {formatCurrency(payment.amount)}
                           </td>
-                          <td className="px-4 py-3 capitalize">{payment.payment_method.replace('_', ' ')}</td>
+                          <td className="px-4 py-3 capitalize">
+                            {payment.payment_method.replace("_", " ")}
+                          </td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              payment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              payment.status === 'failed' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                payment.status === "completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : payment.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : payment.status === "failed"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
                               {payment.status}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-8"
                               onClick={() => handleDownloadReceipt(payment.id)}
                             >
@@ -355,9 +388,11 @@ export default function BillingPage() {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h4 className="font-medium">{bill.invoice_number}</h4>
+                            <h4 className="font-medium">
+                              {bill.invoice_number}
+                            </h4>
                             <p className="text-sm text-gray-600">
-                              {bill.hospital?.name || 'Unknown Provider'}
+                              {bill.hospital?.name || "Unknown Provider"}
                             </p>
                           </div>
                           <div className="text-right">
@@ -376,26 +411,34 @@ export default function BillingPage() {
                             Due: {new Date(bill.due_date).toLocaleDateString()}
                           </span>
                           <span className="mx-2">•</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            bill.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            bill.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                            bill.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              bill.status === "paid"
+                                ? "bg-green-100 text-green-800"
+                                : bill.status === "overdue"
+                                ? "bg-red-100 text-red-800"
+                                : bill.status === "sent"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
                             {bill.status}
                           </span>
                         </div>
 
                         <div className="mt-3 flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleDownloadInvoice(bill.id)}
                           >
                             <FileDown size={16} className="mr-1" />
                             View Invoice
                           </Button>
-                          <Button className="bg-[#006D77] hover:bg-[#00585F]" size="sm">
+                          <Button
+                            className="bg-[#006D77] hover:bg-[#00585F]"
+                            size="sm"
+                          >
                             Pay Now
                           </Button>
                         </div>
@@ -455,7 +498,11 @@ export default function BillingPage() {
                         >
                           <td className="px-4 py-3">
                             <div className="font-medium">
-                              {claim.submission_date ? new Date(claim.submission_date).toLocaleDateString() : 'Not submitted'}
+                              {claim.submission_date
+                                ? new Date(
+                                    claim.submission_date
+                                  ).toLocaleDateString()
+                                : "Not submitted"}
                             </div>
                             <div className="text-xs text-gray-500">
                               {claim.id}
@@ -466,25 +513,32 @@ export default function BillingPage() {
                             {formatCurrency(claim.claim_amount)}
                           </td>
                           <td className="px-4 py-3">
-                            {claim.approved_amount !== undefined 
+                            {claim.approved_amount !== undefined
                               ? formatCurrency(claim.approved_amount)
-                              : '-'}
+                              : "-"}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              claim.status === 'approved' ? 'bg-green-100 text-green-800' :
-                              claim.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                              claim.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                              claim.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {claim.status.replace('_', ' ')}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                claim.status === "approved"
+                                  ? "bg-green-100 text-green-800"
+                                  : claim.status === "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : claim.status === "under_review"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : claim.status === "submitted"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {claim.status.replace("_", " ")}
                             </span>
-                            {claim.status === "rejected" && claim.rejection_reason && (
-                              <div className="text-xs text-red-600 mt-1">
-                                {claim.rejection_reason}
-                              </div>
-                            )}
+                            {claim.status === "rejected" &&
+                              claim.rejection_reason && (
+                                <div className="text-xs text-red-600 mt-1">
+                                  {claim.rejection_reason}
+                                </div>
+                              )}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <Button variant="ghost" size="sm" className="h-8">
@@ -559,104 +613,130 @@ export default function BillingPage() {
         {/* Insurance Plans Tab */}
         <TabsContent value="insurance" className="mt-0">
           <div className="space-y-6">
-            {insurancePlans.length > 0 ? insurancePlans.map((plan) => (
-              <Card key={plan.id}>
-                <CardHeader className="pb-0">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle className="text-lg">{plan.provider_name}</CardTitle>
-                      <p className="text-sm text-gray-500">{plan.plan_name}</p>
+            {insurancePlans.length > 0 ? (
+              insurancePlans.map((plan) => (
+                <Card key={plan.id}>
+                  <CardHeader className="pb-0">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {plan.provider_name}
+                        </CardTitle>
+                        <p className="text-sm text-gray-500">
+                          {plan.plan_name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {plan.is_primary && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            Primary
+                          </span>
+                        )}
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {plan.is_primary && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          Primary
-                        </span>
-                      )}
-                      <Button variant="outline" size="sm">View Details</Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Member ID:</span>
-                          <span className="font-medium">{plan.member_id}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Policy Number:</span>
-                          <span className="font-medium">{plan.policy_number}</span>
-                        </div>
-                        {plan.group_number && (
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="space-y-3">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Group Number:</span>
+                            <span className="text-gray-600">Member ID:</span>
                             <span className="font-medium">
-                              {plan.group_number}
+                              {plan.member_id}
                             </span>
                           </div>
-                        )}
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Coverage Start:</span>
-                          <span className="font-medium">
-                            {new Date(plan.coverage_start_date).toLocaleDateString()}
-                          </span>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">
+                              Policy Number:
+                            </span>
+                            <span className="font-medium">
+                              {plan.policy_number}
+                            </span>
+                          </div>
+                          {plan.group_number && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">
+                                Group Number:
+                              </span>
+                              <span className="font-medium">
+                                {plan.group_number}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">
+                              Coverage Start:
+                            </span>
+                            <span className="font-medium">
+                              {new Date(
+                                plan.coverage_start_date
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium">
+                              Annual Deductible
+                            </span>
+                            <span className="text-sm font-medium">
+                              {formatCurrency(plan.deductible_met)} /{" "}
+                              {formatCurrency(plan.deductible)}
+                            </span>
+                          </div>
+                          <Progress
+                            value={
+                              (plan.deductible_met / plan.deductible) * 100
+                            }
+                            className="h-2"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {Math.round(
+                              (plan.deductible_met / plan.deductible) * 100
+                            )}
+                            % of deductible met
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium">
+                              Out-of-Pocket Maximum
+                            </span>
+                            <span className="text-sm font-medium">
+                              {formatCurrency(plan.out_of_pocket_met)} /{" "}
+                              {formatCurrency(plan.out_of_pocket_max)}
+                            </span>
+                          </div>
+                          <Progress
+                            value={
+                              (plan.out_of_pocket_met /
+                                plan.out_of_pocket_max) *
+                              100
+                            }
+                            className="h-2"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {Math.round(
+                              (plan.out_of_pocket_met /
+                                plan.out_of_pocket_max) *
+                                100
+                            )}
+                            % of maximum met
+                          </p>
                         </div>
                       </div>
                     </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium">
-                            Annual Deductible
-                          </span>
-                          <span className="text-sm font-medium">
-                            {formatCurrency(plan.deductible_met)} /{" "}
-                            {formatCurrency(plan.deductible)}
-                          </span>
-                        </div>
-                        <Progress
-                          value={(plan.deductible_met / plan.deductible) * 100}
-                          className="h-2"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          {Math.round(
-                            (plan.deductible_met / plan.deductible) * 100
-                          )}
-                          % of deductible met
-                        </p>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium">
-                            Out-of-Pocket Maximum
-                          </span>
-                          <span className="text-sm font-medium">
-                            {formatCurrency(plan.out_of_pocket_met)} /{" "}
-                            {formatCurrency(plan.out_of_pocket_max)}
-                          </span>
-                        </div>
-                        <Progress
-                          value={
-                            (plan.out_of_pocket_met / plan.out_of_pocket_max) * 100
-                          }
-                          className="h-2"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          {Math.round(
-                            (plan.out_of_pocket_met / plan.out_of_pocket_max) * 100
-                          )}
-                          % of maximum met
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )) : (
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
               <Card>
                 <CardContent className="py-12 text-center">
                   <FileText className="h-12 w-12 text-gray-300 mx-auto mb-2" />

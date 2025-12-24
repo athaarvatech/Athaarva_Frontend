@@ -9,7 +9,6 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import {
-  PublicRouteGuard,
   ProtectedRouteGuard,
   OnboardingRouteGuard,
   DashboardRouteGuard,

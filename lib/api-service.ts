@@ -5,7 +5,7 @@ import {
   REQUEST_TIMEOUT,
   LONG_REQUEST_TIMEOUT,
 } from "./api-config";
-import { UserStatus, VerificationStatus, isValidUUID } from "./utils";
+import { UserStatus, VerificationStatus } from "./utils";
 
 // API types - Updated for UUID-based backend
 export interface ApiResponse<T = unknown> {

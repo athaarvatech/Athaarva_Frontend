@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { format, addDays, isPast, isToday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,33 +10,24 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon,
   Clock,
   MapPin,
   Video,
-  Phone,
   Star,
   CheckCircle2,
   Filter,
   Sparkles,
-  MessageSquare,
   Plus,
-  Bookmark,
-  AlertCircle,
-  Info,
   FileText,
   UploadCloud,
   Shield,
-  Heart,
   CalendarDays,
-  User,
   ChevronDown,
   Building2,
   Award,
   Languages,
   CreditCard,
   CheckCircle,
-  XCircle,
   Clock3,
   Zap,
   Stethoscope,
@@ -49,15 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
@@ -66,26 +49,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar } from "@/components/ui/calendar";
 
 // Contexts
 import { useAppointments } from "@/contexts/AppointmentContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { cn } from "@/lib/utils";
 
 // Booking process steps
 enum BookingStep {
@@ -436,7 +403,8 @@ export default function AppointmentSchedulePage() {
         </h2>
         <p className="text-slate-600 leading-relaxed">
           Choose from our network of experienced, compassionate healthcare
-          professionals. We'll help you find the right doctor for your needs.
+          professionals. We&apos;ll help you find the right doctor for your
+          needs.
         </p>
       </div>
 
@@ -1195,7 +1163,7 @@ export default function AppointmentSchedulePage() {
                   htmlFor="terms"
                   className="text-sm text-slate-700 leading-relaxed"
                 >
-                  I agree to WellSphere's{" "}
+                  I agree to WellSphere&apos;s{" "}
                   <Link
                     href="#"
                     className="text-blue-600 hover:underline font-medium"
@@ -1261,7 +1229,7 @@ export default function AppointmentSchedulePage() {
         <CardHeader className="pb-4">
           <CardTitle className="text-lg text-slate-900 flex items-center">
             <Shield className="h-5 w-5 mr-2 text-blue-600" />
-            What's Next?
+            What&apos;s Next?
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

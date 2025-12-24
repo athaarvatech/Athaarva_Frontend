@@ -1,14 +1,12 @@
 /**
  * Hospital Admin API Service
- * 
+ *
  * This service connects to the hospital management APIs for:
  * - Hospital profile management
  * - Branding configuration
  * - Staff management
  * - Settings
  */
-
-import { superAdminAPI } from './super-admin';
 
 // Types for Hospital Admin operations
 export interface HospitalProfile {
@@ -122,7 +120,7 @@ export interface StaffMember {
   role: string;
   department: string | null;
   phone: string | null;
-  status: 'invited' | 'active' | 'suspended' | 'inactive';
+  status: "invited" | "active" | "suspended" | "inactive";
   invited_at: string;
   joined_at: string | null;
   last_active_at: string | null;
@@ -153,29 +151,32 @@ export interface DashboardStats {
 }
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-const API_V1_PREFIX = '/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_V1_PREFIX = "/api/v1";
 
 class HospitalAdminAPI {
   private baseUrl: string;
-  
+
   constructor() {
     this.baseUrl = `${API_BASE_URL}${API_V1_PREFIX}`;
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = typeof window !== 'undefined' 
-      ? localStorage.getItem('access_token') 
-      : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
+      const error = await response
+        .json()
+        .catch(() => ({ detail: "An error occurred" }));
       throw new Error(error.detail || `HTTP ${response.status}`);
     }
     return response.json();
@@ -191,9 +192,11 @@ class HospitalAdminAPI {
     return this.handleResponse<HospitalProfile>(response);
   }
 
-  async updateProfile(data: Partial<HospitalProfile>): Promise<HospitalProfile> {
+  async updateProfile(
+    data: Partial<HospitalProfile>
+  ): Promise<HospitalProfile> {
     const response = await fetch(`${this.baseUrl}/hospital/profile`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
@@ -212,24 +215,28 @@ class HospitalAdminAPI {
 
   async updateBranding(data: BrandingUpdate): Promise<TenantBranding> {
     const response = await fetch(`${this.baseUrl}/hospital/branding`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
     return this.handleResponse<TenantBranding>(response);
   }
 
-  async uploadLogo(file: File, type: 'light' | 'dark' | 'favicon' | 'hero'): Promise<{ url: string }> {
+  async uploadLogo(
+    file: File,
+    type: "light" | "dark" | "favicon" | "hero"
+  ): Promise<{ url: string }> {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
+    formData.append("file", file);
+    formData.append("type", type);
 
-    const token = typeof window !== 'undefined' 
-      ? localStorage.getItem('access_token') 
-      : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
 
     const response = await fetch(`${this.baseUrl}/hospital/branding/upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -249,13 +256,16 @@ class HospitalAdminAPI {
     offset?: number;
   }): Promise<StaffMember[]> {
     const searchParams = new URLSearchParams();
-    if (params?.role) searchParams.append('role', params.role);
-    if (params?.status) searchParams.append('status', params.status);
-    if (params?.department) searchParams.append('department', params.department);
-    if (params?.limit) searchParams.append('limit', String(params.limit));
-    if (params?.offset) searchParams.append('offset', String(params.offset));
+    if (params?.role) searchParams.append("role", params.role);
+    if (params?.status) searchParams.append("status", params.status);
+    if (params?.department)
+      searchParams.append("department", params.department);
+    if (params?.limit) searchParams.append("limit", String(params.limit));
+    if (params?.offset) searchParams.append("offset", String(params.offset));
 
-    const url = `${this.baseUrl}/hospital/staff${searchParams.toString() ? '?' + searchParams : ''}`;
+    const url = `${this.baseUrl}/hospital/staff${
+      searchParams.toString() ? "?" + searchParams : ""
+    }`;
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
     });
@@ -264,16 +274,19 @@ class HospitalAdminAPI {
 
   async inviteStaff(data: StaffInviteRequest): Promise<StaffMember> {
     const response = await fetch(`${this.baseUrl}/hospital/staff/invite`, {
-      method: 'POST',
+      method: "POST",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
     return this.handleResponse<StaffMember>(response);
   }
 
-  async updateStaffMember(staffId: string, data: Partial<StaffMember>): Promise<StaffMember> {
+  async updateStaffMember(
+    staffId: string,
+    data: Partial<StaffMember>
+  ): Promise<StaffMember> {
     const response = await fetch(`${this.baseUrl}/hospital/staff/${staffId}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
@@ -282,11 +295,13 @@ class HospitalAdminAPI {
 
   async removeStaffMember(staffId: string): Promise<void> {
     const response = await fetch(`${this.baseUrl}/hospital/staff/${staffId}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: this.getAuthHeaders(),
     });
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to remove staff member' }));
+      const error = await response
+        .json()
+        .catch(() => ({ detail: "Failed to remove staff member" }));
       throw new Error(error.detail);
     }
   }
@@ -311,9 +326,11 @@ class HospitalAdminAPI {
     return this.handleResponse<Record<string, unknown>>(response);
   }
 
-  async updateSettings(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async updateSettings(
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     const response = await fetch(`${this.baseUrl}/hospital/settings`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });

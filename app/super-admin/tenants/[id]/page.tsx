@@ -8,26 +8,27 @@ import {
   Mail,
   Phone,
   Globe,
-  MapPin,
-  Calendar,
   Clock,
   Users,
   Settings,
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  RefreshCw,
   Loader2,
   Edit,
   ExternalLink,
   Copy,
   FileText,
-  Shield,
   CreditCard,
   Activity,
-  BarChart3,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,33 +46,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { 
-  superAdminAPI, 
-  type TenantResponse, 
-  type OnboardingWizardState 
+import {
+  superAdminAPI,
+  type TenantResponse,
+  type OnboardingWizardState,
 } from "@/lib/api";
 
 // Status badge styles
-const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-  active: { 
-    label: "Active", 
+const statusConfig: Record<
+  string,
+  { label: string; className: string; icon: React.ReactNode }
+> = {
+  active: {
+    label: "Active",
     className: "bg-emerald-500/20 text-emerald-200 border-emerald-500/20",
-    icon: <CheckCircle2 className="h-3.5 w-3.5" />
+    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
   },
-  pending: { 
-    label: "Pending", 
+  pending: {
+    label: "Pending",
     className: "bg-yellow-500/20 text-yellow-200 border-yellow-500/20",
-    icon: <Clock className="h-3.5 w-3.5" />
+    icon: <Clock className="h-3.5 w-3.5" />,
   },
-  suspended: { 
-    label: "Suspended", 
+  suspended: {
+    label: "Suspended",
     className: "bg-red-500/20 text-red-200 border-red-500/20",
-    icon: <AlertTriangle className="h-3.5 w-3.5" />
+    icon: <AlertTriangle className="h-3.5 w-3.5" />,
   },
-  inactive: { 
-    label: "Inactive", 
+  inactive: {
+    label: "Inactive",
     className: "bg-slate-500/20 text-slate-200 border-slate-500/20",
-    icon: <XCircle className="h-3.5 w-3.5" />
+    icon: <XCircle className="h-3.5 w-3.5" />,
   },
 };
 
@@ -79,9 +83,11 @@ export default function TenantDetailPage() {
   const params = useParams();
   const router = useRouter();
   const tenantId = params.id as string;
-  
+
   const [tenant, setTenant] = useState<TenantResponse | null>(null);
-  const [onboarding, setOnboarding] = useState<OnboardingWizardState | null>(null);
+  const [onboarding, setOnboarding] = useState<OnboardingWizardState | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -160,9 +166,15 @@ export default function TenantDetailPage() {
         <Card className="bg-red-500/10 border-red-500/20 p-6 max-w-md">
           <div className="text-center space-y-4">
             <AlertTriangle className="h-8 w-8 text-red-400 mx-auto" />
-            <h3 className="font-semibold text-red-200">{error || "Tenant not found"}</h3>
+            <h3 className="font-semibold text-red-200">
+              {error || "Tenant not found"}
+            </h3>
             <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => router.back()} className="border-white/20">
+              <Button
+                variant="outline"
+                onClick={() => router.back()}
+                className="border-white/20"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Go Back
               </Button>
@@ -184,9 +196,9 @@ export default function TenantDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => router.push("/super-admin/tenants")}
           className="text-white/60 hover:text-white"
         >
@@ -205,8 +217,15 @@ export default function TenantDetailPage() {
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl font-semibold">{tenant.display_name}</h1>
-                  <Badge className={cn("gap-1.5", statusConfig[tenant.status]?.className)}>
+                  <h1 className="text-2xl font-semibold">
+                    {tenant.display_name}
+                  </h1>
+                  <Badge
+                    className={cn(
+                      "gap-1.5",
+                      statusConfig[tenant.status]?.className
+                    )}
+                  >
                     {statusConfig[tenant.status]?.icon}
                     {statusConfig[tenant.status]?.label}
                   </Badge>
@@ -254,7 +273,12 @@ export default function TenantDetailPage() {
                       <Label>Display Name</Label>
                       <Input
                         value={editForm.display_name}
-                        onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            display_name: e.target.value,
+                          })
+                        }
                         className="bg-white/5 border-white/10"
                       />
                     </div>
@@ -262,7 +286,12 @@ export default function TenantDetailPage() {
                       <Label>Contact Name</Label>
                       <Input
                         value={editForm.contact_name}
-                        onChange={(e) => setEditForm({ ...editForm, contact_name: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            contact_name: e.target.value,
+                          })
+                        }
                         className="bg-white/5 border-white/10"
                       />
                     </div>
@@ -270,7 +299,12 @@ export default function TenantDetailPage() {
                       <Label>Contact Email</Label>
                       <Input
                         value={editForm.contact_email}
-                        onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            contact_email: e.target.value,
+                          })
+                        }
                         className="bg-white/5 border-white/10"
                       />
                     </div>
@@ -278,7 +312,12 @@ export default function TenantDetailPage() {
                       <Label>Contact Phone</Label>
                       <Input
                         value={editForm.contact_phone}
-                        onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            contact_phone: e.target.value,
+                          })
+                        }
                         className="bg-white/5 border-white/10"
                       />
                     </div>
@@ -286,17 +325,29 @@ export default function TenantDetailPage() {
                       <Label>Brand Tagline</Label>
                       <Textarea
                         value={editForm.brand_tagline}
-                        onChange={(e) => setEditForm({ ...editForm, brand_tagline: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            brand_tagline: e.target.value,
+                          })
+                        }
                         className="bg-white/5 border-white/10"
                         rows={2}
                       />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-white/20">
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditDialogOpen(false)}
+                      className="border-white/20"
+                    >
                       Cancel
                     </Button>
-                    <Button onClick={handleUpdate} className="bg-emerald-600 hover:bg-emerald-700">
+                    <Button
+                      onClick={handleUpdate}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
                       Save Changes
                     </Button>
                   </DialogFooter>
@@ -314,23 +365,38 @@ export default function TenantDetailPage() {
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-white/5 border-white/10">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-white/10">
+          <TabsTrigger
+            value="overview"
+            className="data-[state=active]:bg-white/10"
+          >
             <Activity className="h-4 w-4 mr-2" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="onboarding" className="data-[state=active]:bg-white/10">
+          <TabsTrigger
+            value="onboarding"
+            className="data-[state=active]:bg-white/10"
+          >
             <FileText className="h-4 w-4 mr-2" />
             Onboarding
           </TabsTrigger>
-          <TabsTrigger value="users" className="data-[state=active]:bg-white/10">
+          <TabsTrigger
+            value="users"
+            className="data-[state=active]:bg-white/10"
+          >
             <Users className="h-4 w-4 mr-2" />
             Users
           </TabsTrigger>
-          <TabsTrigger value="billing" className="data-[state=active]:bg-white/10">
+          <TabsTrigger
+            value="billing"
+            className="data-[state=active]:bg-white/10"
+          >
             <CreditCard className="h-4 w-4 mr-2" />
             Billing
           </TabsTrigger>
-          <TabsTrigger value="settings" className="data-[state=active]:bg-white/10">
+          <TabsTrigger
+            value="settings"
+            className="data-[state=active]:bg-white/10"
+          >
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </TabsTrigger>
@@ -350,9 +416,9 @@ export default function TenantDetailPage() {
                     <p className="text-sm text-white/50">Tenant ID</p>
                     <div className="flex items-center gap-2">
                       <p className="font-mono text-sm">{tenant.id}</p>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => copyToClipboard(tenant.id)}
                         className="h-6 w-6 p-0"
                       >
@@ -408,21 +474,30 @@ export default function TenantDetailPage() {
             <div className="space-y-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-white/60">Onboarding Progress</CardTitle>
+                  <CardTitle className="text-sm text-white/60">
+                    Onboarding Progress
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-semibold">
-                      {Math.round((onboardingProgress / totalOnboardingSteps) * 100)}%
+                      {Math.round(
+                        (onboardingProgress / totalOnboardingSteps) * 100
+                      )}
+                      %
                     </span>
                     <span className="text-white/50">
                       {onboardingProgress}/{totalOnboardingSteps} steps
                     </span>
                   </div>
                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-emerald-500 rounded-full"
-                      style={{ width: `${(onboardingProgress / totalOnboardingSteps) * 100}%` }}
+                      style={{
+                        width: `${
+                          (onboardingProgress / totalOnboardingSteps) * 100
+                        }%`,
+                      }}
                     />
                   </div>
                 </CardContent>
@@ -430,29 +505,47 @@ export default function TenantDetailPage() {
 
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-white/60">Feature Flags</CardTitle>
+                  <CardTitle className="text-sm text-white/60">
+                    Feature Flags
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {Object.entries(tenant.feature_flags || {}).slice(0, 5).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between text-sm">
-                      <span className="text-white/70">{key.replace(/_/g, " ")}</span>
-                      <Badge variant="outline" className={cn(
-                        "text-xs",
-                        value ? "border-emerald-500/50 text-emerald-300" : "border-white/20 text-white/50"
-                      )}>
-                        {value ? "Enabled" : "Disabled"}
-                      </Badge>
-                    </div>
-                  ))}
+                  {Object.entries(tenant.feature_flags || {})
+                    .slice(0, 5)
+                    .map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-white/70">
+                          {key.replace(/_/g, " ")}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs",
+                            value
+                              ? "border-emerald-500/50 text-emerald-300"
+                              : "border-white/20 text-white/50"
+                          )}
+                        >
+                          {value ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </div>
+                    ))}
                   {Object.keys(tenant.feature_flags || {}).length === 0 && (
-                    <p className="text-white/50 text-sm">No feature flags configured</p>
+                    <p className="text-white/50 text-sm">
+                      No feature flags configured
+                    </p>
                   )}
                 </CardContent>
               </Card>
 
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-white/60">Contact Information</CardTitle>
+                  <CardTitle className="text-sm text-white/60">
+                    Contact Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {tenant.contact_name && (
@@ -483,7 +576,7 @@ export default function TenantDetailPage() {
             <CardHeader>
               <CardTitle>Onboarding Progress</CardTitle>
               <CardDescription className="text-white/60">
-                Track the hospital's setup and configuration progress
+                Track the hospital&apos;s setup and configuration progress
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -492,15 +585,25 @@ export default function TenantDetailPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white/60 text-sm">Current Step</p>
-                      <p className="font-semibold">{onboarding.session.current_step}</p>
+                      <p className="font-semibold">
+                        {onboarding.session.current_step}
+                      </p>
                     </div>
                     <div>
                       <p className="text-white/60 text-sm">Status</p>
-                      <Badge variant="outline">{onboarding.session.status}</Badge>
+                      <Badge variant="outline">
+                        {onboarding.session.status}
+                      </Badge>
                     </div>
                     <div>
                       <p className="text-white/60 text-sm">Can Submit</p>
-                      <Badge className={onboarding.can_submit ? "bg-emerald-500/20 text-emerald-200" : "bg-white/10"}>
+                      <Badge
+                        className={
+                          onboarding.can_submit
+                            ? "bg-emerald-500/20 text-emerald-200"
+                            : "bg-white/10"
+                        }
+                      >
                         {onboarding.can_submit ? "Yes" : "No"}
                       </Badge>
                     </div>
@@ -509,27 +612,31 @@ export default function TenantDetailPage() {
                   <Separator className="bg-white/10" />
 
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {Object.entries(onboarding.checklist).map(([step, complete], idx) => (
-                      <div 
-                        key={step}
-                        className={cn(
-                          "p-3 rounded-lg border",
-                          complete ? "bg-emerald-500/10 border-emerald-500/30" : "bg-white/5 border-white/10"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          {complete ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                          ) : (
-                            <div className="h-4 w-4 rounded-full border border-white/30" />
+                    {Object.entries(onboarding.checklist).map(
+                      ([step, complete], idx) => (
+                        <div
+                          key={step}
+                          className={cn(
+                            "p-3 rounded-lg border",
+                            complete
+                              ? "bg-emerald-500/10 border-emerald-500/30"
+                              : "bg-white/5 border-white/10"
                           )}
-                          <span className="text-sm">Step {idx}</span>
+                        >
+                          <div className="flex items-center gap-2">
+                            {complete ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                            ) : (
+                              <div className="h-4 w-4 rounded-full border border-white/30" />
+                            )}
+                            <span className="text-sm">Step {idx}</span>
+                          </div>
+                          <p className="text-xs text-white/50 mt-1">
+                            {step.replace(/_/g, " ")}
+                          </p>
                         </div>
-                        <p className="text-xs text-white/50 mt-1">
-                          {step.replace(/_/g, " ")}
-                        </p>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
 
                   {onboarding.session.status === "submitted" && (
@@ -538,7 +645,10 @@ export default function TenantDetailPage() {
                         <CheckCircle2 className="h-4 w-4 mr-2" />
                         Approve Onboarding
                       </Button>
-                      <Button variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10">
+                      <Button
+                        variant="outline"
+                        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                      >
                         <XCircle className="h-4 w-4 mr-2" />
                         Reject
                       </Button>
@@ -548,7 +658,9 @@ export default function TenantDetailPage() {
               ) : (
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 text-white/30 mx-auto mb-4" />
-                  <p className="text-white/60">No onboarding session found for this tenant</p>
+                  <p className="text-white/60">
+                    No onboarding session found for this tenant
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -569,7 +681,8 @@ export default function TenantDetailPage() {
                 <Users className="h-12 w-12 text-white/30 mx-auto mb-4" />
                 <p className="text-white/60">User management coming soon</p>
                 <p className="text-white/40 text-sm mt-1">
-                  API endpoint: GET /api/v2/super-admin/tenants/{tenant.id}/users
+                  API endpoint: GET /api/v2/super-admin/tenants/{tenant.id}
+                  /users
                 </p>
               </div>
             </CardContent>
@@ -589,7 +702,9 @@ export default function TenantDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-white/50 mb-2">Plan</p>
-                  <p className="font-semibold">{tenant.plan_id || "No plan assigned"}</p>
+                  <p className="font-semibold">
+                    {tenant.plan_id || "No plan assigned"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-white/50 mb-2">Billing Contact</p>
