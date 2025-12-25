@@ -33,7 +33,9 @@ function getSubdomain(request: NextRequest): string | null {
 // Validate subdomain against database
 async function validateSubdomain(subdomain: string): Promise<boolean> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://athaarva-backend.onrender.com";
     const response = await fetch(`${apiUrl}/hospitals/${subdomain}/validate`, {
       headers: {
         'Cache-Control': 'no-cache',
