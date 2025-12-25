@@ -71,7 +71,7 @@ interface Appointment {
 const mockAppointments: Appointment[] = [
   {
     id: "apt-1",
-    patientName: "John Smith",
+    patientName: "John Smith joe",
     doctorName: "Dr. Sarah Johnson",
     department: "Cardiology",
     date: "2025-12-04",
