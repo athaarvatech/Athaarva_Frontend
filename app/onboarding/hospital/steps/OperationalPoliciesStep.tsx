@@ -37,22 +37,25 @@ export default function OperationalPoliciesStep() {
   const { data, updateData } = useHospitalOnboarding();
   const [selectedLocation, setSelectedLocation] = useState<string>("");
 
-  const operationalPolicies: OperationalPolicies = useMemo(
-    () =>
-      data.operationalPolicies || {
-        operating_hours: [],
-        appointment_lead_time_hours: 24,
-        cancellation_policy: "",
-        no_show_policy: "",
-        telehealth_sop: "",
-        patient_onboarding_steps: [],
-      },
-    [data.operationalPolicies]
-  );
+  const operationalPolicies: OperationalPolicies = useMemo(() => {
+    const policies = data?.operationalPolicies || {};
+    return {
+      operating_hours: Array.isArray(policies.operating_hours)
+        ? policies.operating_hours
+        : [],
+      appointment_lead_time_hours: policies.appointment_lead_time_hours ?? 24,
+      cancellation_policy: policies.cancellation_policy || "",
+      no_show_policy: policies.no_show_policy || "",
+      telehealth_sop: policies.telehealth_sop || "",
+      patient_onboarding_steps: Array.isArray(policies.patient_onboarding_steps)
+        ? policies.patient_onboarding_steps
+        : [],
+    };
+  }, [data?.operationalPolicies]);
 
   const locations = useMemo(
-    () => (Array.isArray(data.locations) ? data.locations : []),
-    [data.locations]
+    () => (Array.isArray(data?.locations) ? data.locations : []),
+    [data?.locations]
   );
 
   const daysOfWeek = useMemo(
