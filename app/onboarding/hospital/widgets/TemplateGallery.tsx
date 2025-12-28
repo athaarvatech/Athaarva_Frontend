@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -16,6 +16,7 @@ import {
   Tablet,
   Smartphone,
   Palette,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,12 @@ import {
 } from "./templateBlueprints";
 import { EditableTemplatePreviewRenderer } from "./EditableTemplatePreviewRenderer";
 import { ThemeCustomizer } from "./ThemeCustomizer";
+import {
+  AhtarvaModernTemplate,
+  PremiumMedicalTemplate,
+  ModernHealthTechTemplate,
+  HealthcareSaaSTemplate,
+} from "./templates";
 
 // Re-export for convenience
 export type { CustomizedTemplateData } from "@/contexts/HospitalOnboardingContextV2";
@@ -43,86 +50,87 @@ interface TemplateGalleryProps {
 
 const MOCK_TEMPLATES: TemplateData[] = [
   {
-    id: "modern-healthcare",
-    name: "Modern Clinical Flagship",
-    version: "3.2",
-    preview_snapshot_url: "/templates/modern-clinical.jpg",
-    thumbnail_url: "/templates/modern-clinical-thumb.jpg",
+    id: "ahtarva-modern",
+    name: "Ahtarva Modern",
+    version: "1.0",
+    preview_snapshot_url: "/templates/ahtarva-modern.jpg",
+    thumbnail_url: "/templates/ahtarva-modern-thumb.jpg",
     description:
-      "Glass-and-steel campus aesthetic with immersive hero, data-driven stats, specialty grid, and premium doctor storytelling.",
+      "Premium emerald green design with stunning glassmorphism effects, animated gradients, and modern healthcare aesthetics.",
     supported_modules: [
       "Appointments",
-      "Patient Concierge",
-      "Tele-ICU",
-      "Precision Oncology",
-      "Virtual Tour",
+      "Doctor Profiles",
+      "Departments",
+      "Testimonials",
+      "Statistics",
     ],
     recommended_for: [
-      "Multi-specialty Hospitals",
-      "International Patient Programs",
-      "Enterprise Health Systems",
+      "Modern Hospitals",
+      "Multi-specialty Clinics",
+      "Premium Healthcare",
     ],
   },
   {
-    id: "telehealth-first",
-    name: "Telehealth First Mesh",
-    version: "2.6",
-    preview_snapshot_url: "/templates/telehealth-first.jpg",
-    thumbnail_url: "/templates/telehealth-first-thumb.jpg",
+    id: "premium-medical",
+    name: "Premium Medical",
+    version: "1.0",
+    preview_snapshot_url: "/templates/premium-medical.jpg",
+    thumbnail_url: "/templates/premium-medical-thumb.jpg",
     description:
-      "Cloud-native virtual hospital layout inspired by leading hybrid-care networks with strong CTA coverage for remote visits.",
+      "Soft-tech design with pastel accents, generous spacing, and elegant animations for a calming patient experience.",
     supported_modules: [
-      "Virtual Waiting Room",
-      "Remote Monitoring",
-      "At-home Infusion",
-      "Behavioral Health Studio",
-    ],
-    recommended_for: [
-      "Digital-first Hospitals",
-      "Chronic Care Networks",
-      "Employer Health Programs",
-    ],
-  },
-  {
-    id: "heritage",
-    name: "Heritage Academic",
-    version: "1.8",
-    preview_snapshot_url: "/templates/heritage.jpg",
-    thumbnail_url: "/templates/heritage-thumb.jpg",
-    description:
-      "Classic serif typography, heritage imagery, and donor storytelling tuned for legacy hospitals balancing tradition with science.",
-    supported_modules: [
-      "Pastoral Care",
-      "Academic Programs",
-      "Transplant Outcomes",
-      "Heritage Timeline",
-    ],
-    recommended_for: [
-      "Teaching Hospitals",
-      "Mission Hospitals",
-      "Faith-driven Health Systems",
-    ],
-  },
-  {
-    id: "yashoda-inspired",
-    name: "Super Specialty Medicity",
-    version: "4.0",
-    preview_snapshot_url: "/templates/yashoda-medicity.jpg",
-    thumbnail_url: "/templates/yashoda-medicity-thumb.jpg",
-    description:
-      "Premium multi-super specialty design inspired by leading hospital chains. Features stats strip, centers of excellence, doctor profiles with booking, international patient services, and breakthrough cases.",
-    supported_modules: [
-      "Centers of Excellence",
-      "International Patients",
-      "Robotic Surgery",
+      "Patient Portal",
+      "Wellness Programs",
+      "Virtual Tours",
       "Health Checkups",
-      "Emergency Services",
+      "Telemedicine",
     ],
     recommended_for: [
-      "Super Specialty Hospitals",
-      "Medical Tourism",
-      "Corporate Hospitals",
-      "Multi-chain Networks",
+      "Women's Health Centers",
+      "Wellness Clinics",
+      "Family Care",
+    ],
+  },
+  {
+    id: "modern-health-tech",
+    name: "Modern Health Tech",
+    version: "1.0",
+    preview_snapshot_url: "/templates/modern-health-tech.jpg",
+    thumbnail_url: "/templates/modern-health-tech-thumb.jpg",
+    description:
+      "Futuristic electric blue design with bento grid layouts, neon accents, and cutting-edge tech hospital aesthetics.",
+    supported_modules: [
+      "AI Diagnostics",
+      "Robotic Surgery",
+      "Remote Monitoring",
+      "Digital Records",
+      "Smart ICU",
+    ],
+    recommended_for: [
+      "Tech-forward Hospitals",
+      "Research Institutions",
+      "Digital Health Systems",
+    ],
+  },
+  {
+    id: "healthcare-saas",
+    name: "Healthcare SaaS",
+    version: "1.0",
+    preview_snapshot_url: "/templates/healthcare-saas.jpg",
+    thumbnail_url: "/templates/healthcare-saas-thumb.jpg",
+    description:
+      "Corporate Google Green design with clean SaaS aesthetics, perfect for B2B healthcare platforms and enterprise solutions.",
+    supported_modules: [
+      "Enterprise Dashboard",
+      "Multi-tenant Admin",
+      "Analytics Suite",
+      "API Integration",
+      "White-label Options",
+    ],
+    recommended_for: [
+      "Healthcare Enterprises",
+      "Hospital Networks",
+      "B2B Platforms",
     ],
   },
 ];
@@ -220,12 +228,42 @@ export function TemplateGallery({
           <div className="bg-gray-100 rounded-2xl p-6 overflow-hidden">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden mx-auto max-w-4xl">
               <div className="transform scale-[0.5] origin-top h-[400px] overflow-hidden">
-                <EditableTemplatePreviewRenderer
-                  blueprint={selectedTemplate.customizedBlueprint}
-                  device="desktop"
-                  onBlueprintChange={() => {}} // Read-only
-                  isEditMode={false}
-                />
+                {selectedTemplate.id === "ahtarva-modern" ? (
+                  <AhtarvaModernTemplate
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                ) : selectedTemplate.id === "premium-medical" ? (
+                  <PremiumMedicalTemplate
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                ) : selectedTemplate.id === "modern-health-tech" ? (
+                  <ModernHealthTechTemplate
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                ) : selectedTemplate.id === "healthcare-saas" ? (
+                  <HealthcareSaaSTemplate
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                ) : (
+                  <EditableTemplatePreviewRenderer
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                )}
               </div>
             </div>
             <p className="text-center text-sm text-gray-500 mt-4">
@@ -357,29 +395,45 @@ function MiniTemplatePreview({
 }) {
   const getTemplateStyle = () => {
     switch (templateId) {
-      case "modern-healthcare":
+      case "ahtarva-modern":
         return {
-          gradient: "from-teal-500 to-blue-600",
-          accent: "bg-teal-500",
+          gradient: "from-emerald-500 to-emerald-600",
+          accent: "bg-emerald-500",
           style: "modern",
+          icon: Building2,
+          iconColor: "text-emerald-600",
         };
-      case "telehealth-first":
+      case "premium-medical":
         return {
-          gradient: "from-blue-500 to-cyan-500",
+          gradient: "from-emerald-400 to-teal-500",
+          accent: "bg-emerald-400",
+          style: "premium",
+          icon: Heart,
+          iconColor: "text-emerald-500",
+        };
+      case "modern-health-tech":
+        return {
+          gradient: "from-blue-500 to-blue-600",
           accent: "bg-blue-500",
-          style: "digital",
+          style: "tech",
+          icon: Video,
+          iconColor: "text-blue-600",
         };
-      case "heritage":
+      case "healthcare-saas":
         return {
-          gradient: "from-amber-600 to-amber-800",
-          accent: "bg-amber-600",
-          style: "classic",
+          gradient: "from-green-500 to-green-600",
+          accent: "bg-green-500",
+          style: "saas",
+          icon: Building2,
+          iconColor: "text-green-600",
         };
       default:
         return {
           gradient: "from-gray-500 to-gray-700",
           accent: "bg-gray-500",
           style: "default",
+          icon: Sparkles,
+          iconColor: "text-gray-600",
         };
     }
   };
@@ -481,21 +535,9 @@ function MiniTemplatePreview({
 
       {/* Template style indicator */}
       <div className="absolute top-2 left-2">
-        {templateId === "modern-healthcare" && (
-          <div className="bg-white/90 backdrop-blur rounded-full p-1 shadow-sm">
-            <Building2 className="w-3 h-3 text-teal-600" />
-          </div>
-        )}
-        {templateId === "telehealth-first" && (
-          <div className="bg-white/90 backdrop-blur rounded-full p-1 shadow-sm">
-            <Video className="w-3 h-3 text-blue-600" />
-          </div>
-        )}
-        {templateId === "heritage" && (
-          <div className="bg-white/90 backdrop-blur rounded-full p-1 shadow-sm">
-            <Heart className="w-3 h-3 text-amber-600" />
-          </div>
-        )}
+        <div className="bg-white/90 backdrop-blur rounded-full p-1 shadow-sm">
+          <style.icon className={cn("w-3 h-3", style.iconColor)} />
+        </div>
       </div>
     </div>
   );
@@ -519,6 +561,27 @@ function TemplatePreviewModal({
   );
   const [isEditMode, setIsEditMode] = useState(true);
   const [showThemePanel, setShowThemePanel] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Keyboard handler for ESC key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullScreen) {
+        setIsFullScreen(false);
+      }
+    };
+
+    if (isFullScreen) {
+      document.addEventListener("keydown", handleKeyDown);
+      // Prevent body scroll when fullscreen is active
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isFullScreen]);
 
   // Initialize local blueprint state from the template
   const originalBlueprint = useMemo(
@@ -723,8 +786,109 @@ function TemplatePreviewModal({
                 </Button>
               </>
             )}
+            {/* Full Screen Preview Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsFullScreen(true)}
+              className="text-gray-600 hover:text-healthcare-primary hover:border-healthcare-primary"
+            >
+              <Maximize2 className="w-4 h-4 mr-1" />
+              Full Screen
+            </Button>
           </div>
         </div>
+
+        {/* Full Screen Preview Modal */}
+        {isFullScreen && editedBlueprint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-white"
+            style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+          >
+            {/* Escape Button - Top Left Corner */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              onClick={() => setIsFullScreen(false)}
+              className="fixed top-4 left-4 z-[110] flex items-center gap-2 px-4 py-2 bg-black/80 hover:bg-black text-white rounded-full shadow-2xl backdrop-blur-sm transition-all duration-200 hover:scale-105"
+            >
+              <X className="w-5 h-5" />
+              <span className="text-sm font-medium">Exit Full Screen</span>
+            </motion.button>
+
+            {/* Template Name Badge - Top Right */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="fixed top-4 right-4 z-[110] px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200"
+            >
+              <span className="text-sm font-semibold text-gray-700">
+                {template.name}
+              </span>
+            </motion.div>
+
+            {/* Full Screen Template Content */}
+            <div className="w-full h-full overflow-y-auto">
+              {template.id === "ahtarva-modern" ? (
+                <AhtarvaModernTemplate
+                  blueprint={editedBlueprint}
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                  showBanner={false}
+                  device="desktop"
+                />
+              ) : template.id === "premium-medical" ? (
+                <PremiumMedicalTemplate
+                  blueprint={editedBlueprint}
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                  showBanner={false}
+                  device="desktop"
+                />
+              ) : template.id === "modern-health-tech" ? (
+                <ModernHealthTechTemplate
+                  blueprint={editedBlueprint}
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                  showBanner={false}
+                  device="desktop"
+                />
+              ) : template.id === "healthcare-saas" ? (
+                <HealthcareSaaSTemplate
+                  blueprint={editedBlueprint}
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                  showBanner={false}
+                  device="desktop"
+                />
+              ) : (
+                <EditableTemplatePreviewRenderer
+                  blueprint={editedBlueprint}
+                  device="desktop"
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                />
+              )}
+            </div>
+
+            {/* Keyboard Hint */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[110] px-4 py-2 bg-black/60 text-white/80 rounded-full text-xs backdrop-blur-sm"
+            >
+              Press{" "}
+              <kbd className="px-1.5 py-0.5 bg-white/20 rounded mx-1">ESC</kbd>{" "}
+              or click the button to exit
+            </motion.div>
+          </motion.div>
+        )}
 
         {/* Preview Area - Scrollable with optional Theme Panel */}
         <div className="flex-1 overflow-hidden flex">
@@ -768,12 +932,44 @@ function TemplatePreviewModal({
               }}
             >
               {editedBlueprint ? (
-                <EditableTemplatePreviewRenderer
-                  blueprint={editedBlueprint}
-                  device={device}
-                  onBlueprintChange={setEditedBlueprint}
-                  isEditMode={isEditMode}
-                />
+                // Render custom templates based on template ID
+                template.id === "ahtarva-modern" ? (
+                  <AhtarvaModernTemplate
+                    blueprint={editedBlueprint}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                    device={device}
+                  />
+                ) : template.id === "premium-medical" ? (
+                  <PremiumMedicalTemplate
+                    blueprint={editedBlueprint}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                    device={device}
+                  />
+                ) : template.id === "modern-health-tech" ? (
+                  <ModernHealthTechTemplate
+                    blueprint={editedBlueprint}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                    device={device}
+                  />
+                ) : template.id === "healthcare-saas" ? (
+                  <HealthcareSaaSTemplate
+                    blueprint={editedBlueprint}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                    device={device}
+                  />
+                ) : (
+                  // Fallback to generic renderer
+                  <EditableTemplatePreviewRenderer
+                    blueprint={editedBlueprint}
+                    device={device}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                  />
+                )
               ) : (
                 <div className="flex h-full items-center justify-center text-gray-400 min-h-[400px]">
                   <div className="text-center">

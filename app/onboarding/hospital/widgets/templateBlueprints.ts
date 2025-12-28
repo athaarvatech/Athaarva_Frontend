@@ -552,4 +552,578 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       ],
     },
   },
+  // ============================================================================
+  // NEW TEMPLATES - Custom Designed Templates
+  // ============================================================================
+  "ahtarva-modern": {
+    id: "ahtarva-modern",
+    hero: {
+      eyebrow: "Premium Healthcare Experience",
+      title: "Ahtarva Medical Center",
+      subtitle:
+        "Where cutting-edge technology meets compassionate care. Experience world-class healthcare with a personal touch.",
+      primaryCta: { label: "Book Appointment", href: "/appointments" },
+      secondaryCta: { label: "Virtual Tour", href: "/tour" },
+      stats: [
+        { label: "Years of Excellence", value: "25+" },
+        { label: "Expert Doctors", value: "150+" },
+        { label: "Happy Patients", value: "50K+" },
+        { label: "Specialties", value: "40+" },
+      ],
+      heroImageAlt: "Modern hospital building with glass facade",
+    },
+    palette: {
+      background: "#f8fafb",
+      surface: "#ffffff",
+      accent: "#11d473",
+      accentMuted: "#d1fae5",
+      text: "#102219",
+      textMuted: "#475569",
+      gradient: "linear-gradient(135deg, #11d473, #0c4a6e)",
+    },
+    typography: {
+      heading: '"Manrope", "Inter", sans-serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "🫀",
+        title: "Cardiology",
+        description:
+          "Advanced cardiac care with state-of-the-art cath labs and heart failure management.",
+      },
+      {
+        icon: "🧠",
+        title: "Neurosciences",
+        description:
+          "Comprehensive brain and spine care with advanced neuroimaging and neurosurgery.",
+      },
+      {
+        icon: "🦴",
+        title: "Orthopedics",
+        description:
+          "Joint replacement, sports medicine, and spine surgery with robotic precision.",
+      },
+      {
+        icon: "👶",
+        title: "Pediatrics",
+        description:
+          "Complete child healthcare from newborn care to adolescent medicine.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "24/7 Emergency Care",
+        description:
+          "Round-the-clock emergency services with trauma specialists on-site.",
+        icon: "🚑",
+      },
+      {
+        title: "Advanced Diagnostics",
+        description:
+          "Latest imaging technology including 3T MRI, PET-CT, and digital pathology.",
+        icon: "🔬",
+      },
+      {
+        title: "Patient-Centric Approach",
+        description:
+          "Personalized care plans with dedicated patient coordinators.",
+        icon: "💚",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Priya Sharma",
+        specialty: "Chief Cardiologist",
+        description:
+          "Pioneer in minimally invasive cardiac procedures with 20+ years experience.",
+        mediaLabel: "Watch Introduction",
+      },
+      {
+        name: "Dr. Rajesh Kumar",
+        specialty: "Head of Neurosciences",
+        description: "Expert in complex brain surgeries and stroke management.",
+        mediaLabel: "View Profile",
+      },
+      {
+        name: "Dr. Anita Desai",
+        specialty: "Director of Pediatrics",
+        description:
+          "Specialized in pediatric critical care and developmental disorders.",
+        mediaLabel: "Book Consultation",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The care I received was exceptional. The doctors and staff made me feel like family throughout my treatment.",
+        patient: "Ramesh Patel",
+        procedure: "Cardiac Bypass Surgery",
+        rating: 5,
+      },
+      {
+        quote:
+          "From diagnosis to recovery, every step was handled with utmost professionalism and care.",
+        patient: "Sunita Mehta",
+        procedure: "Knee Replacement",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Modern ICU Complex",
+        copy: "State-of-the-art intensive care units with advanced monitoring systems.",
+      },
+      {
+        title: "Healing Environment",
+        copy: "Thoughtfully designed spaces that promote comfort and recovery.",
+      },
+      {
+        title: "Technology Integration",
+        copy: "Seamless digital experience from booking to post-care follow-ups.",
+      },
+    ],
+    programs: [
+      {
+        title: "Executive Health Checkup",
+        meta: "Comprehensive Screening",
+        description:
+          "Complete health assessment packages tailored for busy professionals.",
+      },
+      {
+        title: "Wellness Programs",
+        meta: "Preventive Care",
+        description:
+          "Lifestyle modification and chronic disease management programs.",
+      },
+    ],
+    footer: {
+      contact: {
+        phone: "+91 98765 43210",
+        email: "info@ahtarvamedical.com",
+        location: "Mumbai, Maharashtra, India",
+      },
+      quickLinks: [
+        "Find a Doctor",
+        "Book Appointment",
+        "Health Packages",
+        "Contact Us",
+      ],
+    },
+  },
+  "premium-medical": {
+    id: "premium-medical",
+    hero: {
+      eyebrow: "Trusted Healthcare Partner",
+      title: "Premium Medical Institute",
+      subtitle:
+        "Experience healthcare reimagined. Our expert team combines advanced medicine with genuine compassion.",
+      primaryCta: { label: "Schedule Visit", href: "/schedule" },
+      secondaryCta: { label: "Explore Services", href: "/services" },
+      stats: [
+        { label: "Board Certified Doctors", value: "200+" },
+        { label: "Patient Satisfaction", value: "98%" },
+        { label: "Awards Won", value: "50+" },
+        { label: "Beds Available", value: "500+" },
+      ],
+      heroImageAlt: "Premium hospital lobby with natural lighting",
+    },
+    palette: {
+      background: "#f9fafb",
+      surface: "#ffffff",
+      accent: "#11d473",
+      accentMuted: "#ecfdf5",
+      text: "#111827",
+      textMuted: "#6b7280",
+      gradient: "linear-gradient(135deg, #11d473, #10b981)",
+    },
+    typography: {
+      heading: '"Plus Jakarta Sans", "Inter", sans-serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "❤️",
+        title: "Heart Care",
+        description:
+          "Comprehensive cardiac services from prevention to intervention.",
+      },
+      {
+        icon: "🧬",
+        title: "Oncology",
+        description:
+          "Advanced cancer treatment with personalized therapy protocols.",
+      },
+      {
+        icon: "🏃",
+        title: "Sports Medicine",
+        description: "Specialized care for athletes and active individuals.",
+      },
+      {
+        icon: "👩‍⚕️",
+        title: "Women's Health",
+        description: "Complete women's healthcare across all life stages.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "Personalized Care Plans",
+        description: "Every patient receives a customized treatment pathway.",
+        icon: "📋",
+      },
+      {
+        title: "Holistic Wellness",
+        description: "Integrating mental, physical, and emotional health.",
+        icon: "🌿",
+      },
+      {
+        title: "Family-Centered Approach",
+        description: "Involving families in the healing journey.",
+        icon: "👨‍👩‍👧‍👦",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Sarah Johnson",
+        specialty: "Chief Medical Officer",
+        description:
+          "Leading healthcare innovation with 25 years of clinical excellence.",
+        mediaLabel: "Meet Dr. Johnson",
+      },
+      {
+        name: "Dr. Michael Chen",
+        specialty: "Head of Oncology",
+        description:
+          "Pioneer in precision medicine and targeted cancer therapies.",
+        mediaLabel: "View Credentials",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The warmth and professionalism of the entire team made a difficult time so much easier.",
+        patient: "Jennifer Williams",
+        procedure: "Cancer Treatment",
+        rating: 5,
+      },
+      {
+        quote:
+          "Outstanding care from start to finish. I couldn't have asked for better treatment.",
+        patient: "David Thompson",
+        procedure: "Cardiac Surgery",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Healing Gardens",
+        copy: "Therapeutic outdoor spaces designed for patient wellbeing and recovery.",
+      },
+      {
+        title: "Private Suites",
+        copy: "Comfortable, hotel-like accommodations for patients and families.",
+      },
+      {
+        title: "Wellness Center",
+        copy: "Comprehensive rehabilitation and wellness facilities.",
+      },
+    ],
+    programs: [
+      {
+        title: "Concierge Medicine",
+        meta: "Premium Service",
+        description:
+          "Exclusive healthcare experience with dedicated physician access.",
+      },
+      {
+        title: "Preventive Health",
+        meta: "Stay Ahead",
+        description: "Comprehensive screening and early detection programs.",
+      },
+    ],
+    footer: {
+      contact: {
+        phone: "+1 (555) 123-4567",
+        email: "care@premiummedical.com",
+        location: "San Francisco, California, USA",
+      },
+      quickLinks: ["Our Doctors", "Services", "Patient Portal", "Insurance"],
+    },
+  },
+  "modern-health-tech": {
+    id: "modern-health-tech",
+    hero: {
+      eyebrow: "The Future of Healthcare",
+      title: "HealthTech Medical Center",
+      subtitle:
+        "Where innovation meets healing. Experience next-generation healthcare powered by AI and cutting-edge technology.",
+      primaryCta: { label: "Get Started", href: "/start" },
+      secondaryCta: { label: "Learn More", href: "/about" },
+      stats: [
+        { label: "AI Diagnoses", value: "100K+" },
+        { label: "Digital First", value: "24/7" },
+        { label: "Tech Patents", value: "30+" },
+        { label: "Connected Devices", value: "1M+" },
+      ],
+      heroImageAlt: "Futuristic hospital with advanced technology",
+    },
+    palette: {
+      background: "#f0f4f8",
+      surface: "#ffffff",
+      accent: "#137fec",
+      accentMuted: "#dbeafe",
+      text: "#0f172a",
+      textMuted: "#64748b",
+      gradient: "linear-gradient(135deg, #137fec, #06b6d4)",
+    },
+    typography: {
+      heading: '"Space Grotesk", "Inter", sans-serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "🤖",
+        title: "AI Diagnostics",
+        description: "Machine learning powered diagnostic accuracy and speed.",
+      },
+      {
+        icon: "🔬",
+        title: "Genomic Medicine",
+        description: "Personalized treatments based on your genetic profile.",
+      },
+      {
+        icon: "📱",
+        title: "Digital Therapeutics",
+        description: "App-based treatment programs with real-time monitoring.",
+      },
+      {
+        icon: "🦾",
+        title: "Robotic Surgery",
+        description:
+          "Precision surgery with minimal invasion and faster recovery.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "AI-First Approach",
+        description: "Every diagnosis enhanced by machine learning algorithms.",
+        icon: "🧠",
+      },
+      {
+        title: "Remote Monitoring",
+        description:
+          "Continuous health tracking with smart wearables integration.",
+        icon: "📊",
+      },
+      {
+        title: "Instant Results",
+        description:
+          "Real-time test results and immediate care recommendations.",
+        icon: "⚡",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Alex Rivera",
+        specialty: "Chief Innovation Officer",
+        description:
+          "Leading the integration of AI in clinical decision making.",
+        mediaLabel: "Watch Tech Talk",
+      },
+      {
+        name: "Dr. Lisa Park",
+        specialty: "Director of Digital Health",
+        description: "Pioneering remote care and digital therapeutic programs.",
+        mediaLabel: "See Digital Platform",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The AI-assisted diagnosis was incredibly accurate. The whole experience felt like healthcare from the future.",
+        patient: "Kevin Zhang",
+        procedure: "AI-Assisted Diagnosis",
+        rating: 5,
+      },
+      {
+        quote:
+          "Remote monitoring helped me manage my condition without constant hospital visits.",
+        patient: "Maria Santos",
+        procedure: "Digital Therapeutics",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Innovation Lab",
+        copy: "Research facility where new medical technologies are developed and tested.",
+      },
+      {
+        title: "Smart Rooms",
+        copy: "IoT-enabled patient rooms with voice-controlled systems.",
+      },
+      {
+        title: "Data Center",
+        copy: "Secure, HIPAA-compliant infrastructure powering all digital services.",
+      },
+    ],
+    programs: [
+      {
+        title: "Virtual Care Hub",
+        meta: "Always Available",
+        description: "24/7 telehealth with instant specialist connections.",
+      },
+      {
+        title: "Health Analytics",
+        meta: "Data-Driven",
+        description: "Predictive health insights from continuous monitoring.",
+      },
+    ],
+    footer: {
+      contact: {
+        phone: "+1 (800) HEALTH-1",
+        email: "connect@healthtechmed.com",
+        location: "Boston, Massachusetts, USA",
+      },
+      quickLinks: ["Digital Health App", "AI Services", "Research", "Careers"],
+    },
+  },
+  "healthcare-saas": {
+    id: "healthcare-saas",
+    hero: {
+      eyebrow: "Enterprise Healthcare Platform",
+      title: "Transform Your Hospital Operations",
+      subtitle:
+        "The complete SaaS solution for modern healthcare institutions. Streamline operations, enhance patient care, and drive growth.",
+      primaryCta: { label: "Start Free Trial", href: "/trial" },
+      secondaryCta: { label: "Watch Demo", href: "/demo" },
+      stats: [
+        { label: "Hospitals Served", value: "500+" },
+        { label: "Countries", value: "30+" },
+        { label: "Uptime", value: "99.9%" },
+        { label: "Support", value: "24/7" },
+      ],
+      heroImageAlt: "Healthcare dashboard on modern devices",
+    },
+    palette: {
+      background: "#ffffff",
+      surface: "#f9fafb",
+      accent: "#34A853",
+      accentMuted: "#dcfce7",
+      text: "#111827",
+      textMuted: "#6b7280",
+      gradient: "linear-gradient(135deg, #34A853, #22c55e)",
+    },
+    typography: {
+      heading: '"Inter", system-ui, sans-serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "📅",
+        title: "Smart Scheduling",
+        description:
+          "AI-powered appointment management that maximizes efficiency.",
+      },
+      {
+        icon: "📦",
+        title: "Inventory Management",
+        description: "Real-time tracking and automated reordering systems.",
+      },
+      {
+        icon: "💳",
+        title: "Billing & Revenue",
+        description: "Streamlined billing with insurance integration.",
+      },
+      {
+        icon: "📊",
+        title: "Analytics Dashboard",
+        description: "Comprehensive insights for data-driven decisions.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "Enterprise Ready",
+        description:
+          "Scalable infrastructure designed for large healthcare networks.",
+        icon: "🏢",
+      },
+      {
+        title: "Compliance First",
+        description: "HIPAA, GDPR, and SOC 2 compliant by design.",
+        icon: "🔒",
+      },
+      {
+        title: "Seamless Integration",
+        description: "Connect with existing EHR, EMR, and third-party systems.",
+        icon: "🔗",
+      },
+    ],
+    doctors: [
+      {
+        name: "John Smith",
+        specialty: "CEO, Metro Health Network",
+        description:
+          "Transformed our 50-hospital network operations with remarkable results.",
+        mediaLabel: "Read Case Study",
+      },
+      {
+        name: "Dr. Amanda Foster",
+        specialty: "CMO, Regional Medical",
+        description:
+          "Reduced administrative overhead by 40% in the first year.",
+        mediaLabel: "View Results",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "This platform revolutionized how we manage our hospital operations. The ROI was visible within months.",
+        patient: "James Wilson",
+        procedure: "CEO, HealthFirst Group",
+        rating: 5,
+      },
+      {
+        quote:
+          "Finally, a healthcare SaaS that understands enterprise needs. The support team is exceptional.",
+        patient: "Dr. Rebecca Liu",
+        procedure: "Director, City Medical",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Cloud Infrastructure",
+        copy: "Enterprise-grade cloud hosting with global availability.",
+      },
+      {
+        title: "API First",
+        copy: "Comprehensive APIs for custom integrations and workflows.",
+      },
+      {
+        title: "White Label Ready",
+        copy: "Fully customizable branding for your organization.",
+      },
+    ],
+    programs: [
+      {
+        title: "Enterprise Plan",
+        meta: "Full Platform",
+        description: "Complete solution for large healthcare networks.",
+      },
+      {
+        title: "Growth Plan",
+        meta: "Scale Up",
+        description: "Perfect for growing hospitals and clinics.",
+      },
+    ],
+    footer: {
+      contact: {
+        phone: "+1 (888) 555-0123",
+        email: "enterprise@healthcaresaas.com",
+        location: "Headquarters: New York, NY",
+      },
+      quickLinks: ["Features", "Pricing", "Case Studies", "API Docs"],
+    },
+  },
 };

@@ -38,6 +38,7 @@ export default function AdminStaffInvitationsStep() {
       role: "",
       email: "",
       phone: "",
+      access_scope: "organization",
       status: "pending",
       scope_hint: "",
       notes: "",

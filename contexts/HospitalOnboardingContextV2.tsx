@@ -515,6 +515,7 @@ export interface TeamMemberData {
   access_scope: "organization" | "location" | "department";
   location_ids?: string[];
   status: "pending" | "invited" | "active" | "suspended";
+  scope_hint?: string;
   notes?: string;
 }
 
@@ -604,6 +605,8 @@ export interface HospitalOnboardingData {
     logo_size: "small" | "medium" | "large";
     favicon_url: string;
     favicon_file: File | null;
+    hero_asset_url?: string;
+    hero_asset_file?: File | null;
     colors: {
       primary: string;
       secondary: string;
@@ -683,6 +686,12 @@ export interface HospitalOnboardingData {
       clinical_audit_frequency: "monthly" | "quarterly" | "annual";
       mortality_review_enabled: boolean;
     };
+    consent_templates: Array<{
+      id: string;
+      type: string;
+      url: string;
+      file?: File;
+    }>;
   };
 
   // Step 11: Admin & Staff Invitations (ENHANCED)
@@ -861,6 +870,8 @@ const initialData: HospitalOnboardingData = {
     logo_size: "medium",
     favicon_url: "",
     favicon_file: null,
+    hero_asset_url: "",
+    hero_asset_file: null,
     colors: {
       primary: "#007C7C",
       secondary: "#20B2AA",
@@ -1034,6 +1045,7 @@ const initialData: HospitalOnboardingData = {
       clinical_audit_frequency: "quarterly",
       mortality_review_enabled: true,
     },
+    consent_templates: [],
   },
 
   // Step 11: Admin Team
@@ -1177,16 +1189,48 @@ export const HospitalOnboardingProvider: React.FC<
     <T extends keyof HospitalOnboardingData>(
       section: T,
       updates:
+        | HospitalOnboardingData[T]
         | Partial<HospitalOnboardingData[T]>
         | ((
             prev: HospitalOnboardingData[T]
-          ) => Partial<HospitalOnboardingData[T]>)
+          ) => HospitalOnboardingData[T] | Partial<HospitalOnboardingData[T]>)
     ) => {
       setData((prev) => {
-        const updatedSection =
-          typeof updates === "function"
-            ? { ...prev[section], ...updates(prev[section]) }
-            : { ...prev[section], ...updates };
+        let updatedSection: HospitalOnboardingData[T];
+
+        if (typeof updates === "function") {
+          const result = updates(prev[section]);
+          // If function returns a full array or primitive, use it directly
+          if (
+            Array.isArray(result) ||
+            typeof result !== "object" ||
+            result === null
+          ) {
+            updatedSection = result as HospitalOnboardingData[T];
+          } else {
+            updatedSection = {
+              ...prev[section],
+              ...result,
+            } as HospitalOnboardingData[T];
+          }
+        } else {
+          // If updates is an array, replace entirely; otherwise merge
+          if (Array.isArray(updates)) {
+            updatedSection = updates as HospitalOnboardingData[T];
+          } else if (typeof updates === "object" && updates !== null) {
+            // Check if prev[section] is an array - if so, replace entirely
+            if (Array.isArray(prev[section])) {
+              updatedSection = updates as HospitalOnboardingData[T];
+            } else {
+              updatedSection = {
+                ...prev[section],
+                ...updates,
+              } as HospitalOnboardingData[T];
+            }
+          } else {
+            updatedSection = updates as HospitalOnboardingData[T];
+          }
+        }
 
         return {
           ...prev,

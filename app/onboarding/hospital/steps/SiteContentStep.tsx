@@ -41,7 +41,21 @@ import { countWords } from "@/lib/onboarding-utils";
 
 export default function SiteContentStep() {
   const { data, updateData } = useHospitalOnboarding();
-  const content = data.siteContent;
+
+  // Default content structure in case siteContent is undefined
+  const content = data.siteContent ?? {
+    hero: {
+      headline: "",
+      subtext: "",
+      cta_text: "Book Appointment",
+      cta_url: "/appointments",
+    },
+    services_highlights: [],
+    specialty_blurbs: [],
+    testimonials: [],
+    faq: [],
+    blog_teasers: [],
+  };
 
   // TODO: Implement hero section editor
   // TODO: Implement services highlights (min 3)
@@ -139,120 +153,103 @@ export default function SiteContentStep() {
         </div>
 
         <div className="p-6 space-y-4">
-          {data.siteContent.services_highlights?.map(
-            (service: any, index: number) => (
-              <div
-                key={service.id || index}
-                className="border border-gray-200 rounded-lg p-4 space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    Service #{index + 1}
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const updated = [
-                        ...(data.siteContent.services_highlights || []),
-                      ];
-                      updated.splice(index, 1);
+          {content.services_highlights?.map((service: any, index: number) => (
+            <div
+              key={service.id || index}
+              className="border border-gray-200 rounded-lg p-4 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Service #{index + 1}
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const updated = [...(content.services_highlights || [])];
+                    updated.splice(index, 1);
+                    updateData("siteContent", {
+                      services_highlights: updated,
+                    });
+                  }}
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField label="Icon" required>
+                  <Select
+                    value={service.icon}
+                    onValueChange={(value) => {
+                      const updated = [...(content.services_highlights || [])];
+                      updated[index] = { ...updated[index], icon: value };
                       updateData("siteContent", {
                         services_highlights: updated,
                       });
                     }}
                   >
-                    <X className="w-4 h-4 text-red-600" />
-                  </Button>
-                </div>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select icon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="heart">
+                        ❤️ Heart (Cardiology)
+                      </SelectItem>
+                      <SelectItem value="brain">
+                        🧠 Brain (Neurology)
+                      </SelectItem>
+                      <SelectItem value="bone">
+                        🦴 Bone (Orthopedics)
+                      </SelectItem>
+                      <SelectItem value="eye">
+                        👁️ Eye (Ophthalmology)
+                      </SelectItem>
+                      <SelectItem value="tooth">
+                        🦷 Tooth (Dentistry)
+                      </SelectItem>
+                      <SelectItem value="baby">👶 Baby (Pediatrics)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField label="Icon" required>
-                    <Select
-                      value={service.icon}
-                      onValueChange={(value) => {
-                        const updated = [
-                          ...(data.siteContent.services_highlights || []),
-                        ];
-                        updated[index] = { ...updated[index], icon: value };
-                        updateData("siteContent", {
-                          services_highlights: updated,
-                        });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select icon" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="heart">
-                          ❤️ Heart (Cardiology)
-                        </SelectItem>
-                        <SelectItem value="brain">
-                          🧠 Brain (Neurology)
-                        </SelectItem>
-                        <SelectItem value="bone">
-                          🦴 Bone (Orthopedics)
-                        </SelectItem>
-                        <SelectItem value="eye">
-                          👁️ Eye (Ophthalmology)
-                        </SelectItem>
-                        <SelectItem value="tooth">
-                          🦷 Tooth (Dentistry)
-                        </SelectItem>
-                        <SelectItem value="baby">
-                          👶 Baby (Pediatrics)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-
-                  <FormField label="Title" required>
-                    <Input
-                      value={service.title}
-                      onChange={(e) => {
-                        const updated = [
-                          ...(data.siteContent.services_highlights || []),
-                        ];
-                        updated[index] = {
-                          ...updated[index],
-                          title: e.target.value,
-                        };
-                        updateData("siteContent", {
-                          services_highlights: updated,
-                        });
-                      }}
-                      placeholder="e.g., Advanced Cardiology"
-                    />
-                  </FormField>
-                </div>
-
-                <FormField
-                  label="Description"
-                  required
-                  wordCount
-                  maxWords={150}
-                >
-                  <Textarea
-                    value={service.description}
+                <FormField label="Title" required>
+                  <Input
+                    value={service.title}
                     onChange={(e) => {
-                      const updated = [
-                        ...(data.siteContent.services_highlights || []),
-                      ];
+                      const updated = [...(content.services_highlights || [])];
                       updated[index] = {
                         ...updated[index],
-                        description: e.target.value,
+                        title: e.target.value,
                       };
                       updateData("siteContent", {
                         services_highlights: updated,
                       });
                     }}
-                    placeholder="Describe this service..."
-                    rows={3}
+                    placeholder="e.g., Advanced Cardiology"
                   />
                 </FormField>
               </div>
-            )
-          )}
+
+              <FormField label="Description" required wordCount maxWords={150}>
+                <Textarea
+                  value={service.description}
+                  onChange={(e) => {
+                    const updated = [...(content.services_highlights || [])];
+                    updated[index] = {
+                      ...updated[index],
+                      description: e.target.value,
+                    };
+                    updateData("siteContent", {
+                      services_highlights: updated,
+                    });
+                  }}
+                  placeholder="Describe this service..."
+                  rows={3}
+                />
+              </FormField>
+            </div>
+          ))}
 
           <Button
             variant="outline"
@@ -265,7 +262,7 @@ export default function SiteContentStep() {
               };
               updateData("siteContent", {
                 services_highlights: [
-                  ...(data.siteContent.services_highlights || []),
+                  ...(content.services_highlights || []),
                   newService,
                 ],
               });
@@ -294,117 +291,100 @@ export default function SiteContentStep() {
         </div>
 
         <div className="p-6 space-y-4">
-          {data.siteContent.testimonials?.map(
-            (testimonial: any, index: number) => (
-              <div
-                key={testimonial.id || index}
-                className="border border-gray-200 rounded-lg p-4 space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    Testimonial #{index + 1}
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const updated = [
-                        ...(data.siteContent.testimonials || []),
-                      ];
-                      updated.splice(index, 1);
+          {content.testimonials?.map((testimonial: any, index: number) => (
+            <div
+              key={testimonial.id || index}
+              className="border border-gray-200 rounded-lg p-4 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Testimonial #{index + 1}
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const updated = [...(content.testimonials || [])];
+                    updated.splice(index, 1);
+                    updateData("siteContent", { testimonials: updated });
+                  }}
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Patient Name" required>
+                  <Input
+                    value={testimonial.patient_name}
+                    onChange={(e) => {
+                      const updated = [...(content.testimonials || [])];
+                      updated[index] = {
+                        ...updated[index],
+                        patient_name: e.target.value,
+                      };
+                      updateData("siteContent", { testimonials: updated });
+                    }}
+                    placeholder="e.g., Mrs. Sharma"
+                  />
+                </FormField>
+
+                <FormField label="Rating" required>
+                  <Select
+                    value={String(testimonial.rating)}
+                    onValueChange={(value) => {
+                      const updated = [...(content.testimonials || [])];
+                      updated[index] = {
+                        ...updated[index],
+                        rating: Number(value),
+                      };
                       updateData("siteContent", { testimonials: updated });
                     }}
                   >
-                    <X className="w-4 h-4 text-red-600" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField label="Patient Name" required>
-                    <Input
-                      value={testimonial.patient_name}
-                      onChange={(e) => {
-                        const updated = [
-                          ...(data.siteContent.testimonials || []),
-                        ];
-                        updated[index] = {
-                          ...updated[index],
-                          patient_name: e.target.value,
-                        };
-                        updateData("siteContent", { testimonials: updated });
-                      }}
-                      placeholder="e.g., Mrs. Sharma"
-                    />
-                  </FormField>
-
-                  <FormField label="Rating" required>
-                    <Select
-                      value={String(testimonial.rating)}
-                      onValueChange={(value) => {
-                        const updated = [
-                          ...(data.siteContent.testimonials || []),
-                        ];
-                        updated[index] = {
-                          ...updated[index],
-                          rating: Number(value),
-                        };
-                        updateData("siteContent", { testimonials: updated });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select rating" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">⭐⭐⭐⭐⭐ (5 stars)</SelectItem>
-                        <SelectItem value="4">⭐⭐⭐⭐ (4 stars)</SelectItem>
-                        <SelectItem value="3">⭐⭐⭐ (3 stars)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-                </div>
-
-                <FormField
-                  label="Testimonial"
-                  required
-                  wordCount
-                  maxWords={200}
-                >
-                  <Textarea
-                    value={testimonial.testimonial}
-                    onChange={(e) => {
-                      const updated = [
-                        ...(data.siteContent.testimonials || []),
-                      ];
-                      updated[index] = {
-                        ...updated[index],
-                        testimonial: e.target.value,
-                      };
-                      updateData("siteContent", { testimonials: updated });
-                    }}
-                    placeholder="Patient's feedback..."
-                    rows={4}
-                  />
-                </FormField>
-
-                <FormField label="Date">
-                  <Input
-                    type="date"
-                    value={testimonial.date}
-                    onChange={(e) => {
-                      const updated = [
-                        ...(data.siteContent.testimonials || []),
-                      ];
-                      updated[index] = {
-                        ...updated[index],
-                        date: e.target.value,
-                      };
-                      updateData("siteContent", { testimonials: updated });
-                    }}
-                  />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select rating" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">⭐⭐⭐⭐⭐ (5 stars)</SelectItem>
+                      <SelectItem value="4">⭐⭐⭐⭐ (4 stars)</SelectItem>
+                      <SelectItem value="3">⭐⭐⭐ (3 stars)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormField>
               </div>
-            )
-          )}
+
+              <FormField label="Testimonial" required wordCount maxWords={200}>
+                <Textarea
+                  value={testimonial.testimonial}
+                  onChange={(e) => {
+                    const updated = [...(content.testimonials || [])];
+                    updated[index] = {
+                      ...updated[index],
+                      testimonial: e.target.value,
+                    };
+                    updateData("siteContent", { testimonials: updated });
+                  }}
+                  placeholder="Patient's feedback..."
+                  rows={4}
+                />
+              </FormField>
+
+              <FormField label="Date">
+                <Input
+                  type="date"
+                  value={testimonial.date}
+                  onChange={(e) => {
+                    const updated = [...(content.testimonials || [])];
+                    updated[index] = {
+                      ...updated[index],
+                      date: e.target.value,
+                    };
+                    updateData("siteContent", { testimonials: updated });
+                  }}
+                />
+              </FormField>
+            </div>
+          ))}
 
           <Button
             variant="outline"
@@ -417,10 +397,7 @@ export default function SiteContentStep() {
                 date: new Date().toISOString().split("T")[0],
               };
               updateData("siteContent", {
-                testimonials: [
-                  ...(data.siteContent.testimonials || []),
-                  newTestimonial,
-                ],
+                testimonials: [...(content.testimonials || []), newTestimonial],
               });
             }}
             className="w-full"
@@ -447,7 +424,7 @@ export default function SiteContentStep() {
         </div>
 
         <div className="p-6 space-y-4">
-          {data.siteContent.faq?.map((item: any, index: number) => (
+          {content.faq?.map((item: any, index: number) => (
             <div
               key={item.id || index}
               className="border border-gray-200 rounded-lg p-4 space-y-4"
@@ -460,7 +437,7 @@ export default function SiteContentStep() {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    const updated = [...(data.siteContent.faq || [])];
+                    const updated = [...(content.faq || [])];
                     updated.splice(index, 1);
                     updateData("siteContent", { faq: updated });
                   }}
@@ -473,7 +450,7 @@ export default function SiteContentStep() {
                 <Input
                   value={item.question}
                   onChange={(e) => {
-                    const updated = [...(data.siteContent.faq || [])];
+                    const updated = [...(content.faq || [])];
                     updated[index] = {
                       ...updated[index],
                       question: e.target.value,
@@ -488,7 +465,7 @@ export default function SiteContentStep() {
                 <Textarea
                   value={item.answer}
                   onChange={(e) => {
-                    const updated = [...(data.siteContent.faq || [])];
+                    const updated = [...(content.faq || [])];
                     updated[index] = {
                       ...updated[index],
                       answer: e.target.value,
@@ -511,7 +488,7 @@ export default function SiteContentStep() {
                 answer: "",
               };
               updateData("siteContent", {
-                faq: [...(data.siteContent.faq || []), newFaq],
+                faq: [...(content.faq || []), newFaq],
               });
             }}
             className="w-full"
@@ -538,7 +515,7 @@ export default function SiteContentStep() {
         </div>
 
         <div className="p-6 space-y-4">
-          {data.siteContent.blog_teasers?.map((teaser: any, index: number) => (
+          {content.blog_teasers?.map((teaser: any, index: number) => (
             <div
               key={teaser.id || index}
               className="border border-gray-200 rounded-lg p-4 space-y-4"
@@ -547,29 +524,26 @@ export default function SiteContentStep() {
                 <h4 className="text-sm font-medium text-gray-900">
                   Blog Post #{index + 1}
                 </h4>
-                {data.siteContent.blog_teasers &&
-                  data.siteContent.blog_teasers.length > 3 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const updated = [
-                          ...(data.siteContent.blog_teasers || []),
-                        ];
-                        updated.splice(index, 1);
-                        updateData("siteContent", { blog_teasers: updated });
-                      }}
-                    >
-                      <X className="w-4 h-4 text-red-600" />
-                    </Button>
-                  )}
+                {content.blog_teasers && content.blog_teasers.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const updated = [...(content.blog_teasers || [])];
+                      updated.splice(index, 1);
+                      updateData("siteContent", { blog_teasers: updated });
+                    }}
+                  >
+                    <X className="w-4 h-4 text-red-600" />
+                  </Button>
+                )}
               </div>
 
               <FormField label="Title" required>
                 <Input
                   value={teaser.title}
                   onChange={(e) => {
-                    const updated = [...(data.siteContent.blog_teasers || [])];
+                    const updated = [...(content.blog_teasers || [])];
                     updated[index] = {
                       ...updated[index],
                       title: e.target.value,
@@ -584,7 +558,7 @@ export default function SiteContentStep() {
                 <Textarea
                   value={teaser.excerpt}
                   onChange={(e) => {
-                    const updated = [...(data.siteContent.blog_teasers || [])];
+                    const updated = [...(content.blog_teasers || [])];
                     updated[index] = {
                       ...updated[index],
                       excerpt: e.target.value,
@@ -602,9 +576,7 @@ export default function SiteContentStep() {
                     type="date"
                     value={teaser.publish_date}
                     onChange={(e) => {
-                      const updated = [
-                        ...(data.siteContent.blog_teasers || []),
-                      ];
+                      const updated = [...(content.blog_teasers || [])];
                       updated[index] = {
                         ...updated[index],
                         publish_date: e.target.value,
@@ -618,9 +590,7 @@ export default function SiteContentStep() {
                   <Input
                     value={teaser.author}
                     onChange={(e) => {
-                      const updated = [
-                        ...(data.siteContent.blog_teasers || []),
-                      ];
+                      const updated = [...(content.blog_teasers || [])];
                       updated[index] = {
                         ...updated[index],
                         author: e.target.value,
@@ -634,8 +604,7 @@ export default function SiteContentStep() {
             </div>
           ))}
 
-          {(!data.siteContent.blog_teasers ||
-            data.siteContent.blog_teasers.length < 3) && (
+          {(!content.blog_teasers || content.blog_teasers.length < 3) && (
             <Button
               variant="outline"
               onClick={() => {
@@ -647,10 +616,7 @@ export default function SiteContentStep() {
                   author: "",
                 };
                 updateData("siteContent", {
-                  blog_teasers: [
-                    ...(data.siteContent.blog_teasers || []),
-                    newTeaser,
-                  ],
+                  blog_teasers: [...(content.blog_teasers || []), newTeaser],
                 });
               }}
               className="w-full"
