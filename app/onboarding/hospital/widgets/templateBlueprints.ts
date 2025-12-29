@@ -1126,4 +1126,174 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       quickLinks: ["Features", "Pricing", "Case Studies", "API Docs"],
     },
   },
+
+  // ========================================
+  // MEDITAGG CLINIC SAAS TEMPLATE
+  // ========================================
+  "meditagg-saas": {
+    id: "meditagg-saas",
+    hero: {
+      eyebrow: "INDIA'S #1 CLINIC SOFTWARE",
+      title: "Grow Your Medical Practice!",
+      subtitle:
+        "Comprehensive clinic management software trusted by 10,000+ healthcare professionals across India.",
+      primaryCta: {
+        label: "Try For Free",
+        href: "#signup",
+      },
+      secondaryCta: {
+        label: "Book a Demo",
+        href: "#demo",
+      },
+      stats: [
+        { label: "60+ Cities", value: "60+" },
+        { label: "10k+ Clinics", value: "10k+" },
+        { label: "98% Satisfaction", value: "98%" },
+        { label: "24/7 Support", value: "24/7" },
+      ],
+      heroImageAlt: "Doctor using clinic management software",
+    },
+    facilityHighlights: [
+      {
+        title: "Appointment Management",
+        copy: "Smart scheduling with automated reminders and confirmations.",
+      },
+      {
+        title: "Billing & Payments",
+        copy: "Seamless payment processing with insurance integration.",
+      },
+      {
+        title: "Medical Records",
+        copy: "Secure digital health record management system.",
+      },
+      {
+        title: "Data Security",
+        copy: "Enterprise-grade security with HIPAA compliance.",
+      },
+    ],
+    specialties: [
+      {
+        icon: "🌐",
+        title: "Multilingual Support",
+        description: "Available in 10+ Indian regional languages.",
+      },
+      {
+        icon: "📡",
+        title: "Low Bandwidth Mode",
+        description: "Works seamlessly even on 2G connections.",
+      },
+      {
+        icon: "☁️",
+        title: "Cloud Storage",
+        description: "Unlimited secure cloud storage for patient records.",
+      },
+      {
+        icon: "🔒",
+        title: "Data Safety",
+        description: "Bank-level encryption and daily backups.",
+      },
+      {
+        icon: "📊",
+        title: "Analytics Dashboard",
+        description: "Real-time insights into clinic performance.",
+      },
+      {
+        icon: "💊",
+        title: "Pharmacy Integration",
+        description: "Direct integration with leading pharmacies.",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "Meditagg has transformed how we manage our clinic. The interface is intuitive and the support is excellent.",
+        name: "Dr. Rajesh Kumar",
+        procedure: "Cardiologist",
+        rating: 5,
+      },
+      {
+        quote:
+          "Best clinic management software I've used. Saves us hours every day and patients love the online booking.",
+        name: "Dr. Priya Sharma",
+        procedure: "Pediatrician",
+        rating: 5,
+      },
+      {
+        quote:
+          "The billing and insurance features are game-changing. Highly recommend to any medical practice.",
+        name: "Dr. Amit Patel",
+        procedure: "General Physician",
+        rating: 5,
+      },
+    ],
+    programs: [
+      {
+        title: "Starter Plan",
+        meta: "₹999/month",
+        description: "Perfect for single-doctor clinics and small practices.",
+      },
+      {
+        title: "Professional Plan",
+        meta: "₹2,499/month",
+        description: "For multi-specialty clinics with advanced features.",
+      },
+      {
+        title: "Enterprise Plan",
+        meta: "Custom Pricing",
+        description: "Complete solution for hospital chains and networks.",
+      },
+    ],
+    footer: {
+      contact: {
+        phone: "+91 98765 43210",
+        email: "hello@meditagg.com",
+        location: "Mumbai, Maharashtra, India",
+      },
+      quickLinks: ["Features", "Pricing", "About", "Blog", "Contact"],
+    },
+    palette: {
+      background: "#ffffff",
+      surface: "#f8f9fc",
+      accent: "#33c467",
+      accentMuted: "#2f57ef",
+      text: "#111827",
+      textMuted: "#6b7280",
+      gradient: "linear-gradient(135deg, #33c467, #2f57ef)",
+    },
+    typography: {
+      heading: '"Poppins", sans-serif',
+      body: '"Poppins", sans-serif',
+    },
+    differentiators: [
+      {
+        title: "HIPAA Compliant",
+        description: "Enterprise-grade security meeting all healthcare regulations.",
+        icon: "🔒",
+      },
+      {
+        title: "99.9% Uptime",
+        description: "Reliable infrastructure ensuring your clinic runs smoothly.",
+        icon: "⚡",
+      },
+      {
+        title: "Indian Healthcare Focus",
+        description: "Built specifically for Indian clinics and hospitals.",
+        icon: "🇮🇳",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Rajesh Kumar",
+        specialty: "Implementation Specialist",
+        description: "Helping clinics digitize their operations since 2015. MBBS, Hospital Management Expert.",
+        mediaLabel: "Onboarding Expert",
+      },
+      {
+        name: "Dr. Priya Sharma",
+        specialty: "Product Specialist",
+        description: "Dedicated to making healthcare technology accessible. MD, Healthcare IT Consultant.",
+        mediaLabel: "Customer Success",
+      },
+    ],
+  },
 };

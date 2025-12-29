@@ -36,6 +36,7 @@ import {
   PremiumMedicalTemplate,
   ModernHealthTechTemplate,
   HealthcareSaaSTemplate,
+  MeditaggSaaSTemplate,
 } from "./templates";
 
 // Re-export for convenience
@@ -131,6 +132,28 @@ const MOCK_TEMPLATES: TemplateData[] = [
       "Healthcare Enterprises",
       "Hospital Networks",
       "B2B Platforms",
+    ],
+  },
+  {
+    id: "meditagg-saas",
+    name: "Meditagg Clinic SaaS",
+    version: "1.0",
+    preview_snapshot_url: "/templates/meditagg-saas.jpg",
+    thumbnail_url: "/templates/meditagg-saas-thumb.jpg",
+    description:
+      "High-conversion clinic management SaaS landing page with green/blue dual CTAs, Bento grid, and modern Indian healthcare focus.",
+    supported_modules: [
+      "Appointments",
+      "Billing & Payments",
+      "EMR System",
+      "Multilingual Support",
+      "Low Bandwidth Mode",
+      "Cloud Storage",
+    ],
+    recommended_for: [
+      "Indian Clinics",
+      "Multi-location Practices",
+      "Clinic Management Software",
     ],
   },
 ];
@@ -251,6 +274,13 @@ export function TemplateGallery({
                   />
                 ) : selectedTemplate.id === "healthcare-saas" ? (
                   <HealthcareSaaSTemplate
+                    blueprint={selectedTemplate.customizedBlueprint}
+                    device="desktop"
+                    onBlueprintChange={() => {}}
+                    isEditMode={false}
+                  />
+                ) : selectedTemplate.id === "meditagg-saas" ? (
+                  <MeditaggSaaSTemplate
                     blueprint={selectedTemplate.customizedBlueprint}
                     device="desktop"
                     onBlueprintChange={() => {}}
@@ -426,6 +456,14 @@ function MiniTemplatePreview({
           style: "saas",
           icon: Building2,
           iconColor: "text-green-600",
+        };
+      case "meditagg-saas":
+        return {
+          gradient: "from-emerald-500 via-green-500 to-blue-500",
+          accent: "bg-emerald-500",
+          style: "saas",
+          icon: Building2,
+          iconColor: "text-emerald-600",
         };
       default:
         return {
@@ -866,6 +904,14 @@ function TemplatePreviewModal({
                   showBanner={false}
                   device="desktop"
                 />
+              ) : template.id === "meditagg-saas" ? (
+                <MeditaggSaaSTemplate
+                  blueprint={editedBlueprint}
+                  onBlueprintChange={setEditedBlueprint}
+                  isEditMode={false}
+                  showBanner={false}
+                  device="desktop"
+                />
               ) : (
                 <EditableTemplatePreviewRenderer
                   blueprint={editedBlueprint}
@@ -956,6 +1002,13 @@ function TemplatePreviewModal({
                   />
                 ) : template.id === "healthcare-saas" ? (
                   <HealthcareSaaSTemplate
+                    blueprint={editedBlueprint}
+                    onBlueprintChange={setEditedBlueprint}
+                    isEditMode={isEditMode}
+                    device={device}
+                  />
+                ) : template.id === "meditagg-saas" ? (
+                  <MeditaggSaaSTemplate
                     blueprint={editedBlueprint}
                     onBlueprintChange={setEditedBlueprint}
                     isEditMode={isEditMode}
