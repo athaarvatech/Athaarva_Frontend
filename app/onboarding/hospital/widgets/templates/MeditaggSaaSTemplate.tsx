@@ -121,8 +121,7 @@ export function MeditaggSaaSTemplate({
   };
 
   // Device-specific scale
-  const scale =
-    device === "tablet" ? 0.75 : device === "mobile" ? 0.4 : 1;
+  const scale = device === "tablet" ? 0.75 : device === "mobile" ? 0.4 : 1;
 
   // Helper functions
   const updateBlueprint = <K extends keyof TemplateBlueprint>(
@@ -294,7 +293,9 @@ function FeatureHighlight({
               Clinic Management Software
             </h2>
             <p className="text-lg text-gray-600">
-              Streamline your practice with our comprehensive clinic management solution. From appointments to billing, we&apos;ve got you covered.
+              Streamline your practice with our comprehensive clinic management
+              solution. From appointments to billing, we&apos;ve got you
+              covered.
             </p>
             <div className="flex gap-4">
               <button
@@ -363,7 +364,9 @@ function KeyBenefits({ blueprint, colors, isEditMode }: KeyBenefitsProps) {
     <section className="py-20 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Key Benefits</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Key Benefits
+          </h2>
           <p className="text-lg text-gray-600">
             Everything you need to run a modern clinic
           </p>
@@ -425,7 +428,8 @@ function VisionAndSafety({
           <div className="space-y-6">
             <h2 className="text-4xl font-bold text-gray-900">Data Safety</h2>
             <p className="text-lg text-gray-600">
-              Your patient data is protected with enterprise-grade encryption and compliance with healthcare regulations.
+              Your patient data is protected with enterprise-grade encryption
+              and compliance with healthcare regulations.
             </p>
             <button
               className="px-6 py-3 rounded-full text-white font-semibold shadow-green"
@@ -471,7 +475,8 @@ function VisionAndSafety({
           <div className="space-y-6 order-1 lg:order-2">
             <h2 className="text-4xl font-bold text-gray-900">Our Vision</h2>
             <p className="text-lg text-gray-600">
-              We envision a future where every clinic has access to world-class technology, enabling better patient care and outcomes.
+              We envision a future where every clinic has access to world-class
+              technology, enabling better patient care and outcomes.
             </p>
             <button
               className="px-6 py-3 rounded-full text-white font-semibold shadow-green"
@@ -686,7 +691,9 @@ function Testimonials({ blueprint, colors, isEditMode }: TestimonialsProps) {
                   {testimonial.name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                  <h4 className="font-bold text-gray-900">
+                    {testimonial.name}
+                  </h4>
                   <p className="text-sm text-gray-600">{testimonial.role}</p>
                 </div>
               </div>
@@ -964,7 +971,8 @@ function Footer({ colors }: FooterProps) {
               Meditagg
             </div>
             <p className="text-gray-400 mb-6 max-w-sm">
-              India&apos;s leading clinic management software, trusted by thousands of healthcare professionals.
+              India&apos;s leading clinic management software, trusted by
+              thousands of healthcare professionals.
             </p>
             <button
               className="px-6 py-3 rounded-full text-white font-semibold shadow-green"
@@ -1051,7 +1059,6 @@ function Footer({ colors }: FooterProps) {
   );
 }
 
-
 // ============================================================================
 // NAVIGATION COMPONENT
 // ============================================================================
@@ -1085,13 +1092,22 @@ function MeditaggNavigation({
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#about" className="text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#about"
+              className="text-gray-700 hover:text-gray-900 font-medium"
+            >
               About
             </a>
-            <a href="#features" className="text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#features"
+              className="text-gray-700 hover:text-gray-900 font-medium"
+            >
               Features
             </a>
-            <a href="#contact" className="text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#contact"
+              className="text-gray-700 hover:text-gray-900 font-medium"
+            >
               Contact
             </a>
           </div>
@@ -1100,7 +1116,10 @@ function MeditaggNavigation({
           <div className="hidden md:block">
             <button
               className="px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-200 hover:scale-105"
-              style={{ backgroundColor: colors.primary, boxShadow: '0 8px 25px rgba(51, 196, 103, 0.3)' }}
+              style={{
+                backgroundColor: colors.primary,
+                boxShadow: "0 8px 25px rgba(51, 196, 103, 0.3)",
+              }}
             >
               Get Started
               <ArrowRight className="inline-block ml-2 w-4 h-4" />
@@ -1125,13 +1144,22 @@ function MeditaggNavigation({
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100">
           <div className="px-4 py-4 space-y-3">
-            <a href="#about" className="block text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#about"
+              className="block text-gray-700 hover:text-gray-900 font-medium"
+            >
               About
             </a>
-            <a href="#features" className="block text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#features"
+              className="block text-gray-700 hover:text-gray-900 font-medium"
+            >
               Features
             </a>
-            <a href="#contact" className="block text-gray-700 hover:text-gray-900 font-medium">
+            <a
+              href="#contact"
+              className="block text-gray-700 hover:text-gray-900 font-medium"
+            >
               Contact
             </a>
             <button
@@ -1181,7 +1209,10 @@ function MeditaggHero({
           {/* Left Content */}
           <div className="space-y-6">
             <div className="inline-block">
-              <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: colors.textLight }}>
+              <span
+                className="text-xs font-semibold tracking-widest uppercase"
+                style={{ color: colors.textLight }}
+              >
                 INDIA&apos;S #1 CLINIC SOFTWARE
               </span>
             </div>
@@ -1239,7 +1270,10 @@ function MeditaggHero({
                 { label: "24/7 Support", value: "24/7" },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center lg:text-left">
-                  <div className="text-2xl font-bold" style={{ color: colors.secondary }}>
+                  <div
+                    className="text-2xl font-bold"
+                    style={{ color: colors.secondary }}
+                  >
                     {stat.value}
                   </div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
@@ -1254,7 +1288,12 @@ function MeditaggHero({
               {isEditMode ? (
                 <HeroImageUploader
                   value={heroImage || null}
-                  onChange={(img) => onImageUpdate("heroImage" as keyof TemplateBlueprint["images"], img || null)}
+                  onChange={(img) =>
+                    onImageUpdate(
+                      "heroImage" as keyof TemplateBlueprint["images"],
+                      img || null
+                    )
+                  }
                   className="w-full h-[600px]"
                 />
               ) : heroImage?.previewUrl ? (
@@ -1273,7 +1312,10 @@ function MeditaggHero({
             {/* Floating Card */}
             <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-card-hover p-6 max-w-xs">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: colors.primary }}
+                >
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>

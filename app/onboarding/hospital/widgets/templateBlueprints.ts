@@ -1267,12 +1267,14 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
     differentiators: [
       {
         title: "HIPAA Compliant",
-        description: "Enterprise-grade security meeting all healthcare regulations.",
+        description:
+          "Enterprise-grade security meeting all healthcare regulations.",
         icon: "🔒",
       },
       {
         title: "99.9% Uptime",
-        description: "Reliable infrastructure ensuring your clinic runs smoothly.",
+        description:
+          "Reliable infrastructure ensuring your clinic runs smoothly.",
         icon: "⚡",
       },
       {
@@ -1285,13 +1287,15 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       {
         name: "Dr. Rajesh Kumar",
         specialty: "Implementation Specialist",
-        description: "Helping clinics digitize their operations since 2015. MBBS, Hospital Management Expert.",
+        description:
+          "Helping clinics digitize their operations since 2015. MBBS, Hospital Management Expert.",
         mediaLabel: "Onboarding Expert",
       },
       {
         name: "Dr. Priya Sharma",
         specialty: "Product Specialist",
-        description: "Dedicated to making healthcare technology accessible. MD, Healthcare IT Consultant.",
+        description:
+          "Dedicated to making healthcare technology accessible. MD, Healthcare IT Consultant.",
         mediaLabel: "Customer Success",
       },
     ],
