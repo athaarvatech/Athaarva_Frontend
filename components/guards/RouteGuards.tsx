@@ -52,7 +52,7 @@ export function ProtectedRouteGuard({ children }: RouteGuardProps) {
   }
 
   if (!isAuthenticated) {
-    return <FullPageLoader message="Redirecting to login..." />;
+    return null; // Don't show loading, just redirect immediately
   }
 
   return <>{children}</>;

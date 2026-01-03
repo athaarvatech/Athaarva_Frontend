@@ -18,6 +18,8 @@ const MedicalLogo: React.FC<MedicalLogoProps> = ({
       width={width}
       height={height}
       className={className}
+      style={{ width: width, height: "auto" }} // Ensures aspect ratio is maintained
+      priority // Add priority for LCP warning if logo is above the fold
     />
   );
 };

@@ -218,58 +218,278 @@ function HeroSection({ onDemoClick }: HeroSectionProps) {
             </div>
           </motion.div>
 
-          {/* Animated 3D Illustration Placeholder */}
+          {/* Animated 3D Illustration */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, delay: 1.1 }}
+            initial={{ opacity: 0, scale: 0.8, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 1.1, ease: "easeOut" }}
             className="mt-20"
           >
             <div className="relative max-w-4xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-                <div className="aspect-video bg-gradient-to-br from-white/5 to-white/10 rounded-2xl flex items-center justify-center">
+              {/* Main Container with Enhanced Glass Effect */}
+              <motion.div 
+                className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/30 shadow-2xl relative overflow-hidden"
+                animate={{ 
+                  boxShadow: [
+                    "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    "0 35px 60px -12px rgba(34, 197, 195, 0.3)",
+                    "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+                  ]
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {/* Animated Background Glow */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-teal-400/10 via-transparent to-yellow-400/10 rounded-3xl"
+                  animate={{ 
+                    opacity: [0.3, 0.6, 0.3],
+                    scale: [1, 1.02, 1]
+                  }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                />
+                
+                {/* Image Container */}
+                <div className="aspect-video bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden relative">
+                  {/* Animated Border Gradient */}
                   <motion.div
+                    className="absolute inset-0 rounded-2xl"
+                    style={{
+                      background: "linear-gradient(45deg, transparent, rgba(34, 197, 195, 0.3), transparent, rgba(251, 191, 36, 0.3), transparent)"
+                    }}
                     animate={{ 
-                      rotate: [0, 5, -5, 0],
-                      scale: [1, 1.02, 1]
+                      rotate: [0, 360]
                     }}
                     transition={{ 
-                      duration: 6,
+                      duration: 20,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  />
+                  
+                  {/* Main Image with Enhanced Animations */}
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.03, 1],
+                      rotateY: [0, 2, 0, -2, 0]
+                    }}
+                    transition={{ 
+                      duration: 8,
                       repeat: Infinity,
                       ease: "easeInOut"
                     }}
-                    className="text-center"
+                    className="w-full h-full relative z-10"
                   >
-                    <TrendingUp className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-                    <p className="text-white/60 text-lg">
-                      3D Hospital Dashboard Animation
-                      <br />
-                      <span className="text-sm">(Spline/Lottie Integration)</span>
-                    </p>
+                    <img
+                      src="/render.png"
+                      alt="Hospital Management System 3D Render"
+                      className="w-full h-full object-cover object-center rounded-2xl filter brightness-110 contrast-105"
+                    />
+                    
+                    {/* Multi-layered Overlay Effects */}
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-t from-healthcare-primary/30 via-transparent to-teal-400/20 rounded-2xl"
+                      animate={{ 
+                        opacity: [0.6, 0.8, 0.6]
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                    
+                    {/* Shimmer Effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-2xl"
+                      animate={{ 
+                        x: [-100, 400],
+                        opacity: [0, 1, 0]
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 2
+                      }}
+                      style={{ transform: "skewX(-20deg)" }}
+                    />
                   </motion.div>
-                </div>
-              </div>
-              
-              {/* Floating Cards */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-4 -right-4 bg-white rounded-xl p-4 shadow-2xl"
-              >
-                <div className="text-healthcare-primary text-sm font-semibold">
-                  Live Analytics
+                  
+                  {/* Floating Healthcare Icons */}
+                  <motion.div
+                    className="absolute top-4 left-4 w-8 h-8 bg-teal-400/80 rounded-full flex items-center justify-center"
+                    animate={{ 
+                      y: [0, -8, 0],
+                      rotate: [0, 360]
+                    }}
+                    transition={{ 
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <div className="w-4 h-4 bg-white rounded-full" />
+                  </motion.div>
+                  
+                  <motion.div
+                    className="absolute top-1/2 right-6 w-6 h-6 bg-yellow-400/80 rounded-lg flex items-center justify-center"
+                    animate={{ 
+                      y: [0, 12, 0],
+                      rotate: [0, -360]
+                    }}
+                    transition={{ 
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1
+                    }}
+                  >
+                    <div className="w-3 h-3 bg-white rounded-sm" />
+                  </motion.div>
+                  
+                  <motion.div
+                    className="absolute bottom-6 left-1/3 w-5 h-5 bg-emerald-400/80 rounded-full"
+                    animate={{ 
+                      scale: [1, 1.3, 1],
+                      opacity: [0.8, 1, 0.8]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5
+                    }}
+                  />
                 </div>
               </motion.div>
               
+              {/* Enhanced Floating Cards with Healthcare Theme */}
               <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute -bottom-4 -left-4 bg-white rounded-xl p-4 shadow-2xl"
+                animate={{ 
+                  y: [0, -15, 0],
+                  rotate: [0, 3, 0, -3, 0]
+                }}
+                transition={{ 
+                  duration: 6, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="absolute -top-6 -right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-teal-100 z-20"
               >
-                <div className="text-healthcare-primary text-sm font-semibold">
-                  AI Insights
+                <div className="flex items-center space-x-2">
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="w-3 h-3 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full"
+                  />
+                  <div className="text-healthcare-primary text-sm font-semibold">
+                    Live Analytics
+                  </div>
                 </div>
+                <motion.div 
+                  className="text-xs text-gray-600 mt-1"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Real-time monitoring
+                </motion.div>
               </motion.div>
+              
+              <motion.div
+                animate={{ 
+                  y: [0, 15, 0],
+                  rotate: [0, -3, 0, 3, 0]
+                }}
+                transition={{ 
+                  duration: 7, 
+                  repeat: Infinity, 
+                  ease: "easeInOut", 
+                  delay: 2 
+                }}
+                className="absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-yellow-100 z-20"
+              >
+                <div className="flex items-center space-x-2">
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      backgroundColor: ["#f59e0b", "#10b981", "#06b6d4", "#f59e0b"]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-3 h-3 rounded-full"
+                  />
+                  <div className="text-healthcare-primary text-sm font-semibold">
+                    AI Insights
+                  </div>
+                </div>
+                <motion.div 
+                  className="text-xs text-gray-600 mt-1"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                >
+                  Smart predictions
+                </motion.div>
+              </motion.div>
+              
+              {/* Additional Floating Elements */}
+              <motion.div
+                animate={{ 
+                  y: [0, -10, 0],
+                  x: [0, 5, 0]
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+                className="absolute top-1/2 -left-8 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full p-3 shadow-xl z-10"
+              >
+                <Users className="w-5 h-5 text-white" />
+              </motion.div>
+              
+              <motion.div
+                animate={{ 
+                  y: [0, 12, 0],
+                  x: [0, -8, 0]
+                }}
+                transition={{ 
+                  duration: 5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: 3
+                }}
+                className="absolute top-1/3 -right-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-3 shadow-xl z-10"
+              >
+                <TrendingUp className="w-5 h-5 text-white" />
+              </motion.div>
+              
+              {/* Pulsing Background Rings */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.1, 0.3, 0.1]
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-yellow-400/20 rounded-3xl -z-10"
+              />
+              
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.05, 0.2, 0.05]
+                }}
+                transition={{ 
+                  duration: 6, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+                className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-orange-400/20 rounded-3xl -z-20"
+              />
             </div>
           </motion.div>
         </div>
