@@ -553,10 +553,11 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
     },
   },
   // ============================================================================
-  // NEW TEMPLATES - Custom Designed Templates
+  // AHTARVA PROFESSIONAL TEMPLATE (Based on React Landing Page)
+  // Professional blue (#246AFE), clean modern design, floating cards
   // ============================================================================
-  "ahtarva-modern": {
-    id: "ahtarva-modern",
+  "ahtarva-professional": {
+    id: "ahtarva-professional",
     hero: {
       eyebrow: "Premium Healthcare Experience",
       title: "Ahtarva Medical Center",
@@ -711,8 +712,13 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       ],
     },
   },
-  "premium-medical": {
-    id: "premium-medical",
+
+  // ============================================================================
+  // PREMIUM MEDICAL INSTITUTE TEMPLATE
+  // Professional design, clean modern interface
+  // ============================================================================
+  "premium-medical-institute": {
+    id: "premium-medical-institute",
     hero: {
       eyebrow: "Trusted Healthcare Partner",
       title: "Premium Medical Institute",
@@ -850,8 +856,13 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
       quickLinks: ["Our Doctors", "Services", "Patient Portal", "Insurance"],
     },
   },
-  "modern-health-tech": {
-    id: "modern-health-tech",
+
+  // ============================================================================
+  // HEALTHTECH MEDICAL CENTER TEMPLATE
+  // Futuristic AI-powered healthcare design
+  // ============================================================================
+  "healthtech-medical-center": {
+    id: "healthtech-medical-center",
     hero: {
       eyebrow: "The Future of Healthcare",
       title: "HealthTech Medical Center",
@@ -1299,5 +1310,631 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         mediaLabel: "Customer Success",
       },
     ],
+  },
+
+  // ============================================================================
+  // 6. AHTARVA COMMUNITY CARE TEMPLATE
+  // Professional blue (#246AFE), clean modern design, floating cards
+  // ============================================================================
+  "ahtarva-community-care": {
+    id: "ahtarva-community-care",
+    hero: {
+      eyebrow: "Trusted by 1M+ Patients",
+      title: "Exceptional Care for a Healthier Community",
+      subtitle:
+        "Experience world-class healthcare with our team of 150+ specialists across 40+ departments. Your health, our priority – available 24/7.",
+      primaryCta: { label: "Book Appointment", href: "#contact" },
+      secondaryCta: { label: "Learn More", href: "#about" },
+      stats: [
+        { value: "25+", label: "Years of Excellence" },
+        { value: "150+", label: "Expert Physicians" },
+        { value: "1M+", label: "Happy Patients" },
+        { value: "40+", label: "Medical Departments" },
+      ],
+      heroImageAlt: "Expert Doctor at Ahtarva Medical Center",
+    },
+    palette: {
+      background: "#FFFFFF",
+      surface: "#EBF0FE",
+      accent: "#246AFE",
+      accentMuted: "#1a5ad4",
+      text: "#0B0A0A",
+      textMuted: "#4B5563",
+      gradient:
+        "linear-gradient(135deg, #EBF0FE 0%, #FFFFFF 50%, #EBF0FE 100%)",
+    },
+    typography: {
+      heading: "Inter",
+      body: "Inter",
+    },
+    about: {
+      title: "Advanced Medical Technology",
+      subtitle: "Why Choose Us",
+      description:
+        "Combining cutting-edge technology with compassionate care to deliver exceptional patient outcomes",
+      highlights: [
+        { label: "Cutting-Edge Tech", value: "State-of-the-art equipment" },
+        { label: "Expert Team", value: "Highly qualified specialists" },
+        { label: "Patient-Centric", value: "Personalized care" },
+        { label: "Modern Facilities", value: "Contemporary infrastructure" },
+      ],
+    },
+    specialties: [
+      {
+        title: "Cardiology",
+        icon: "heart",
+        description:
+          "Comprehensive heart care including diagnostics, treatment, and rehabilitation for all cardiac conditions.",
+      },
+      {
+        title: "Neurology",
+        icon: "brain",
+        description:
+          "Expert diagnosis and treatment of disorders affecting the brain, spinal cord, and nervous system.",
+      },
+      {
+        title: "Orthopedics",
+        icon: "bone",
+        description:
+          "Specialized care for bones, joints, ligaments, tendons, and muscles with advanced surgical options.",
+      },
+      {
+        title: "Oncology",
+        icon: "ribbon",
+        description:
+          "Comprehensive cancer care with cutting-edge treatments and compassionate support.",
+      },
+      {
+        title: "Pediatrics",
+        icon: "baby",
+        description:
+          "Dedicated healthcare for infants, children, and adolescents in a child-friendly environment.",
+      },
+      {
+        title: "Gynecology",
+        icon: "flower",
+        description:
+          "Complete women's health services including obstetrics, reproductive medicine, and gynecological surgery.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "Cutting-Edge Tech",
+        description: "State-of-the-art medical equipment and diagnostic tools",
+        icon: "cpu",
+      },
+      {
+        title: "Expert Team",
+        description: "Highly qualified specialists with years of experience",
+        icon: "users",
+      },
+      {
+        title: "Patient-Centric",
+        description: "Personalized care focused on your well-being",
+        icon: "heart",
+      },
+      {
+        title: "Modern Facilities",
+        description: "Contemporary infrastructure for optimal care delivery",
+        icon: "building",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Rajesh Kumar",
+        specialty: "Cardiology",
+        description:
+          "Board-certified cardiologist with 15+ years of experience specializing in interventional procedures and heart failure management.",
+        mediaLabel: "Senior Consultant Cardiologist",
+      },
+      {
+        name: "Dr. Priya Sharma",
+        specialty: "Neurology",
+        description:
+          "Expert neurologist with 12+ years of experience focusing on stroke care, epilepsy, and neurodegenerative disorders.",
+        mediaLabel: "Consultant Neurologist",
+      },
+      {
+        name: "Dr. Amit Patel",
+        specialty: "Orthopedics",
+        description:
+          "Orthopedic surgeon with 18+ years of experience specializing in joint replacements and sports medicine.",
+        mediaLabel: "Senior Orthopedic Surgeon",
+      },
+      {
+        name: "Dr. Sneha Reddy",
+        specialty: "Pediatrics",
+        description:
+          "Pediatrician with 10+ years of experience and expertise in neonatology and child development.",
+        mediaLabel: "Consultant Pediatrician",
+      },
+    ],
+    testimonials: [
+      {
+        name: "Ramesh K.",
+        procedure: "Cardiac Bypass Surgery",
+        quote:
+          "The cardiac team at Ahtarva Medical Center saved my life. From the moment I arrived with chest pain, every staff member showed incredible professionalism and compassion. Dr. Kumar explained every step of my treatment, and the nursing staff made my recovery comfortable. I'm now back to my normal life thanks to their expertise.",
+        rating: 5,
+      },
+      {
+        name: "Meera S.",
+        procedure: "Knee Replacement",
+        quote:
+          "From my first consultation to post-surgery recovery, every step was handled with utmost professionalism. The nursing staff was incredibly supportive throughout my stay. The minimally invasive hip replacement surgery had me walking within days.",
+        rating: 5,
+      },
+      {
+        name: "Vikram P.",
+        procedure: "Pediatric Care",
+        quote:
+          "Bringing my child here was the best decision. The pediatric team made my son feel comfortable and at ease. The child-friendly environment really helped reduce his anxiety during hospitalization.",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Intensive Care Unit",
+        copy: "24/7 critical care with advanced monitoring systems and dedicated specialists",
+      },
+      {
+        title: "Operation Theaters",
+        copy: "Modular OTs with latest surgical equipment and laminar air flow",
+      },
+      {
+        title: "Diagnostic Center",
+        copy: "Advanced imaging and laboratory services with rapid results",
+      },
+      {
+        title: "Emergency Department",
+        copy: "Round-the-clock emergency and trauma care with rapid response teams",
+      },
+    ],
+    programs: [
+      {
+        title: "Executive Health Checkup",
+        meta: "₹5,999 - ₹15,999",
+        description:
+          "Comprehensive screening for busy professionals including cardiac, diabetic, and cancer markers",
+      },
+      {
+        title: "Women's Wellness Package",
+        meta: "₹4,999 - ₹12,999",
+        description:
+          "Complete gynecological checkup with breast screening, bone density, and hormonal assessment",
+      },
+      {
+        title: "Senior Citizen Care",
+        meta: "₹6,999 - ₹14,999",
+        description:
+          "Age-appropriate health assessment including memory screening and chronic disease monitoring",
+      },
+    ],
+    footer: {
+      tagline: "Excellence in Healthcare, Compassion in Care",
+      copyright: "© 2024 Ahtarva Medical Center. All Rights Reserved.",
+      contact: {
+        phone: "+91 98765 43210",
+        email: "care@ahtarvamedical.com",
+        location: "123 Healthcare Avenue, Medical District, City - 400001",
+      },
+      quickLinks: [
+        "Home",
+        "About Us",
+        "Services",
+        "Find a Doctor",
+        "Book Appointment",
+        "Patient Portal",
+        "Health Packages",
+        "International Patients",
+      ],
+      links: [
+        { label: "Privacy Policy", href: "#" },
+        { label: "Terms of Service", href: "#" },
+        { label: "Cookie Policy", href: "#" },
+      ],
+    },
+  },
+
+  // ============================================================================
+  // AHTARVA MEDICAL CENTER TEMPLATE (Based on Athh-Frontend)
+  // Teal accent (#0d9488), Merriweather serif headings, elegant modern design
+  // ============================================================================
+  "ahtarva-medical-center": {
+    id: "ahtarva-medical-center",
+    hero: {
+      eyebrow: "Welcome to Ahtarva",
+      title: "Exceptional Care for a Healthier Community",
+      subtitle:
+        "Experience world-class healthcare with our team of 150+ specialists dedicated to your well-being and recovery.",
+      primaryCta: { label: "Find a Doctor", href: "#doctors" },
+      secondaryCta: { label: "Watch Video", href: "#" },
+      stats: [
+        { label: "Years Experience", value: "25+" },
+        { label: "Expert Doctors", value: "150+" },
+        { label: "Patients Served", value: "1M+" },
+        { label: "Departments", value: "40+" },
+      ],
+      heroImageAlt: "Doctor consulting with patient",
+    },
+    palette: {
+      background: "#F8FAFC",
+      surface: "#ffffff",
+      accent: "#0d9488",
+      accentMuted: "#f0fdfa",
+      text: "#0f172a",
+      textMuted: "#64748b",
+      gradient: "linear-gradient(135deg, #0d9488, #0f766e)",
+    },
+    typography: {
+      heading: '"Merriweather", Georgia, "Times New Roman", serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "🫀",
+        title: "Cardiology",
+        description:
+          "Comprehensive heart care with advanced cardiac interventions and surgeries.",
+      },
+      {
+        icon: "🧠",
+        title: "Neurology",
+        description:
+          "Expert care for brain and nervous system disorders using latest technologies.",
+      },
+      {
+        icon: "🦴",
+        title: "Orthopedics",
+        description:
+          "Joint replacements, sports medicine, and spine care by skilled surgeons.",
+      },
+      {
+        icon: "🔬",
+        title: "Oncology",
+        description:
+          "Multidisciplinary cancer treatment with cutting-edge therapies.",
+      },
+      {
+        icon: "👶",
+        title: "Pediatrics",
+        description:
+          "Dedicated child healthcare from newborn care to adolescent medicine.",
+      },
+      {
+        icon: "✨",
+        title: "Dermatology",
+        description:
+          "Complete skin care solutions including cosmetic dermatology.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "Cutting-Edge Technology",
+        description:
+          "State-of-the-art medical equipment and diagnostic facilities",
+        icon: "🔬",
+      },
+      {
+        title: "World-Class Experts",
+        description:
+          "Board-certified specialists with international experience",
+        icon: "👨‍⚕️",
+      },
+      {
+        title: "Compassionate Care",
+        description:
+          "Patient-centered approach with personalized treatment plans",
+        icon: "💚",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Sarah Mitchell",
+        specialty: "Cardiologist",
+        description: "18 years experience",
+        mediaLabel: "Book Appointment",
+      },
+      {
+        name: "Dr. James Chen",
+        specialty: "Neurologist",
+        description: "15 years experience",
+        mediaLabel: "Book Appointment",
+      },
+      {
+        name: "Dr. Emily Parker",
+        specialty: "Oncologist",
+        description: "12 years experience",
+        mediaLabel: "Book Appointment",
+      },
+      {
+        name: "Dr. Michael Roberts",
+        specialty: "Orthopedic Surgeon",
+        description: "20 years experience",
+        mediaLabel: "Book Appointment",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The care I received was exceptional. The doctors and staff made me feel like family throughout my treatment.",
+        patient: "Sarah Mitchell",
+        procedure: "Heart Surgery",
+        rating: 5,
+      },
+      {
+        quote:
+          "From diagnosis to recovery, every step was handled with utmost professionalism and care.",
+        patient: "James Wilson",
+        procedure: "Knee Replacement",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Modern ICU Complex",
+        copy: "State-of-the-art intensive care units with advanced monitoring systems.",
+      },
+      {
+        title: "Healing Environment",
+        copy: "Thoughtfully designed spaces that promote comfort and recovery.",
+      },
+      {
+        title: "Technology Integration",
+        copy: "Seamless digital experience from booking to post-care follow-ups.",
+      },
+    ],
+    programs: [
+      {
+        title: "Executive Health Checkup",
+        meta: "Comprehensive Screening",
+        description:
+          "Complete health assessment packages tailored for busy professionals.",
+      },
+      {
+        title: "Wellness Programs",
+        meta: "Preventive Care",
+        description:
+          "Lifestyle modification and chronic disease management programs.",
+      },
+    ],
+    about: {
+      title: "Why Choose Us",
+      subtitle: "Leading Medical Excellence Since 1998",
+      description:
+        "For over two decades, we've been at the forefront of medical innovation, combining cutting-edge technology with compassionate patient care.",
+      highlights: [
+        { label: "Years of Excellence", value: "25+" },
+        { label: "Successful Surgeries", value: "50K+" },
+      ],
+    },
+    footer: {
+      tagline: "Excellence in Healthcare, Compassion in Care",
+      copyright: "© 2024 Ahtarva Medical Center. All Rights Reserved.",
+      contact: {
+        phone: "+1 (555) 123-4567",
+        email: "appointments@ahtarva.com",
+        location: "123 Healthcare Boulevard, Medical District, NY 10001",
+      },
+      quickLinks: [
+        "About Us",
+        "Our Doctors",
+        "Careers",
+        "News & Updates",
+        "Emergency Care",
+        "Health Checkup",
+        "Lab Services",
+        "Pharmacy",
+      ],
+      links: [
+        { label: "Privacy Policy", href: "#" },
+        { label: "Terms of Service", href: "#" },
+        { label: "HIPAA Compliance", href: "#" },
+      ],
+    },
+  },
+  // ============================================================================
+  // AHTARVA HEALTHCARE TEMPLATE (Based on Athh-Frontend Landing Page)
+  // Modern teal design (#14b8a6), professional healthcare with smooth animations
+  // ============================================================================
+  "ahtarva-healthcare": {
+    id: "ahtarva-healthcare",
+    hero: {
+      eyebrow: "WELCOME TO AHTARVA MEDICAL CENTER",
+      title: "Exceptional Care for a Healthier Community",
+      subtitle:
+        "Experience world-class healthcare with our team of 150+ specialists across 40 departments. We combine cutting-edge technology with personalized care.",
+      primaryCta: { label: "Book Appointment", href: "/appointments" },
+      secondaryCta: { label: "Explore Services", href: "/services" },
+      stats: [
+        { label: "Years of Excellence", value: "25+" },
+        { label: "Expert Physicians", value: "150+" },
+        { label: "Happy Patients", value: "1M+" },
+        { label: "Medical Departments", value: "40+" },
+      ],
+      heroImageAlt: "Professional healthcare team",
+    },
+    palette: {
+      background: "#f0fdfa",
+      surface: "#ffffff",
+      accent: "#14b8a6",
+      accentMuted: "#99f6e4",
+      text: "#0f172a",
+      textMuted: "#64748b",
+      gradient: "linear-gradient(135deg, #14b8a6, #0d9488)",
+    },
+    typography: {
+      heading: '"Inter", -apple-system, sans-serif',
+      body: '"Inter", system-ui, sans-serif',
+    },
+    specialties: [
+      {
+        icon: "🫀",
+        title: "Cardiology",
+        description:
+          "Comprehensive heart care with advanced cardiac interventions and surgeries.",
+      },
+      {
+        icon: "🧠",
+        title: "Neurology",
+        description:
+          "Expert neurological care with state-of-the-art diagnostic facilities.",
+      },
+      {
+        icon: "🦴",
+        title: "Orthopedics",
+        description:
+          "Advanced orthopedic treatments with minimally invasive procedures.",
+      },
+      {
+        icon: "🎗️",
+        title: "Oncology",
+        description:
+          "Comprehensive cancer care with latest treatment protocols.",
+      },
+      {
+        icon: "👶",
+        title: "Pediatrics",
+        description:
+          "Specialized care for children with experienced pediatricians.",
+      },
+      {
+        icon: "👤",
+        title: "Gynecology",
+        description: "Complete women's health services with modern facilities.",
+      },
+    ],
+    differentiators: [
+      {
+        title: "Cutting-Edge Technology",
+        description:
+          "State-of-the-art diagnostic and treatment equipment including AI-powered imaging.",
+        icon: "💻",
+      },
+      {
+        title: "World-Class Experts",
+        description:
+          "Physicians trained at leading global institutions bringing decades of experience.",
+        icon: "🏆",
+      },
+      {
+        title: "Patient-Centric Care",
+        description:
+          "Personalized attention with dedicated care coordinators ensuring seamless journeys.",
+        icon: "❤️",
+      },
+    ],
+    doctors: [
+      {
+        name: "Dr. Rajesh Kumar",
+        specialty: "Cardiology",
+        description: "MBBS, DM Cardiology",
+        mediaLabel: "Book Now",
+      },
+      {
+        name: "Dr. Priya Sharma",
+        specialty: "Neurology",
+        description: "MBBS, MD",
+        mediaLabel: "Book Now",
+      },
+      {
+        name: "Dr. Amit Patel",
+        specialty: "Orthopedics",
+        description: "MBBS, MS Ortho",
+        mediaLabel: "Book Now",
+      },
+      {
+        name: "Dr. Sunita Reddy",
+        specialty: "Oncology",
+        description: "MBBS, MD",
+        mediaLabel: "Book Now",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The cardiac team saved my life. Dr. Kumar explained every step of my treatment with patience and care.",
+        patient: "Ramesh K.",
+        procedure: "Cardiac Surgery",
+        rating: 5,
+      },
+      {
+        quote:
+          "The pediatric department took excellent care of my daughter. The staff was incredibly supportive and kind.",
+        patient: "Priya M.",
+        procedure: "Pediatric Care",
+        rating: 5,
+      },
+      {
+        quote:
+          "Minimally invasive hip replacement had me walking in days. I'm grateful for the orthopedic team's expertise.",
+        patient: "Lakshmi S.",
+        procedure: "Hip Replacement",
+        rating: 5,
+      },
+    ],
+    facilityHighlights: [
+      {
+        title: "Advanced ICU",
+        copy: "50-bed intensive care unit with 24/7 critical care specialists monitoring patients round the clock.",
+      },
+      {
+        title: "Modular Operation Theaters",
+        copy: "Equipped with robotic surgery systems and state-of-the-art medical equipment for precise procedures.",
+      },
+      {
+        title: "Safe Environment",
+        copy: "Safe, clean, and caring hospital premises with professional treatment and full-time medical support.",
+      },
+    ],
+    programs: [
+      {
+        title: "Comprehensive Health Screening",
+        meta: "Preventive Care",
+        description:
+          "Complete health assessment packages with advanced diagnostic facilities.",
+      },
+      {
+        title: "Chronic Disease Management",
+        meta: "Ongoing Care",
+        description:
+          "Specialized programs for diabetes, hypertension, and other chronic conditions.",
+      },
+    ],
+    about: {
+      title: "Why Patients Trust Us",
+      subtitle: "Leading Healthcare Excellence",
+      description:
+        "We combine expertise, technology, and compassion to deliver exceptional healthcare experiences.",
+      highlights: [
+        { label: "Years of Excellence", value: "25+" },
+        { label: "Patients Served", value: "1M+" },
+      ],
+    },
+    footer: {
+      tagline: "Excellence in Healthcare, Compassion in Care.",
+      copyright: "© 2024 Ahtarva Medical Center. All Rights Reserved.",
+      contact: {
+        phone: "+91 98765 43210",
+        email: "info@ahtarvamedical.com",
+        location:
+          "123, Healthcare Avenue, Medical District, Mumbai, Maharashtra, 400001",
+      },
+      quickLinks: [
+        "Home",
+        "About",
+        "Services",
+        "Doctors",
+        "Appointments",
+        "Emergency Care",
+        "Lab Services",
+        "Pharmacy",
+      ],
+      links: [
+        { label: "Privacy Policy", href: "#" },
+        { label: "Terms of Service", href: "#" },
+        { label: "Patient Rights", href: "#" },
+      ],
+    },
   },
 };

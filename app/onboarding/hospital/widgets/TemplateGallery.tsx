@@ -9,8 +9,6 @@ import {
   Sparkles,
   Info,
   Building2,
-  Video,
-  Heart,
   RotateCcw,
   Monitor,
   Tablet,
@@ -32,11 +30,9 @@ import {
 import { EditableTemplatePreviewRenderer } from "./EditableTemplatePreviewRenderer";
 import { ThemeCustomizer } from "./ThemeCustomizer";
 import {
-  AhtarvaModernTemplate,
-  PremiumMedicalTemplate,
-  ModernHealthTechTemplate,
-  HealthcareSaaSTemplate,
-  MeditaggSaaSTemplate,
+  AhtarvaProfessionalTemplate,
+  AhtarvaMedicalCenterTemplate,
+  AhtarvaHealthcareTemplate,
 } from "./templates";
 
 // Re-export for convenience
@@ -51,109 +47,70 @@ interface TemplateGalleryProps {
 
 const MOCK_TEMPLATES: TemplateData[] = [
   {
-    id: "ahtarva-modern",
-    name: "Ahtarva Modern",
+    id: "ahtarva-professional",
+    name: "Ahtarva Professional",
     version: "1.0",
-    preview_snapshot_url: "/templates/ahtarva-modern.jpg",
-    thumbnail_url: "/templates/ahtarva-modern-thumb.jpg",
+    preview_snapshot_url: "/templates/ahtarva-professional.jpg",
+    thumbnail_url: "/templates/ahtarva-professional-thumb.jpg",
     description:
-      "Premium emerald green design with stunning glassmorphism effects, animated gradients, and modern healthcare aesthetics.",
+      "Modern, clean hospital template with professional blue design. Features floating cards, smooth animations, and comprehensive sections for specialties, doctors, facilities, and patient testimonials.",
     supported_modules: [
       "Appointments",
-      "Doctor Profiles",
       "Departments",
+      "Doctors",
+      "Facilities",
       "Testimonials",
-      "Statistics",
+      "Contact",
     ],
     recommended_for: [
-      "Modern Hospitals",
-      "Multi-specialty Clinics",
-      "Premium Healthcare",
+      "Multi-specialty Hospitals",
+      "Medical Centers",
+      "Healthcare Networks",
     ],
   },
   {
-    id: "premium-medical",
-    name: "Premium Medical",
+    id: "ahtarva-medical-center",
+    name: "Ahtarva Medical Center",
     version: "1.0",
-    preview_snapshot_url: "/templates/premium-medical.jpg",
-    thumbnail_url: "/templates/premium-medical-thumb.jpg",
+    preview_snapshot_url: "/templates/ahtarva-medical-center.jpg",
+    thumbnail_url: "/templates/ahtarva-medical-center-thumb.jpg",
     description:
-      "Soft-tech design with pastel accents, generous spacing, and elegant animations for a calming patient experience.",
-    supported_modules: [
-      "Patient Portal",
-      "Wellness Programs",
-      "Virtual Tours",
-      "Health Checkups",
-      "Telemedicine",
-    ],
-    recommended_for: [
-      "Women's Health Centers",
-      "Wellness Clinics",
-      "Family Care",
-    ],
-  },
-  {
-    id: "modern-health-tech",
-    name: "Modern Health Tech",
-    version: "1.0",
-    preview_snapshot_url: "/templates/modern-health-tech.jpg",
-    thumbnail_url: "/templates/modern-health-tech-thumb.jpg",
-    description:
-      "Futuristic electric blue design with bento grid layouts, neon accents, and cutting-edge tech hospital aesthetics.",
-    supported_modules: [
-      "AI Diagnostics",
-      "Robotic Surgery",
-      "Remote Monitoring",
-      "Digital Records",
-      "Smart ICU",
-    ],
-    recommended_for: [
-      "Tech-forward Hospitals",
-      "Research Institutions",
-      "Digital Health Systems",
-    ],
-  },
-  {
-    id: "healthcare-saas",
-    name: "Healthcare SaaS",
-    version: "1.0",
-    preview_snapshot_url: "/templates/healthcare-saas.jpg",
-    thumbnail_url: "/templates/healthcare-saas-thumb.jpg",
-    description:
-      "Corporate Google Green design with clean SaaS aesthetics, perfect for B2B healthcare platforms and enterprise solutions.",
-    supported_modules: [
-      "Enterprise Dashboard",
-      "Multi-tenant Admin",
-      "Analytics Suite",
-      "API Integration",
-      "White-label Options",
-    ],
-    recommended_for: [
-      "Healthcare Enterprises",
-      "Hospital Networks",
-      "B2B Platforms",
-    ],
-  },
-  {
-    id: "meditagg-saas",
-    name: "Meditagg Clinic SaaS",
-    version: "1.0",
-    preview_snapshot_url: "/templates/meditagg-saas.jpg",
-    thumbnail_url: "/templates/meditagg-saas-thumb.jpg",
-    description:
-      "High-conversion clinic management SaaS landing page with green/blue dual CTAs, Bento grid, and modern Indian healthcare focus.",
+      "Elegant, modern hospital template with teal accents and Merriweather serif typography. Features full-screen hero, stats strip, specialties grid, doctor profiles, and appointment booking form.",
     supported_modules: [
       "Appointments",
-      "Billing & Payments",
-      "EMR System",
-      "Multilingual Support",
-      "Low Bandwidth Mode",
-      "Cloud Storage",
+      "Departments",
+      "Doctors",
+      "About",
+      "Contact",
     ],
     recommended_for: [
-      "Indian Clinics",
-      "Multi-location Practices",
-      "Clinic Management Software",
+      "Medical Centers",
+      "Specialty Clinics",
+      "Healthcare Facilities",
+    ],
+  },
+  {
+    id: "ahtarva-healthcare",
+    name: "Ahtarva Healthcare",
+    version: "1.0",
+    preview_snapshot_url: "/templates/ahtarva-healthcare.jpg",
+    thumbnail_url: "/templates/ahtarva-healthcare-thumb.jpg",
+    description:
+      "Professional healthcare landing page with teal color scheme, smooth animations, and modern design. Complete with hero section, stats, trust badges, specialties, doctors showcase, facilities, appointment booking, testimonials, and footer.",
+    supported_modules: [
+      "Appointments",
+      "Departments",
+      "Doctors",
+      "Facilities",
+      "Testimonials",
+      "About",
+      "Contact",
+    ],
+    recommended_for: [
+      "Medical Centers",
+      "Multi-specialty Hospitals",
+      "Healthcare Networks",
+      "Specialty Clinics",
     ],
   },
 ];
@@ -251,36 +208,22 @@ export function TemplateGallery({
           <div className="bg-gray-100 rounded-2xl p-6 overflow-hidden">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden mx-auto max-w-4xl">
               <div className="transform scale-[0.5] origin-top h-[400px] overflow-hidden">
-                {selectedTemplate.id === "ahtarva-modern" ? (
-                  <AhtarvaModernTemplate
+                {selectedTemplate.id === "ahtarva-professional" ? (
+                  <AhtarvaProfessionalTemplate
                     blueprint={selectedTemplate.customizedBlueprint}
                     device="desktop"
                     onBlueprintChange={() => {}}
                     isEditMode={false}
                   />
-                ) : selectedTemplate.id === "premium-medical" ? (
-                  <PremiumMedicalTemplate
+                ) : selectedTemplate.id === "ahtarva-medical-center" ? (
+                  <AhtarvaMedicalCenterTemplate
                     blueprint={selectedTemplate.customizedBlueprint}
                     device="desktop"
                     onBlueprintChange={() => {}}
                     isEditMode={false}
                   />
-                ) : selectedTemplate.id === "modern-health-tech" ? (
-                  <ModernHealthTechTemplate
-                    blueprint={selectedTemplate.customizedBlueprint}
-                    device="desktop"
-                    onBlueprintChange={() => {}}
-                    isEditMode={false}
-                  />
-                ) : selectedTemplate.id === "healthcare-saas" ? (
-                  <HealthcareSaaSTemplate
-                    blueprint={selectedTemplate.customizedBlueprint}
-                    device="desktop"
-                    onBlueprintChange={() => {}}
-                    isEditMode={false}
-                  />
-                ) : selectedTemplate.id === "meditagg-saas" ? (
-                  <MeditaggSaaSTemplate
+                ) : selectedTemplate.id === "ahtarva-healthcare" ? (
+                  <AhtarvaHealthcareTemplate
                     blueprint={selectedTemplate.customizedBlueprint}
                     device="desktop"
                     onBlueprintChange={() => {}}
@@ -425,45 +368,29 @@ function MiniTemplatePreview({
 }) {
   const getTemplateStyle = () => {
     switch (templateId) {
-      case "ahtarva-modern":
+      case "ahtarva-professional":
         return {
-          gradient: "from-emerald-500 to-emerald-600",
-          accent: "bg-emerald-500",
-          style: "modern",
-          icon: Building2,
-          iconColor: "text-emerald-600",
-        };
-      case "premium-medical":
-        return {
-          gradient: "from-emerald-400 to-teal-500",
-          accent: "bg-emerald-400",
-          style: "premium",
-          icon: Heart,
-          iconColor: "text-emerald-500",
-        };
-      case "modern-health-tech":
-        return {
-          gradient: "from-blue-500 to-blue-600",
+          gradient: "from-blue-500 via-sky-500 to-blue-600",
           accent: "bg-blue-500",
-          style: "tech",
-          icon: Video,
+          style: "professional",
+          icon: Building2,
           iconColor: "text-blue-600",
         };
-      case "healthcare-saas":
+      case "ahtarva-medical-center":
         return {
-          gradient: "from-green-500 to-green-600",
-          accent: "bg-green-500",
-          style: "saas",
+          gradient: "from-teal-600 via-teal-500 to-emerald-600",
+          accent: "bg-teal-600",
+          style: "medical-center",
           icon: Building2,
-          iconColor: "text-green-600",
+          iconColor: "text-teal-600",
         };
-      case "meditagg-saas":
+      case "ahtarva-healthcare":
         return {
-          gradient: "from-emerald-500 via-green-500 to-blue-500",
-          accent: "bg-emerald-500",
-          style: "saas",
+          gradient: "from-teal-500 via-cyan-500 to-teal-600",
+          accent: "bg-teal-500",
+          style: "healthcare",
           icon: Building2,
-          iconColor: "text-emerald-600",
+          iconColor: "text-teal-500",
         };
       default:
         return {
@@ -872,40 +799,24 @@ function TemplatePreviewModal({
 
             {/* Full Screen Template Content */}
             <div className="w-full h-full overflow-y-auto">
-              {template.id === "ahtarva-modern" ? (
-                <AhtarvaModernTemplate
+              {template.id === "ahtarva-professional" ? (
+                <AhtarvaProfessionalTemplate
                   blueprint={editedBlueprint}
                   onBlueprintChange={setEditedBlueprint}
                   isEditMode={false}
                   showBanner={false}
                   device="desktop"
                 />
-              ) : template.id === "premium-medical" ? (
-                <PremiumMedicalTemplate
+              ) : template.id === "ahtarva-medical-center" ? (
+                <AhtarvaMedicalCenterTemplate
                   blueprint={editedBlueprint}
                   onBlueprintChange={setEditedBlueprint}
                   isEditMode={false}
                   showBanner={false}
                   device="desktop"
                 />
-              ) : template.id === "modern-health-tech" ? (
-                <ModernHealthTechTemplate
-                  blueprint={editedBlueprint}
-                  onBlueprintChange={setEditedBlueprint}
-                  isEditMode={false}
-                  showBanner={false}
-                  device="desktop"
-                />
-              ) : template.id === "healthcare-saas" ? (
-                <HealthcareSaaSTemplate
-                  blueprint={editedBlueprint}
-                  onBlueprintChange={setEditedBlueprint}
-                  isEditMode={false}
-                  showBanner={false}
-                  device="desktop"
-                />
-              ) : template.id === "meditagg-saas" ? (
-                <MeditaggSaaSTemplate
+              ) : template.id === "ahtarva-healthcare" ? (
+                <AhtarvaHealthcareTemplate
                   blueprint={editedBlueprint}
                   onBlueprintChange={setEditedBlueprint}
                   isEditMode={false}
@@ -979,36 +890,22 @@ function TemplatePreviewModal({
             >
               {editedBlueprint ? (
                 // Render custom templates based on template ID
-                template.id === "ahtarva-modern" ? (
-                  <AhtarvaModernTemplate
+                template.id === "ahtarva-professional" ? (
+                  <AhtarvaProfessionalTemplate
                     blueprint={editedBlueprint}
                     onBlueprintChange={setEditedBlueprint}
                     isEditMode={isEditMode}
                     device={device}
                   />
-                ) : template.id === "premium-medical" ? (
-                  <PremiumMedicalTemplate
+                ) : template.id === "ahtarva-medical-center" ? (
+                  <AhtarvaMedicalCenterTemplate
                     blueprint={editedBlueprint}
                     onBlueprintChange={setEditedBlueprint}
                     isEditMode={isEditMode}
                     device={device}
                   />
-                ) : template.id === "modern-health-tech" ? (
-                  <ModernHealthTechTemplate
-                    blueprint={editedBlueprint}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                    device={device}
-                  />
-                ) : template.id === "healthcare-saas" ? (
-                  <HealthcareSaaSTemplate
-                    blueprint={editedBlueprint}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                    device={device}
-                  />
-                ) : template.id === "meditagg-saas" ? (
-                  <MeditaggSaaSTemplate
+                ) : template.id === "ahtarva-healthcare" ? (
+                  <AhtarvaHealthcareTemplate
                     blueprint={editedBlueprint}
                     onBlueprintChange={setEditedBlueprint}
                     isEditMode={isEditMode}
