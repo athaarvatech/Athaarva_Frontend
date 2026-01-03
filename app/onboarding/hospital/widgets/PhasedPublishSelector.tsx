@@ -10,18 +10,18 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface PhasedPublishSelectorProps {
-  value: "immediate" | "scheduled" | "site_only";
-  scheduledAt?: string;
+  value: "immediate" | "scheduled" | "pilot";
+  scheduledDate?: string;
   onChange: (
-    mode: "immediate" | "scheduled" | "site_only",
-    scheduledAt?: string
+    mode: "immediate" | "scheduled" | "pilot",
+    scheduledDate?: string
   ) => void;
   className?: string;
 }
 
 export function PhasedPublishSelector({
   value,
-  scheduledAt,
+  scheduledDate,
   onChange,
   className,
 }: PhasedPublishSelectorProps) {
@@ -72,7 +72,7 @@ export function PhasedPublishSelector({
               <Input
                 id="scheduled-date"
                 type="datetime-local"
-                value={scheduledAt || ""}
+                value={scheduledDate || ""}
                 onChange={(e) => onChange("scheduled", e.target.value)}
                 className="mt-1"
                 min={new Date().toISOString().slice(0, 16)}
@@ -81,15 +81,15 @@ export function PhasedPublishSelector({
           )}
         </PublishOption>
 
-        {/* Site Only */}
+        {/* Pilot Launch */}
         <PublishOption
-          value="site_only"
+          value="pilot"
           icon={Eye}
-          title="Website Only (Staged Rollout)"
+          title="Pilot Launch (Staged Rollout)"
           description="Launch public website first, enable booking/billing modules later"
-          selected={value === "site_only"}
+          selected={value === "pilot"}
         >
-          {value === "site_only" && (
+          {value === "pilot" && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}

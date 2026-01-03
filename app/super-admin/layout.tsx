@@ -10,11 +10,19 @@ import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/super-admin', exact: true },
+  { label: 'Tenants', href: '/super-admin/tenants' },
+  { label: 'Users', href: '/super-admin/users' },
   { label: 'Invitations', href: '/super-admin/invites' },
-  { label: 'Tenants', href: '#', disabled: true },
-  { label: 'Plans & Pricing', href: '#', disabled: true },
-  { label: 'Templates', href: '#', disabled: true },
-  { label: 'Security & Audit', href: '#', disabled: true },
+  { label: 'Plans', href: '/super-admin/plans' },
+  { label: 'Database', href: '/super-admin/database' },
+  { label: 'Audit Logs', href: '/super-admin/audit-logs' },
+  { label: 'Settings', href: '/super-admin/settings' },
+  { label: 'Impersonate', href: '/super-admin/impersonate' },
+  { label: 'Jobs', href: '/super-admin/jobs' },
+  { label: 'AI', href: '/super-admin/ai' },
+  { label: 'Templates', href: '/super-admin/templates' },
+  { label: 'Website', href: '/super-admin/website' },
+  { label: 'Social', href: '/super-admin/social' },
 ];
 
 function SuperAdminLayoutContent({ children }: { children: React.ReactNode }) {

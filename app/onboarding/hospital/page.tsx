@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * Hospital Onboarding Page v2 - 12-Step Comprehensive Wizard
+ * Hospital Onboarding Page v2 - 11-Step Comprehensive Wizard
  *
  * This is the refactored version integrating HospitalOnboardingContextV2
- * with all 12 steps. Rename this file to page.tsx to activate.
+ * with all 11 steps (removed Integrations & Preferences).
  *
  * Features:
  * - Token-gated invitation validation
- * - 12-step comprehensive wizard
+ * - 11-step comprehensive wizard
  * - Autosave with localStorage persistence
  * - Activity log sidebar
  * - Contextual help panels
@@ -41,8 +41,6 @@ import {
   Users,
   Settings,
   Shield,
-  Zap,
-  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -55,13 +53,12 @@ import InvitationTemplateStep from "./steps/InvitationTemplateStep";
 import OrganizationProfileStep from "./steps/OrganizationProfileStep";
 import LocationsContactsStep from "./steps/LocationsContactsStep";
 import BrandingStudioStep from "./steps/BrandingStudioStep";
-import SiteContentStep from "./steps/SiteContentStep";
-import ServicesPricingStep from "./steps/ServicesPricingStep";
-import LeadershipTeamStep from "./steps/LeadershipTeamStep";
+import FacilityManagementStep from "./steps/FacilityManagementStep";
+import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
+import BillingFinancialStep from "./steps/BillingFinancialStep";
+import ClinicalConfigStep from "./steps/ClinicalConfigStep";
+import PharmacyInventoryStep from "./steps/PharmacyInventoryStep";
 import OperationalPoliciesStep from "./steps/OperationalPoliciesStep";
-import ComplianceDocumentationStep from "./steps/ComplianceDocumentationStep";
-import IntegrationsPreferencesStep from "./steps/IntegrationsPreferencesStep";
-import AdminStaffInvitationsStep from "./steps/AdminStaffInvitationsStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 
 // Import widgets for contextual panels
@@ -93,7 +90,7 @@ const STEP_CONFIGS: StepConfig[] = [
   {
     id: 1,
     title: "Organization Profile",
-    description: "Legal info, GST/PAN, timezone",
+    description: "Legal info, GST/PAN, timezone, registrations",
     icon: Building2,
     component: OrganizationProfileStep,
     category: "Setup",
@@ -102,7 +99,7 @@ const STEP_CONFIGS: StepConfig[] = [
   {
     id: 2,
     title: "Locations & Contacts",
-    description: "Multiple locations with geocoding",
+    description: "Hospital addresses, contacts, geocoding",
     icon: Globe,
     component: LocationsContactsStep,
     category: "Setup",
@@ -110,80 +107,71 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 3,
-    title: "Branding Studio",
-    description: "Colors, typography, assets with WCAG",
+    title: "Branding & Reports",
+    description: "Logo, colors, report headers and footers",
     icon: Palette,
     component: BrandingStudioStep,
     category: "Branding",
-    estimatedMinutes: 12,
+    estimatedMinutes: 8,
   },
   {
     id: 4,
-    title: "Site Content",
-    description: "Hero, services, testimonials, FAQ",
-    icon: FileText,
-    component: SiteContentStep,
-    category: "Branding",
+    title: "Facility Management",
+    description: "Wings, floors, wards, beds for IPD",
+    icon: Building2,
+    component: FacilityManagementStep,
+    category: "Operations",
     estimatedMinutes: 15,
   },
   {
     id: 5,
-    title: "Services & Pricing",
-    description: "Departments, procedures, consultation types",
-    icon: DollarSign,
-    component: ServicesPricingStep,
+    title: "Departments & Cost Centers",
+    description: "Clinical departments, specializations, accounting",
+    icon: Users,
+    component: DepartmentsStaffStep,
     category: "Operations",
     estimatedMinutes: 12,
   },
   {
     id: 6,
-    title: "Leadership & Team",
-    description: "Leadership cards, staffing plan",
-    icon: Users,
-    component: LeadershipTeamStep,
+    title: "Billing & Financial",
+    description: "Tax config, payments, TPA panels, banking",
+    icon: DollarSign,
+    component: BillingFinancialStep,
     category: "Operations",
-    estimatedMinutes: 10,
+    estimatedMinutes: 15,
   },
   {
     id: 7,
-    title: "Operational Policies",
-    description: "Hours, buffers, cancellation policies",
+    title: "Clinical Configuration",
+    description: "Prescription settings, coding, consultation params",
     icon: Settings,
-    component: OperationalPoliciesStep,
-    category: "Operations",
-    estimatedMinutes: 8,
-  },
-  {
-    id: 8,
-    title: "Compliance & Documentation",
-    description: "Accreditation uploads, DPO contact",
-    icon: Shield,
-    component: ComplianceDocumentationStep,
+    component: ClinicalConfigStep,
     category: "Operations",
     estimatedMinutes: 10,
   },
   {
-    id: 9,
-    title: "Integrations & Preferences",
-    description: "Messaging, analytics, LLM opt-in",
-    icon: Zap,
-    component: IntegrationsPreferencesStep,
+    id: 8,
+    title: "Pharmacy & Inventory",
+    description: "Drug licenses, stores, inventory categories",
+    icon: Shield,
+    component: PharmacyInventoryStep,
     category: "Operations",
-    estimatedMinutes: 7,
+    estimatedMinutes: 12,
+  },
+  {
+    id: 9,
+    title: "Operational Policies",
+    description: "Hours, holidays, appointment rules, consent",
+    icon: Clock,
+    component: OperationalPoliciesStep,
+    category: "Operations",
+    estimatedMinutes: 10,
   },
   {
     id: 10,
-    title: "Admin & Staff Invitations",
-    description: "Invite team members with roles",
-    icon: UserPlus,
-    component: AdminStaffInvitationsStep,
-    category: "Operations",
-    estimatedMinutes: 8,
-  },
-  {
-    id: 11,
     title: "Review & Submission",
-    description: "Final review, acknowledgements, publish plan",
+    description: "Final review, acknowledgements, publish",
     icon: ListChecks,
     component: ReviewSubmissionStep,
     category: "Review",
