@@ -8,6 +8,7 @@ export { superAdminAPI } from './super-admin';
 export type {
   DashboardMetrics,
   TenantResponse,
+  TenantUserResponse,
   InvitationResponse,
   InvitationCreateResponse,
   TokenValidationResponse,

@@ -101,6 +101,16 @@ export interface OnboardingWizardState {
   validation_errors: Record<string, string[]>;
 }
 
+export interface TenantUserResponse {
+  id: string;
+  email: string;
+  display_name: string | null;
+  user_type: string;
+  status: string;
+  created_at: string;
+  last_login_at: string | null;
+}
+
 export interface CreateInvitationRequest {
   email: string;
   hospital_name?: string;
@@ -254,6 +264,28 @@ class SuperAdminAPI {
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<TenantResponse>(response);
+  }
+
+  // =========================================================================
+  // Tenant Users
+  // =========================================================================
+  async listTenantUsers(tenantId: string, params?: {
+    user_type?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<TenantUserResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.user_type) searchParams.append('user_type', params.user_type);
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.limit) searchParams.append('limit', String(params.limit));
+    if (params?.offset) searchParams.append('offset', String(params.offset));
+    
+    const url = `${this.baseUrl}/tenants/${tenantId}/users${searchParams.toString() ? '?' + searchParams : ''}`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<TenantUserResponse[]>(response);
   }
 
   // =========================================================================
