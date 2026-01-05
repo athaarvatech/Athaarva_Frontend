@@ -445,8 +445,9 @@ function HospitalOnboardingContent({
         localStorage.setItem("hospital_admin_token", mainAuthToken);
       }
 
-      // Redirect to hospital admin dashboard
-      router.push(`/hospital/${hospitalSubdomain}/admin`);
+      // Show success message and redirect to staff signin page
+      // Admin will receive credentials via email
+      router.push(`/auth/staff/signin?hospital=${hospitalSubdomain}&onboarding=complete`);
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
       setSubmitError(
