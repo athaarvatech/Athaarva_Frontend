@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { cn } from "@/lib/utils";
 import type {
   TemplateBlueprint,
   UploadedImageData,
@@ -50,6 +51,7 @@ export interface AhtarvaProfessionalTemplateProps {
   onBlueprintChange: (updatedBlueprint: TemplateBlueprint) => void;
   isEditMode?: boolean;
   showBanner?: boolean;
+  useResponsive?: boolean; // When true, uses actual responsive CSS instead of scaling
 }
 
 interface ColorScheme {
@@ -77,22 +79,27 @@ export function AhtarvaProfessionalTemplate({
   onBlueprintChange,
   isEditMode = false,
   showBanner = true,
+  useResponsive = false,
 }: AhtarvaProfessionalTemplateProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Color scheme - Professional Blue Theme (locked)
+  // Color scheme - Use blueprint palette with fallback to Professional Blue
   const colors: ColorScheme = {
-    primary: "#246AFE", // Professional Blue - always use this
-    secondary: "#1a5ad4",
-    accent: "#EBF0FE",
-    textPrimary: "#0B0A0A",
-    textSecondary: "#4B5563",
-    lightBg: "#FFFFFF",
+    primary: blueprint.palette?.accent || "#246AFE",
+    secondary: blueprint.palette?.accentMuted || "#1a5ad4",
+    accent: blueprint.palette?.surface || "#EBF0FE",
+    textPrimary: blueprint.palette?.text || "#0B0A0A",
+    textSecondary: blueprint.palette?.textMuted || "#4B5563",
+    lightBg: blueprint.palette?.background || "#FFFFFF",
     border: "#E5E7EB",
   };
 
-  // Device scaling
-  const scale = device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7;
+  // Device scaling - only apply when not using responsive mode
+  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
+  
+  // Responsive breakpoint classes
+  const isMobile = useResponsive && device === "mobile";
+  const isTablet = useResponsive && device === "tablet";
 
   // Helper functions
   const updateBlueprint = <K extends keyof TemplateBlueprint>(
@@ -112,30 +119,101 @@ export function AhtarvaProfessionalTemplate({
     updateBlueprint("images", { ...blueprint.images, ...updates });
   };
 
+  // Typography from blueprint
+  const typography = {
+    heading: blueprint.typography?.heading || '"Inter", system-ui, sans-serif',
+    body: blueprint.typography?.body || '"Inter", system-ui, sans-serif',
+  };
+
   return (
     <div
-      className="min-h-screen bg-white overflow-hidden"
+      className={cn(
+        "min-h-screen bg-white overflow-hidden",
+        useResponsive && isMobile && "force-mobile-layout",
+        useResponsive && isTablet && "force-tablet-layout"
+      )}
       style={{
-        transform: `scale(${scale})`,
+        transform: useResponsive ? "none" : `scale(${scale})`,
         transformOrigin: "top center",
-        fontFamily: '"Inter", sans-serif',
+        fontFamily: typography.body,
       }}
     >
       {/* Google Fonts */}
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&family=Lato:wght@400;700&display=swap"
         rel="stylesheet"
       />
 
-      {/* Edit Mode Banner */}
-      {isEditMode && showBanner && (
-        <div
-          className="sticky top-0 z-[100] text-white px-4 py-2 text-center text-sm backdrop-blur-lg"
-          style={{ backgroundColor: `${colors.primary}ee` }}
-        >
-          <span className="font-bold">🏥 Ahtarva Professional Canvas</span> —
-          Click to edit text, hover images to upload. Auto-save enabled.
-        </div>
+      {/* Note: Responsive overrides removed due to styled-jsx nesting limitations */}
+      {false && useResponsive && isMobile && (
+        <style>{`
+          /* Force mobile layouts */
+          .force-mobile-layout .hidden.md\\:flex,
+          .force-mobile-layout .hidden.lg\\:flex,
+          .force-mobile-layout .hidden.md\\:block,
+          .force-mobile-layout .hidden.lg\\:block,
+          .force-mobile-layout .hidden.md\\:grid,
+          .force-mobile-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-mobile-layout .md\\:hidden,
+          .force-mobile-layout .lg\\:hidden {
+            display: block !important;
+          }
+          .force-mobile-layout .lg\\:grid-cols-2,
+          .force-mobile-layout .lg\\:grid-cols-3,
+          .force-mobile-layout .md\\:grid-cols-2,
+          .force-mobile-layout .md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+          }
+          .force-mobile-layout .lg\\:text-6xl,
+          .force-mobile-layout .lg\\:text-5xl {
+            font-size: 2.25rem !important;
+            line-height: 2.5rem !important;
+          }
+          .force-mobile-layout .lg\\:text-4xl {
+            font-size: 1.875rem !important;
+          }
+          .force-mobile-layout .lg\\:py-20,
+          .force-mobile-layout .lg\\:py-24 {
+            padding-top: 3rem !important;
+            padding-bottom: 3rem !important;
+          }
+          .force-mobile-layout .lg\\:px-8 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+          .force-mobile-layout .lg\\:gap-8,
+          .force-mobile-layout .lg\\:gap-12 {
+            gap: 2rem !important;
+          }
+          .force-mobile-layout .lg\\:flex-row {
+            flex-direction: column !important;
+          }
+          .force-mobile-layout .lg\\:w-1\\/2,
+          .force-mobile-layout .lg\\:w-1\\/3 {
+            width: 100% !important;
+          }
+        `}</style>
+      )}
+      {false && useResponsive && isTablet && (
+        <style>{`
+          /* Tablet styles */
+          .force-tablet-layout .hidden.lg\\:flex,
+          .force-tablet-layout .hidden.lg\\:block,
+          .force-tablet-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-tablet-layout .lg\\:hidden {
+            display: block !important;
+          }
+          .force-tablet-layout .lg\\:grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .force-tablet-layout .lg\\:text-6xl {
+            font-size: 3rem !important;
+          }
+        `}</style>
       )}
 
       {/* Header */}
