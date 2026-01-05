@@ -696,7 +696,7 @@ export default function LocationsContactsStep() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <span className="capitalize">
-                          {location.type.replace("_", " ")}
+                          {location.type?.replace("_", " ") || "Unknown"}
                         </span>
                         <span className="text-gray-300">|</span>
                         <span>{location.location_code}</span>

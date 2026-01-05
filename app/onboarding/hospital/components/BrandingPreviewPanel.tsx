@@ -49,8 +49,11 @@ function LoginPagePreview({ isDark = false }: { isDark?: boolean }) {
               />
             </div>
           ) : (
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+              <div className="text-center">
+                <Building2 className="h-6 w-6 mx-auto text-gray-300" />
+                <p className="text-[8px] text-gray-400 mt-0.5">Logo</p>
+              </div>
             </div>
           )}
 
@@ -176,8 +179,8 @@ function BrandingPreview() {
                 />
               </>
             ) : (
-              <div className="w-12 h-12 mx-auto bg-gray-100 rounded flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-gray-400" />
+              <div className="w-12 h-12 mx-auto bg-gray-50 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-gray-300" />
               </div>
             )}
             <div className="text-xs text-gray-500 mt-2">Light Background</div>
@@ -193,8 +196,8 @@ function BrandingPreview() {
                 />
               </>
             ) : (
-              <div className="w-12 h-12 mx-auto bg-gray-700 rounded flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-gray-400" />
+              <div className="w-12 h-12 mx-auto bg-gray-700 rounded border-2 border-dashed border-gray-500 flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-gray-500" />
               </div>
             )}
             <div className="text-xs text-gray-400 mt-2">Dark Background</div>

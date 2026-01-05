@@ -53,7 +53,7 @@ export default function BrandingStudioStep() {
   const updateReportHeader = (field: string, value: boolean | string) => {
     updateData("branding", {
       report_header: {
-        ...branding.report_header,
+        ...(branding?.report_header || {}),
         [field]: value,
       },
     });
@@ -62,7 +62,7 @@ export default function BrandingStudioStep() {
   const updateReportFooter = (field: string, value: boolean | string) => {
     updateData("branding", {
       report_footer: {
-        ...branding.report_footer,
+        ...(branding?.report_footer || {}),
         [field]: value,
       },
     });
@@ -111,8 +111,8 @@ export default function BrandingStudioStep() {
             <FileUploadZone
               label="Hospital Logo"
               description="Upload your hospital logo for invoices, prescriptions, and reports (PNG, JPG, or SVG, max 2MB)"
-              currentFile={branding.logo_file}
-              currentUrl={branding.logo_url}
+              currentFile={branding?.logo_file}
+              currentUrl={branding?.logo_url}
               onFileSelect={(file) =>
                 updateData("branding", { logo_file: file })
               }
@@ -132,7 +132,7 @@ export default function BrandingStudioStep() {
           <div className="space-y-2">
             <Label>Logo Size on Documents</Label>
             <Select
-              value={branding.logo_size}
+              value={branding?.logo_size || "medium"}
               onValueChange={(value: "small" | "medium" | "large") =>
                 updateData("branding", { logo_size: value })
               }
@@ -153,8 +153,8 @@ export default function BrandingStudioStep() {
             <FileUploadZone
               label="Favicon (Optional)"
               description="Small icon for browser tabs"
-              currentFile={branding.favicon_file}
-              currentUrl={branding.favicon_url}
+              currentFile={branding?.favicon_file}
+              currentUrl={branding?.favicon_url}
               onFileSelect={(file) =>
                 updateData("branding", { favicon_file: file })
               }
@@ -209,19 +209,19 @@ export default function BrandingStudioStep() {
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={branding.colors.primary}
+                  value={branding?.colors?.primary || "#007C7C"}
                   onChange={(e) =>
                     updateData("branding", {
-                      colors: { ...branding.colors, primary: e.target.value },
+                      colors: { ...(branding?.colors || {}), primary: e.target.value },
                     })
                   }
                   className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
                 />
                 <Input
-                  value={branding.colors.primary}
+                  value={branding?.colors?.primary || "#007C7C"}
                   onChange={(e) =>
                     updateData("branding", {
-                      colors: { ...branding.colors, primary: e.target.value },
+                      colors: { ...(branding?.colors || {}), primary: e.target.value },
                     })
                   }
                   placeholder="#007C7C"
@@ -235,19 +235,19 @@ export default function BrandingStudioStep() {
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={branding.colors.secondary}
+                  value={branding?.colors?.secondary || "#20B2AA"}
                   onChange={(e) =>
                     updateData("branding", {
-                      colors: { ...branding.colors, secondary: e.target.value },
+                      colors: { ...(branding?.colors || {}), secondary: e.target.value },
                     })
                   }
                   className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
                 />
                 <Input
-                  value={branding.colors.secondary}
+                  value={branding?.colors?.secondary || "#20B2AA"}
                   onChange={(e) =>
                     updateData("branding", {
-                      colors: { ...branding.colors, secondary: e.target.value },
+                      colors: { ...(branding?.colors || {}), secondary: e.target.value },
                     })
                   }
                   placeholder="#20B2AA"
@@ -292,7 +292,7 @@ export default function BrandingStudioStep() {
                 </p>
               </div>
               <Switch
-                checked={branding.report_header.show_logo}
+                checked={branding?.report_header?.show_logo ?? false}
                 onCheckedChange={(checked) =>
                   updateReportHeader("show_logo", checked)
                 }
@@ -307,7 +307,7 @@ export default function BrandingStudioStep() {
                 </p>
               </div>
               <Switch
-                checked={branding.report_header.show_address}
+                checked={branding?.report_header?.show_address ?? false}
                 onCheckedChange={(checked) =>
                   updateReportHeader("show_address", checked)
                 }
@@ -320,7 +320,7 @@ export default function BrandingStudioStep() {
                 <p className="text-xs text-gray-500">Display contact numbers</p>
               </div>
               <Switch
-                checked={branding.report_header.show_phone}
+                checked={branding?.report_header?.show_phone ?? false}
                 onCheckedChange={(checked) =>
                   updateReportHeader("show_phone", checked)
                 }
@@ -335,7 +335,7 @@ export default function BrandingStudioStep() {
                 </p>
               </div>
               <Switch
-                checked={branding.report_header.show_registration}
+                checked={branding?.report_header?.show_registration ?? false}
                 onCheckedChange={(checked) =>
                   updateReportHeader("show_registration", checked)
                 }
@@ -348,7 +348,7 @@ export default function BrandingStudioStep() {
             <div className="space-y-2">
               <Label>Hospital Tagline (Optional)</Label>
               <Input
-                value={branding.report_header.tagline || ""}
+                value={branding?.report_header?.tagline || ""}
                 onChange={(e) => updateReportHeader("tagline", e.target.value)}
                 placeholder="e.g., Caring for you, always"
               />
@@ -360,7 +360,7 @@ export default function BrandingStudioStep() {
             <div className="space-y-2">
               <Label>Prescription Header Format</Label>
               <Select
-                value={branding.prescription_header_format}
+                value={branding?.prescription_header_format || "standard"}
                 onValueChange={(value: "standard" | "compact" | "detailed") =>
                   updateData("branding", { prescription_header_format: value })
                 }
@@ -379,7 +379,7 @@ export default function BrandingStudioStep() {
             <div className="space-y-2">
               <Label>Invoice Header Format</Label>
               <Select
-                value={branding.invoice_header_format}
+                value={branding?.invoice_header_format || "standard"}
                 onValueChange={(value: "standard" | "detailed") =>
                   updateData("branding", { invoice_header_format: value })
                 }
@@ -399,7 +399,7 @@ export default function BrandingStudioStep() {
             <div className="space-y-2">
               <Label>Document Watermark (Optional)</Label>
               <Input
-                value={branding.watermark_text || ""}
+                value={branding?.watermark_text || ""}
                 onChange={(e) =>
                   updateData("branding", { watermark_text: e.target.value })
                 }
@@ -431,7 +431,7 @@ export default function BrandingStudioStep() {
           <div className="space-y-2">
             <Label>Footer Disclaimer Text (Optional)</Label>
             <Textarea
-              value={branding.report_footer.disclaimer_text || ""}
+              value={branding?.report_footer?.disclaimer_text || ""}
               onChange={(e) =>
                 updateReportFooter("disclaimer_text", e.target.value)
               }
@@ -451,7 +451,7 @@ export default function BrandingStudioStep() {
               </p>
             </div>
             <Switch
-              checked={branding.report_footer.signatory_line}
+              checked={branding?.report_footer?.signatory_line ?? false}
               onCheckedChange={(checked) =>
                 updateReportFooter("signatory_line", checked)
               }

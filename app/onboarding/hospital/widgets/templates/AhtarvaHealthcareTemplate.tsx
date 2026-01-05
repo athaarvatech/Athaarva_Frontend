@@ -3,12 +3,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader } from "../ImageUploader";
+import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
 import {
   Phone,
   Mail,
@@ -49,6 +50,7 @@ export interface AhtarvaHealthcareTemplateProps {
   onBlueprintChange: (updatedBlueprint: TemplateBlueprint) => void;
   isEditMode?: boolean;
   showBanner?: boolean;
+  useResponsive?: boolean; // When true, uses actual responsive CSS instead of scaling
 }
 
 interface ColorScheme {
@@ -95,8 +97,7 @@ const defaultHeroContent = {
     subtitle: "Advanced Technology",
   },
   floatingCard2: "24/7 Support",
-  heroImage:
-    "https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg?auto=compress&cs=tinysrgb&w=800",
+  // heroImage: "", // Removed hardcoded image - users will upload their own
 };
 
 const defaultStats = [
@@ -141,29 +142,25 @@ const defaultDoctors = [
     name: "Dr. Rajesh Kumar",
     specialty: "Cardiology",
     qualification: "MBBS, DM Cardiology",
-    image:
-      "https://images.pexels.com/photos/8376189/pexels-photo-8376189.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Priya Sharma",
     specialty: "Neurology",
     qualification: "MBBS, MD",
-    image:
-      "https://images.pexels.com/photos/5407249/pexels-photo-5407249.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Amit Patel",
     specialty: "Orthopedics",
     qualification: "MBBS, MS Ortho",
-    image:
-      "https://images.pexels.com/photos/8313184/pexels-photo-8313184.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Sunita Reddy",
     specialty: "Oncology",
     qualification: "MBBS, MD",
-    image:
-      "https://images.pexels.com/photos/4421494/pexels-photo-4421494.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
 ];
 
@@ -172,15 +169,13 @@ const defaultFacilities = [
     title: "Advanced ICU",
     description:
       "50-bed intensive care unit with 24/7 critical care specialists monitoring patients round the clock.",
-    image:
-      "https://images.pexels.com/photos/11748791/pexels-photo-11748791.jpeg?auto=compress&cs=tinysrgb&w=600",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     title: "Modular Operation Theaters",
     description:
       "Equipped with robotic surgery systems and state-of-the-art medical equipment for precise procedures.",
-    image:
-      "https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=600",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
 ];
 
@@ -259,23 +254,34 @@ export function AhtarvaHealthcareTemplate({
   onBlueprintChange,
   isEditMode = false,
   showBanner = true,
+  useResponsive = false,
 }: AhtarvaHealthcareTemplateProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Color scheme - Teal accent based design
+  // Color scheme - Use blueprint palette with fallback to Teal
   const colors: ColorScheme = {
-    primary: "#14b8a6",
-    primaryDark: "#0d9488",
-    textPrimary: "#0f172a",
-    textSecondary: "#64748b",
-    lightBg: "#f0fdfa",
+    primary: blueprint.palette?.accent || "#14b8a6",
+    primaryDark: blueprint.palette?.text || "#0d9488",
+    textPrimary: blueprint.palette?.text || "#0f172a",
+    textSecondary: blueprint.palette?.textMuted || "#64748b",
+    lightBg: blueprint.palette?.accentMuted || "#f0fdfa",
     white: "#FFFFFF",
     border: "#e2e8f0",
-    accent: "#14b8a6",
+    accent: blueprint.palette?.accent || "#14b8a6",
   };
 
-  // Device scaling
-  const scale = device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7;
+  // Typography from blueprint
+  const typography = {
+    heading: blueprint.typography?.heading || '"Inter", system-ui, sans-serif',
+    body: blueprint.typography?.body || '"Inter", system-ui, sans-serif',
+  };
+
+  // Device scaling - only apply when not using responsive mode
+  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
+  
+  // Responsive breakpoint classes
+  const isMobile = useResponsive && device === "mobile";
+  const isTablet = useResponsive && device === "tablet";
 
   // Helper functions
   const updateBlueprint = <K extends keyof TemplateBlueprint>(
@@ -297,12 +303,23 @@ export function AhtarvaHealthcareTemplate({
 
   return (
     <div
-      className="min-h-screen bg-white overflow-hidden antialiased font-sans"
+      className={cn(
+        "min-h-screen bg-white overflow-hidden antialiased",
+        useResponsive && isMobile && "force-mobile-layout",
+        useResponsive && isTablet && "force-tablet-layout"
+      )}
       style={{
-        transform: `scale(${scale})`,
+        transform: useResponsive ? "none" : `scale(${scale})`,
         transformOrigin: "top center",
+        fontFamily: typography.body,
       }}
     >
+      {/* Google Fonts */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&family=Lato:wght@400;700&display=swap"
+        rel="stylesheet"
+      />
+
       {/* Global Styles */}
       <style jsx global>{`
         html {
@@ -314,15 +331,97 @@ export function AhtarvaHealthcareTemplate({
         }
       `}</style>
 
-      {/* Edit Mode Banner */}
-      {isEditMode && showBanner && (
-        <div
-          className="sticky top-0 z-[100] text-white px-4 py-2 text-center text-sm backdrop-blur-lg"
-          style={{ backgroundColor: `${colors.primary}ee` }}
-        >
-          <span className="font-bold">🏥 Ahtarva Healthcare Template</span> —
-          Click to edit text, hover images to upload. Auto-save enabled.
-        </div>
+      {/* Note: Responsive overrides removed due to styled-jsx nesting limitations */}
+      {false && useResponsive && isMobile && (
+        <style>{`
+          .force-mobile-layout .hidden.md\\:flex,
+          .force-mobile-layout .hidden.lg\\:flex,
+          .force-mobile-layout .hidden.md\\:block,
+          .force-mobile-layout .hidden.lg\\:block,
+          .force-mobile-layout .hidden.md\\:grid,
+          .force-mobile-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-mobile-layout .md\\:hidden,
+          .force-mobile-layout .lg\\:hidden {
+            display: flex !important;
+          }
+          .force-mobile-layout .lg\\:grid-cols-2,
+          .force-mobile-layout .lg\\:grid-cols-3,
+          .force-mobile-layout .lg\\:grid-cols-4,
+          .force-mobile-layout .md\\:grid-cols-2,
+          .force-mobile-layout .md\\:grid-cols-3,
+          .force-mobile-layout .md\\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+          }
+          .force-mobile-layout .lg\\:text-6xl,
+          .force-mobile-layout .lg\\:text-5xl,
+          .force-mobile-layout .md\\:text-5xl {
+            font-size: 2rem !important;
+            line-height: 2.25rem !important;
+          }
+          .force-mobile-layout .lg\\:text-4xl,
+          .force-mobile-layout .md\\:text-4xl {
+            font-size: 1.75rem !important;
+          }
+          .force-mobile-layout .lg\\:text-3xl,
+          .force-mobile-layout .md\\:text-3xl {
+            font-size: 1.5rem !important;
+          }
+          .force-mobile-layout .lg\\:py-20,
+          .force-mobile-layout .lg\\:py-24,
+          .force-mobile-layout .md\\:py-16,
+          .force-mobile-layout .md\\:py-20 {
+            padding-top: 2.5rem !important;
+            padding-bottom: 2.5rem !important;
+          }
+          .force-mobile-layout .lg\\:px-8,
+          .force-mobile-layout .md\\:px-6 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+          .force-mobile-layout .lg\\:gap-8,
+          .force-mobile-layout .lg\\:gap-12,
+          .force-mobile-layout .md\\:gap-8 {
+            gap: 1.5rem !important;
+          }
+          .force-mobile-layout .lg\\:flex-row,
+          .force-mobile-layout .md\\:flex-row {
+            flex-direction: column !important;
+          }
+          .force-mobile-layout .lg\\:w-1\\/2,
+          .force-mobile-layout .lg\\:w-1\\/3,
+          .force-mobile-layout .md\\:w-1\\/2 {
+            width: 100% !important;
+          }
+          .force-mobile-layout .lg\\:h-\\[600px\\],
+          .force-mobile-layout .md\\:h-\\[500px\\] {
+            height: auto !important;
+            min-height: 300px !important;
+          }
+        `}</style>
+      )}
+      {false && useResponsive && isTablet && (
+        <style>{`
+          .force-tablet-layout .hidden.lg\\:flex,
+          .force-tablet-layout .hidden.lg\\:block,
+          .force-tablet-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-tablet-layout .lg\\:hidden {
+            display: flex !important;
+          }
+          .force-tablet-layout .lg\\:grid-cols-3,
+          .force-tablet-layout .lg\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .force-tablet-layout .lg\\:text-6xl {
+            font-size: 2.75rem !important;
+          }
+          .force-tablet-layout .lg\\:text-5xl {
+            font-size: 2.5rem !important;
+          }
+        `}</style>
       )}
 
       {/* Header */}
@@ -376,6 +475,7 @@ export function AhtarvaHealthcareTemplate({
         blueprint={blueprint}
         colors={colors}
         isEditMode={isEditMode}
+        onImageUpdate={updateImages}
       />
 
       {/* Appointment Section */}
@@ -618,15 +718,15 @@ function HeroSection({
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg text-slate-600 max-w-lg leading-relaxed">
+            <div className="text-lg text-slate-600 max-w-lg leading-relaxed">
               <EditableText
                 value={blueprint.hero.subtitle || defaultHeroContent.subtitle}
                 onChange={(val) => onUpdate({ subtitle: val })}
-                as="span"
+                as="p"
                 placeholder="Subtitle Description"
                 editIndicator="icon"
               />
-            </p>
+            </div>
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4">
@@ -721,15 +821,19 @@ function HeroSection({
                   placeholder="Upload hero image"
                   className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] rounded-3xl"
                 />
-              ) : (
+              ) : blueprint.images?.heroImage?.previewUrl ? (
                 <img
-                  src={
-                    blueprint.images?.heroImage?.previewUrl ||
-                    defaultHeroContent.heroImage
-                  }
+                  src={blueprint.images.heroImage.previewUrl}
                   alt="Professional Doctor"
                   className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] object-cover object-top rounded-3xl"
                 />
+              ) : (
+                <div className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] rounded-3xl bg-slate-100 flex items-center justify-center">
+                  <div className="text-center text-slate-400">
+                    <span className="text-7xl">👨‍⚕️</span>
+                    <p className="mt-3 text-sm">No hero image uploaded</p>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -1209,17 +1313,22 @@ function DoctorsSection({
                         placeholder="Upload doctor photo"
                         className="w-full h-64"
                       />
-                    ) : (
+                    ) : doctor.photo?.previewUrl ? (
                       <>
                         <img
-                          src={
-                            doctor.photo?.previewUrl || defaultDoc?.image || ""
-                          }
+                          src={doctor.photo.previewUrl}
                           alt={doctor.name}
                           className="w-full h-64 object-cover object-top group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </>
+                    ) : (
+                      <div className="w-full h-64 bg-slate-100 flex items-center justify-center">
+                        <div className="text-center text-slate-400">
+                          <span className="text-5xl">👨‍⚕️</span>
+                          <p className="mt-2 text-xs">No photo uploaded</p>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -1321,9 +1430,10 @@ interface FacilitiesSectionProps {
   blueprint: TemplateBlueprint;
   colors: ColorScheme;
   isEditMode: boolean;
+  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
 }
 
-function FacilitiesSection({ blueprint, colors }: FacilitiesSectionProps) {
+function FacilitiesSection({ blueprint, colors, isEditMode, onImageUpdate }: FacilitiesSectionProps) {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1356,11 +1466,36 @@ function FacilitiesSection({ blueprint, colors }: FacilitiesSectionProps) {
                       background: `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`,
                     }}
                   />
-                  <img
-                    src={facility.image}
-                    alt={facility.title}
-                    className="relative rounded-3xl w-full h-[350px] object-cover shadow-xl"
-                  />
+                  {isEditMode ? (
+                    <div className="relative rounded-3xl overflow-hidden shadow-xl">
+                      <FacilityImageUploader
+                        value={blueprint.images?.facilityImages?.[index] || null}
+                        onChange={(img) => {
+                          const facilityImages = blueprint.images?.facilityImages || [];
+                          if (img) {
+                            facilityImages[index] = img;
+                          } else {
+                            facilityImages[index] = undefined as unknown as UploadedImageData;
+                          }
+                          onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                        }}
+                        className="w-full h-[350px]"
+                      />
+                    </div>
+                  ) : blueprint.images?.facilityImages?.[index]?.previewUrl ? (
+                    <img
+                      src={blueprint.images.facilityImages[index].previewUrl}
+                      alt={facility.title}
+                      className="relative rounded-3xl w-full h-[350px] object-cover shadow-xl"
+                    />
+                  ) : (
+                    <div className="relative rounded-3xl w-full h-[350px] bg-slate-100 shadow-xl flex items-center justify-center">
+                      <div className="text-center text-slate-400">
+                        <span className="text-6xl">🏥</span>
+                        <p className="mt-3 text-sm">No facility image</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

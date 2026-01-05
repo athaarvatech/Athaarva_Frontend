@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { cn } from "@/lib/utils";
 import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader } from "../ImageUploader";
+import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
 import {
   Phone,
   ArrowRight,
@@ -50,6 +51,7 @@ export interface AhtarvaProfessionalTemplateProps {
   onBlueprintChange: (updatedBlueprint: TemplateBlueprint) => void;
   isEditMode?: boolean;
   showBanner?: boolean;
+  useResponsive?: boolean; // When true, uses actual responsive CSS instead of scaling
 }
 
 interface ColorScheme {
@@ -77,22 +79,27 @@ export function AhtarvaProfessionalTemplate({
   onBlueprintChange,
   isEditMode = false,
   showBanner = true,
+  useResponsive = false,
 }: AhtarvaProfessionalTemplateProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Color scheme - Professional Blue Theme (locked)
+  // Color scheme - Use blueprint palette with fallback to Professional Blue
   const colors: ColorScheme = {
-    primary: "#246AFE", // Professional Blue - always use this
-    secondary: "#1a5ad4",
-    accent: "#EBF0FE",
-    textPrimary: "#0B0A0A",
-    textSecondary: "#4B5563",
-    lightBg: "#FFFFFF",
+    primary: blueprint.palette?.accent || "#246AFE",
+    secondary: blueprint.palette?.accentMuted || "#1a5ad4",
+    accent: blueprint.palette?.surface || "#EBF0FE",
+    textPrimary: blueprint.palette?.text || "#0B0A0A",
+    textSecondary: blueprint.palette?.textMuted || "#4B5563",
+    lightBg: blueprint.palette?.background || "#FFFFFF",
     border: "#E5E7EB",
   };
 
-  // Device scaling
-  const scale = device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7;
+  // Device scaling - only apply when not using responsive mode
+  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
+  
+  // Responsive breakpoint classes
+  const isMobile = useResponsive && device === "mobile";
+  const isTablet = useResponsive && device === "tablet";
 
   // Helper functions
   const updateBlueprint = <K extends keyof TemplateBlueprint>(
@@ -112,30 +119,101 @@ export function AhtarvaProfessionalTemplate({
     updateBlueprint("images", { ...blueprint.images, ...updates });
   };
 
+  // Typography from blueprint
+  const typography = {
+    heading: blueprint.typography?.heading || '"Inter", system-ui, sans-serif',
+    body: blueprint.typography?.body || '"Inter", system-ui, sans-serif',
+  };
+
   return (
     <div
-      className="min-h-screen bg-white overflow-hidden"
+      className={cn(
+        "min-h-screen bg-white overflow-hidden",
+        useResponsive && isMobile && "force-mobile-layout",
+        useResponsive && isTablet && "force-tablet-layout"
+      )}
       style={{
-        transform: `scale(${scale})`,
+        transform: useResponsive ? "none" : `scale(${scale})`,
         transformOrigin: "top center",
-        fontFamily: '"Inter", sans-serif',
+        fontFamily: typography.body,
       }}
     >
       {/* Google Fonts */}
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&family=Lato:wght@400;700&display=swap"
         rel="stylesheet"
       />
 
-      {/* Edit Mode Banner */}
-      {isEditMode && showBanner && (
-        <div
-          className="sticky top-0 z-[100] text-white px-4 py-2 text-center text-sm backdrop-blur-lg"
-          style={{ backgroundColor: `${colors.primary}ee` }}
-        >
-          <span className="font-bold">🏥 Ahtarva Professional Canvas</span> —
-          Click to edit text, hover images to upload. Auto-save enabled.
-        </div>
+      {/* Note: Responsive overrides removed due to styled-jsx nesting limitations */}
+      {false && useResponsive && isMobile && (
+        <style>{`
+          /* Force mobile layouts */
+          .force-mobile-layout .hidden.md\\:flex,
+          .force-mobile-layout .hidden.lg\\:flex,
+          .force-mobile-layout .hidden.md\\:block,
+          .force-mobile-layout .hidden.lg\\:block,
+          .force-mobile-layout .hidden.md\\:grid,
+          .force-mobile-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-mobile-layout .md\\:hidden,
+          .force-mobile-layout .lg\\:hidden {
+            display: block !important;
+          }
+          .force-mobile-layout .lg\\:grid-cols-2,
+          .force-mobile-layout .lg\\:grid-cols-3,
+          .force-mobile-layout .md\\:grid-cols-2,
+          .force-mobile-layout .md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+          }
+          .force-mobile-layout .lg\\:text-6xl,
+          .force-mobile-layout .lg\\:text-5xl {
+            font-size: 2.25rem !important;
+            line-height: 2.5rem !important;
+          }
+          .force-mobile-layout .lg\\:text-4xl {
+            font-size: 1.875rem !important;
+          }
+          .force-mobile-layout .lg\\:py-20,
+          .force-mobile-layout .lg\\:py-24 {
+            padding-top: 3rem !important;
+            padding-bottom: 3rem !important;
+          }
+          .force-mobile-layout .lg\\:px-8 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+          .force-mobile-layout .lg\\:gap-8,
+          .force-mobile-layout .lg\\:gap-12 {
+            gap: 2rem !important;
+          }
+          .force-mobile-layout .lg\\:flex-row {
+            flex-direction: column !important;
+          }
+          .force-mobile-layout .lg\\:w-1\\/2,
+          .force-mobile-layout .lg\\:w-1\\/3 {
+            width: 100% !important;
+          }
+        `}</style>
+      )}
+      {false && useResponsive && isTablet && (
+        <style>{`
+          /* Tablet styles */
+          .force-tablet-layout .hidden.lg\\:flex,
+          .force-tablet-layout .hidden.lg\\:block,
+          .force-tablet-layout .hidden.lg\\:grid {
+            display: none !important;
+          }
+          .force-tablet-layout .lg\\:hidden {
+            display: block !important;
+          }
+          .force-tablet-layout .lg\\:grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .force-tablet-layout .lg\\:text-6xl {
+            font-size: 3rem !important;
+          }
+        `}</style>
       )}
 
       {/* Header */}
@@ -171,6 +249,7 @@ export function AhtarvaProfessionalTemplate({
         colors={colors}
         isEditMode={isEditMode}
         onUpdate={(about) => updateBlueprint("about", about)}
+        onImageUpdate={updateImages}
       />
 
       {/* Specialties Grid */}
@@ -899,6 +978,7 @@ interface ProfessionalAboutProps {
   colors: ColorScheme;
   isEditMode: boolean;
   onUpdate: (about: TemplateBlueprint["about"]) => void;
+  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
 }
 
 function ProfessionalAbout({
@@ -906,6 +986,7 @@ function ProfessionalAbout({
   colors,
   isEditMode,
   onUpdate,
+  onImageUpdate,
 }: ProfessionalAboutProps) {
   const iconMap: Record<string, any> = {
     cpu: Cpu,
@@ -993,39 +1074,64 @@ function ProfessionalAbout({
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left - Video/Image with Play Button */}
           <div className="relative group">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop"
-                alt="Take a look inside Ahtarva Medical Center"
-                className="w-full h-[400px] lg:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-[#0B0A0A]/30 group-hover:bg-[#0B0A0A]/20 transition-colors" />
+            {isEditMode ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[400px] lg:h-[500px]">
+                <FacilityImageUploader
+                  value={blueprint.images?.facilityImages?.[0] || null}
+                  onChange={(img) => {
+                    const facilityImages = blueprint.images?.facilityImages || [];
+                    if (img) {
+                      facilityImages[0] = img;
+                    } else {
+                      facilityImages[0] = undefined as unknown as UploadedImageData;
+                    }
+                    onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                  }}
+                  className="h-full"
+                />
+              </div>
+            ) : blueprint.images?.facilityImages?.[0]?.previewUrl ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src={blueprint.images.facilityImages[0].previewUrl}
+                  alt="Take a look inside Ahtarva Medical Center"
+                  className="w-full h-[400px] lg:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-[#0B0A0A]/30 group-hover:bg-[#0B0A0A]/20 transition-colors" />
 
-              {/* Text Overlay */}
-              <div className="absolute bottom-8 left-8 right-8">
-                <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-[#0B0A0A] mb-2">
-                    Take a look inside
-                  </h3>
-                  <p style={{ color: colors.textSecondary }}>
-                    Discover our state-of-the-art facilities designed for your
-                    comfort and care.
-                  </p>
+                {/* Text Overlay */}
+                <div className="absolute bottom-8 left-8 right-8">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-[#0B0A0A] mb-2">
+                      Take a look inside
+                    </h3>
+                    <p style={{ color: colors.textSecondary }}>
+                      Discover our state-of-the-art facilities designed for your
+                      comfort and care.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Play Button - Only show when image is uploaded */}
+                <button
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform group/play"
+                  style={{
+                    backgroundColor: colors.primary,
+                    boxShadow: `0 8px 24px ${colors.primary}80`,
+                  }}
+                >
+                  <Play className="w-10 h-10 text-white ml-1 group-hover/play:scale-110 transition-transform" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-slate-100 flex items-center justify-center h-[400px] lg:h-[500px]">
+                <div className="text-center text-slate-400">
+                  <span className="text-7xl">🏥</span>
+                  <p className="mt-3 text-sm">No image uploaded yet</p>
                 </div>
               </div>
-
-              {/* Play Button */}
-              <button
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform group/play"
-                style={{
-                  backgroundColor: colors.primary,
-                  boxShadow: `0 8px 24px ${colors.primary}80`,
-                }}
-              >
-                <Play className="w-10 h-10 text-white ml-1 group-hover/play:scale-110 transition-transform" />
-              </button>
-            </div>
+            )}
 
             {/* Floating Badge */}
             <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg px-6 py-3">
@@ -1287,7 +1393,7 @@ function ProfessionalSpecialties({
                     editIndicator="icon"
                   />
                 </h3>
-                <p
+                <div
                   className="leading-relaxed mb-6"
                   style={{ color: colors.textSecondary }}
                 >
@@ -1302,7 +1408,7 @@ function ProfessionalSpecialties({
                     placeholder="Description"
                     editIndicator="icon"
                   />
-                </p>
+                </div>
 
                 {/* Learn More Link */}
                 <button
