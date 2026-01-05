@@ -257,13 +257,19 @@ function AboutSection({ blueprint }: { blueprint: TemplateBlueprint }) {
         </div>
       </div>
       <div
-        className="h-56 rounded-xl flex items-center justify-center"
-        style={{ background: blueprint.palette.surface }}
+        className="h-56 rounded-xl flex items-center justify-center border-2 border-dashed"
+        style={{ 
+          background: blueprint.palette.surface,
+          borderColor: blueprint.palette.accent + '40'
+        }}
       >
-        <Building2
-          className="w-16 h-16"
-          style={{ color: blueprint.palette.accent, opacity: 0.5 }}
-        />
+        <div className="text-center">
+          <Building2
+            className="w-16 h-16 mx-auto mb-2"
+            style={{ color: blueprint.palette.accent, opacity: 0.3 }}
+          />
+          <p className="text-xs" style={{ color: blueprint.palette.accent, opacity: 0.5 }}>Hospital Image</p>
+        </div>
       </div>
     </div>
   );
@@ -386,17 +392,23 @@ function DoctorsCarousel({ blueprint }: { blueprint: TemplateBlueprint }) {
             className="rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow group bg-white"
           >
             <div
-              className="h-28 flex items-center justify-center"
-              style={{ background: blueprint.palette.surface }}
+              className="h-28 flex items-center justify-center border-b-2 border-dashed"
+              style={{ 
+                background: blueprint.palette.surface,
+                borderColor: blueprint.palette.accent + '30'
+              }}
             >
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg"
-                style={{ background: blueprint.palette.gradient }}
-              >
-                {doc.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg"
+                  style={{ background: blueprint.palette.gradient, opacity: 0.7 }}
+                >
+                  {doc.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </div>
+                <p className="text-[10px] mt-1" style={{ color: blueprint.palette.accent, opacity: 0.4 }}>Upload Photo</p>
               </div>
             </div>
             <div className="p-3">
@@ -627,9 +639,17 @@ function NewsSection({ blueprint }: { blueprint: TemplateBlueprint }) {
             className="rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white"
           >
             <div
-              className="h-24"
-              style={{ background: blueprint.palette.surface }}
-            />
+              className="h-24 flex items-center justify-center border-b-2 border-dashed"
+              style={{ 
+                background: blueprint.palette.surface,
+                borderColor: blueprint.palette.accent + '30'
+              }}
+            >
+              <FileText
+                className="w-8 h-8"
+                style={{ color: blueprint.palette.accent, opacity: 0.3 }}
+              />
+            </div>
             <div className="p-3">
               <div className="text-xs text-slate-400 mb-1">{item.date}</div>
               <h3
@@ -711,9 +731,20 @@ function FacilitiesSection({ blueprint }: { blueprint: TemplateBlueprint }) {
             className="rounded-xl overflow-hidden shadow-sm bg-white"
           >
             <div
-              className="h-28"
-              style={{ background: blueprint.palette.surface }}
-            />
+              className="h-28 flex items-center justify-center border-b-2 border-dashed"
+              style={{ 
+                background: blueprint.palette.surface,
+                borderColor: blueprint.palette.accent + '30'
+              }}
+            >
+              <div className="text-center">
+                <Home
+                  className="w-10 h-10 mx-auto"
+                  style={{ color: blueprint.palette.accent, opacity: 0.3 }}
+                />
+                <p className="text-[10px] mt-1" style={{ color: blueprint.palette.accent, opacity: 0.4 }}>Facility Image</p>
+              </div>
+            </div>
             <div className="p-3">
               <h3
                 className="text-sm font-semibold"

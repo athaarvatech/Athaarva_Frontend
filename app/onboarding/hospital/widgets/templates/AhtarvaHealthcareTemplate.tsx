@@ -8,7 +8,7 @@ import type {
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader } from "../ImageUploader";
+import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
 import {
   Phone,
   Mail,
@@ -95,8 +95,7 @@ const defaultHeroContent = {
     subtitle: "Advanced Technology",
   },
   floatingCard2: "24/7 Support",
-  heroImage:
-    "https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg?auto=compress&cs=tinysrgb&w=800",
+  // heroImage: "", // Removed hardcoded image - users will upload their own
 };
 
 const defaultStats = [
@@ -141,29 +140,25 @@ const defaultDoctors = [
     name: "Dr. Rajesh Kumar",
     specialty: "Cardiology",
     qualification: "MBBS, DM Cardiology",
-    image:
-      "https://images.pexels.com/photos/8376189/pexels-photo-8376189.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Priya Sharma",
     specialty: "Neurology",
     qualification: "MBBS, MD",
-    image:
-      "https://images.pexels.com/photos/5407249/pexels-photo-5407249.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Amit Patel",
     specialty: "Orthopedics",
     qualification: "MBBS, MS Ortho",
-    image:
-      "https://images.pexels.com/photos/8313184/pexels-photo-8313184.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     name: "Dr. Sunita Reddy",
     specialty: "Oncology",
     qualification: "MBBS, MD",
-    image:
-      "https://images.pexels.com/photos/4421494/pexels-photo-4421494.jpeg?auto=compress&cs=tinysrgb&w=400",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
 ];
 
@@ -172,15 +167,13 @@ const defaultFacilities = [
     title: "Advanced ICU",
     description:
       "50-bed intensive care unit with 24/7 critical care specialists monitoring patients round the clock.",
-    image:
-      "https://images.pexels.com/photos/11748791/pexels-photo-11748791.jpeg?auto=compress&cs=tinysrgb&w=600",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     title: "Modular Operation Theaters",
     description:
       "Equipped with robotic surgery systems and state-of-the-art medical equipment for precise procedures.",
-    image:
-      "https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=600",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
 ];
 
@@ -376,6 +369,7 @@ export function AhtarvaHealthcareTemplate({
         blueprint={blueprint}
         colors={colors}
         isEditMode={isEditMode}
+        onImageUpdate={updateImages}
       />
 
       {/* Appointment Section */}
@@ -618,15 +612,15 @@ function HeroSection({
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg text-slate-600 max-w-lg leading-relaxed">
+            <div className="text-lg text-slate-600 max-w-lg leading-relaxed">
               <EditableText
                 value={blueprint.hero.subtitle || defaultHeroContent.subtitle}
                 onChange={(val) => onUpdate({ subtitle: val })}
-                as="span"
+                as="p"
                 placeholder="Subtitle Description"
                 editIndicator="icon"
               />
-            </p>
+            </div>
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4">
@@ -721,15 +715,19 @@ function HeroSection({
                   placeholder="Upload hero image"
                   className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] rounded-3xl"
                 />
-              ) : (
+              ) : blueprint.images?.heroImage?.previewUrl ? (
                 <img
-                  src={
-                    blueprint.images?.heroImage?.previewUrl ||
-                    defaultHeroContent.heroImage
-                  }
+                  src={blueprint.images.heroImage.previewUrl}
                   alt="Professional Doctor"
                   className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] object-cover object-top rounded-3xl"
                 />
+              ) : (
+                <div className="relative z-10 w-full max-w-md mx-auto lg:max-w-lg h-[450px] lg:h-[550px] rounded-3xl bg-slate-100 flex items-center justify-center">
+                  <div className="text-center text-slate-400">
+                    <span className="text-7xl">👨‍⚕️</span>
+                    <p className="mt-3 text-sm">No hero image uploaded</p>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -1209,17 +1207,22 @@ function DoctorsSection({
                         placeholder="Upload doctor photo"
                         className="w-full h-64"
                       />
-                    ) : (
+                    ) : doctor.photo?.previewUrl ? (
                       <>
                         <img
-                          src={
-                            doctor.photo?.previewUrl || defaultDoc?.image || ""
-                          }
+                          src={doctor.photo.previewUrl}
                           alt={doctor.name}
                           className="w-full h-64 object-cover object-top group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </>
+                    ) : (
+                      <div className="w-full h-64 bg-slate-100 flex items-center justify-center">
+                        <div className="text-center text-slate-400">
+                          <span className="text-5xl">👨‍⚕️</span>
+                          <p className="mt-2 text-xs">No photo uploaded</p>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -1321,9 +1324,10 @@ interface FacilitiesSectionProps {
   blueprint: TemplateBlueprint;
   colors: ColorScheme;
   isEditMode: boolean;
+  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
 }
 
-function FacilitiesSection({ blueprint, colors }: FacilitiesSectionProps) {
+function FacilitiesSection({ blueprint, colors, isEditMode, onImageUpdate }: FacilitiesSectionProps) {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1356,11 +1360,36 @@ function FacilitiesSection({ blueprint, colors }: FacilitiesSectionProps) {
                       background: `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`,
                     }}
                   />
-                  <img
-                    src={facility.image}
-                    alt={facility.title}
-                    className="relative rounded-3xl w-full h-[350px] object-cover shadow-xl"
-                  />
+                  {isEditMode ? (
+                    <div className="relative rounded-3xl overflow-hidden shadow-xl">
+                      <FacilityImageUploader
+                        value={blueprint.images?.facilityImages?.[index] || null}
+                        onChange={(img) => {
+                          const facilityImages = blueprint.images?.facilityImages || [];
+                          if (img) {
+                            facilityImages[index] = img;
+                          } else {
+                            facilityImages[index] = undefined as unknown as UploadedImageData;
+                          }
+                          onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                        }}
+                        className="w-full h-[350px]"
+                      />
+                    </div>
+                  ) : blueprint.images?.facilityImages?.[index]?.previewUrl ? (
+                    <img
+                      src={blueprint.images.facilityImages[index].previewUrl}
+                      alt={facility.title}
+                      className="relative rounded-3xl w-full h-[350px] object-cover shadow-xl"
+                    />
+                  ) : (
+                    <div className="relative rounded-3xl w-full h-[350px] bg-slate-100 shadow-xl flex items-center justify-center">
+                      <div className="text-center text-slate-400">
+                        <span className="text-6xl">🏥</span>
+                        <p className="mt-3 text-sm">No facility image</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

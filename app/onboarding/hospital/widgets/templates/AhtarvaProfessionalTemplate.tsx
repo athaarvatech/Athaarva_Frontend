@@ -6,7 +6,7 @@ import type {
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader } from "../ImageUploader";
+import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
 import {
   Phone,
   ArrowRight,
@@ -171,6 +171,7 @@ export function AhtarvaProfessionalTemplate({
         colors={colors}
         isEditMode={isEditMode}
         onUpdate={(about) => updateBlueprint("about", about)}
+        onImageUpdate={updateImages}
       />
 
       {/* Specialties Grid */}
@@ -899,6 +900,7 @@ interface ProfessionalAboutProps {
   colors: ColorScheme;
   isEditMode: boolean;
   onUpdate: (about: TemplateBlueprint["about"]) => void;
+  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
 }
 
 function ProfessionalAbout({
@@ -906,6 +908,7 @@ function ProfessionalAbout({
   colors,
   isEditMode,
   onUpdate,
+  onImageUpdate,
 }: ProfessionalAboutProps) {
   const iconMap: Record<string, any> = {
     cpu: Cpu,
@@ -993,39 +996,64 @@ function ProfessionalAbout({
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left - Video/Image with Play Button */}
           <div className="relative group">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop"
-                alt="Take a look inside Ahtarva Medical Center"
-                className="w-full h-[400px] lg:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-[#0B0A0A]/30 group-hover:bg-[#0B0A0A]/20 transition-colors" />
+            {isEditMode ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[400px] lg:h-[500px]">
+                <FacilityImageUploader
+                  value={blueprint.images?.facilityImages?.[0] || null}
+                  onChange={(img) => {
+                    const facilityImages = blueprint.images?.facilityImages || [];
+                    if (img) {
+                      facilityImages[0] = img;
+                    } else {
+                      facilityImages[0] = undefined as unknown as UploadedImageData;
+                    }
+                    onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                  }}
+                  className="h-full"
+                />
+              </div>
+            ) : blueprint.images?.facilityImages?.[0]?.previewUrl ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src={blueprint.images.facilityImages[0].previewUrl}
+                  alt="Take a look inside Ahtarva Medical Center"
+                  className="w-full h-[400px] lg:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-[#0B0A0A]/30 group-hover:bg-[#0B0A0A]/20 transition-colors" />
 
-              {/* Text Overlay */}
-              <div className="absolute bottom-8 left-8 right-8">
-                <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-[#0B0A0A] mb-2">
-                    Take a look inside
-                  </h3>
-                  <p style={{ color: colors.textSecondary }}>
-                    Discover our state-of-the-art facilities designed for your
-                    comfort and care.
-                  </p>
+                {/* Text Overlay */}
+                <div className="absolute bottom-8 left-8 right-8">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-[#0B0A0A] mb-2">
+                      Take a look inside
+                    </h3>
+                    <p style={{ color: colors.textSecondary }}>
+                      Discover our state-of-the-art facilities designed for your
+                      comfort and care.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Play Button - Only show when image is uploaded */}
+                <button
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform group/play"
+                  style={{
+                    backgroundColor: colors.primary,
+                    boxShadow: `0 8px 24px ${colors.primary}80`,
+                  }}
+                >
+                  <Play className="w-10 h-10 text-white ml-1 group-hover/play:scale-110 transition-transform" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-slate-100 flex items-center justify-center h-[400px] lg:h-[500px]">
+                <div className="text-center text-slate-400">
+                  <span className="text-7xl">🏥</span>
+                  <p className="mt-3 text-sm">No image uploaded yet</p>
                 </div>
               </div>
-
-              {/* Play Button */}
-              <button
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform group/play"
-                style={{
-                  backgroundColor: colors.primary,
-                  boxShadow: `0 8px 24px ${colors.primary}80`,
-                }}
-              >
-                <Play className="w-10 h-10 text-white ml-1 group-hover/play:scale-110 transition-transform" />
-              </button>
-            </div>
+            )}
 
             {/* Floating Badge */}
             <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg px-6 py-3">
@@ -1287,7 +1315,7 @@ function ProfessionalSpecialties({
                     editIndicator="icon"
                   />
                 </h3>
-                <p
+                <div
                   className="leading-relaxed mb-6"
                   style={{ color: colors.textSecondary }}
                 >
@@ -1302,7 +1330,7 @@ function ProfessionalSpecialties({
                     placeholder="Description"
                     editIndicator="icon"
                   />
-                </p>
+                </div>
 
                 {/* Learn More Link */}
                 <button

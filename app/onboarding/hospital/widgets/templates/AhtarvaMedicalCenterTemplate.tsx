@@ -9,7 +9,7 @@ import type {
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader } from "../ImageUploader";
+import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
 import {
   Phone,
   Mail,
@@ -136,32 +136,28 @@ const defaultDoctors = [
     name: "Dr. Sarah Mitchell",
     specialty: "CARDIOLOGIST",
     experience: "18 years experience",
-    image:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=500&fit=crop&crop=face",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     id: 2,
     name: "Dr. James Chen",
     specialty: "NEUROLOGIST",
     experience: "15 years experience",
-    image:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=500&fit=crop&crop=face",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     id: 3,
     name: "Dr. Emily Parker",
     specialty: "ONCOLOGIST",
     experience: "12 years experience",
-    image:
-      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=500&fit=crop&crop=face",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
   {
     id: 4,
     name: "Dr. Michael Roberts",
     specialty: "ORTHOPEDIC SURGEON",
     experience: "20 years experience",
-    image:
-      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=500&fit=crop&crop=face",
+    // image: "", // Removed hardcoded image - users will upload their own
   },
 ];
 
@@ -332,6 +328,7 @@ export function AhtarvaMedicalCenterTemplate({
         colors={colors}
         isEditMode={isEditMode}
         onUpdate={(about) => updateBlueprint("about", about)}
+        onImageUpdate={updateImages}
       />
 
       {/* Specialties Section */}
@@ -513,8 +510,7 @@ function HeroSection({
   onImageUpdate,
 }: HeroSectionProps) {
   const heroImage = blueprint.images?.heroImage;
-  const defaultHeroImage =
-    "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1600&h=900&fit=crop";
+  // const defaultHeroImage = ""; // Removed hardcoded image - users will upload their own
 
   return (
     <section id="home" className="relative min-h-screen overflow-hidden">
@@ -533,11 +529,12 @@ function HeroSection({
             className="w-full h-full object-cover"
           />
         ) : (
-          <img
-            src={defaultHeroImage}
-            alt="Doctor consulting with patient"
-            className="w-full h-full object-cover"
-          />
+          <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+            <div className="text-center">
+              <span className="text-6xl">🏥</span>
+              <p className="mt-2 text-sm">Upload Hero Image</p>
+            </div>
+          </div>
         )}
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-transparent" />
@@ -678,6 +675,7 @@ interface AboutSectionProps {
   colors: ColorScheme;
   isEditMode: boolean;
   onUpdate: (about: TemplateBlueprint["about"]) => void;
+  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
 }
 
 function AboutSection({
@@ -685,6 +683,7 @@ function AboutSection({
   colors,
   isEditMode,
   onUpdate,
+  onImageUpdate,
 }: AboutSectionProps) {
   const features = defaultFeatures;
 
@@ -707,13 +706,38 @@ function AboutSection({
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Left - Image */}
           <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-slate-900/5">
-              <img
-                src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=1000&fit=crop"
-                alt="Medical team in surgery"
-                className="w-full h-[500px] lg:h-[600px] object-cover"
-              />
-            </div>
+            {isEditMode ? (
+              <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-slate-900/5 h-[500px] lg:h-[600px]">
+                <FacilityImageUploader
+                  value={blueprint.images?.facilityImages?.[0] || null}
+                  onChange={(img) => {
+                    const facilityImages = blueprint.images?.facilityImages || [];
+                    if (img) {
+                      facilityImages[0] = img;
+                    } else {
+                      facilityImages[0] = undefined as unknown as UploadedImageData;
+                    }
+                    onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                  }}
+                  className="h-full"
+                />
+              </div>
+            ) : blueprint.images?.facilityImages?.[0]?.previewUrl ? (
+              <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-slate-900/5">
+                <img
+                  src={blueprint.images.facilityImages[0].previewUrl}
+                  alt="Medical team"
+                  className="w-full h-[500px] lg:h-[600px] object-cover"
+                />
+              </div>
+            ) : (
+              <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-slate-900/5 bg-slate-100 flex items-center justify-center h-[500px] lg:h-[600px]">
+                <div className="text-center text-slate-400">
+                  <span className="text-7xl">🏥</span>
+                  <p className="mt-3 text-sm">No image uploaded yet</p>
+                </div>
+              </div>
+            )}
 
             {/* Floating Card */}
             <div className="absolute -bottom-8 -right-4 lg:right-8 bg-white p-6 rounded-2xl shadow-xl shadow-slate-900/10 flex items-center gap-4">
