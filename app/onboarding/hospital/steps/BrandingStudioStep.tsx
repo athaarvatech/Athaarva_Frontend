@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Palette, Type, Image, CheckCircle2 } from "lucide-react";
+import { Palette, FileText, Image as ImageIcon } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { FileUploadZone } from "../widgets/FileUploadZone";
-import { ContrastChecker } from "../widgets/ContrastChecker";
-import { HelpPopover } from "../widgets/HelpPopover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -16,528 +16,449 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { calculateAccessibilityScore } from "@/lib/onboarding-utils";
 
-const FONT_FAMILIES = [
-  "Inter",
-  "Roboto",
-  "Open Sans",
-  "Lato",
-  "Montserrat",
-  "Poppins",
-  "Raleway",
-  "Source Sans Pro",
-];
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
 
 const COLOR_PRESETS = [
-  {
-    name: "Healthcare Teal",
-    primary: "#007C7C",
-    secondary: "#20B2AA",
-    accent: "#10B981",
-    neutral: "#6B7280",
-  },
-  {
-    name: "Medical Blue",
-    primary: "#1E40AF",
-    secondary: "#3B82F6",
-    accent: "#60A5FA",
-    neutral: "#6B7280",
-  },
-  {
-    name: "Wellness Green",
-    primary: "#059669",
-    secondary: "#10B981",
-    accent: "#34D399",
-    neutral: "#6B7280",
-  },
-  {
-    name: "Premium Purple",
-    primary: "#7C3AED",
-    secondary: "#8B5CF6",
-    accent: "#A78BFA",
-    neutral: "#6B7280",
-  },
+  { name: "Healthcare Teal", primary: "#007C7C", secondary: "#20B2AA" },
+  { name: "Medical Blue", primary: "#1E40AF", secondary: "#3B82F6" },
+  { name: "Wellness Green", primary: "#059669", secondary: "#10B981" },
+  { name: "Premium Purple", primary: "#7C3AED", secondary: "#8B5CF6" },
 ];
 
 export default function BrandingStudioStep() {
   const { data, updateData } = useHospitalOnboarding();
   const branding = data.branding;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [previewMode, setPreviewMode] = useState<"light" | "dark">("light");
-
-  // Calculate accessibility score whenever colors change
-  useEffect(() => {
-    const score = calculateAccessibilityScore(
-      branding.colors.primary,
-      branding.colors.secondary,
-      branding.colors.accent
-    );
-    if (score !== branding.accessibility_score) {
-      updateData("branding", { accessibility_score: score });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    branding.colors.primary,
-    branding.colors.secondary,
-    branding.colors.accent,
-  ]);
 
   const applyPreset = (preset: (typeof COLOR_PRESETS)[0]) => {
     updateData("branding", {
       colors: {
         primary: preset.primary,
         secondary: preset.secondary,
-        accent: preset.accent,
-        neutral: preset.neutral,
+      },
+    });
+  };
+
+  const updateReportHeader = (field: string, value: boolean | string) => {
+    updateData("branding", {
+      report_header: {
+        ...(branding?.report_header || {}),
+        [field]: value,
+      },
+    });
+  };
+
+  const updateReportFooter = (field: string, value: boolean | string) => {
+    updateData("branding", {
+      report_footer: {
+        ...(branding?.report_footer || {}),
+        [field]: value,
       },
     });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Tabs for different branding sections */}
-      <Tabs defaultValue="colors" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="colors">
-            <Palette className="w-4 h-4 mr-2" />
-            Colors
-          </TabsTrigger>
-          <TabsTrigger value="typography">
-            <Type className="w-4 h-4 mr-2" />
-            Typography
-          </TabsTrigger>
-          <TabsTrigger value="assets">
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image className="w-4 h-4 mr-2" />
-            Assets
-          </TabsTrigger>
-        </TabsList>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants} className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100">
+          <Palette className="h-6 w-6 text-indigo-600" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Branding & Report Configuration
+          </h2>
+          <p className="text-gray-600">
+            Configure your hospital logo, colors, and document headers for
+            invoices and prescriptions
+          </p>
+        </div>
+      </motion.div>
 
-        {/* COLORS TAB */}
-        <TabsContent value="colors" className="space-y-6 mt-6">
-          {/* Color Presets */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-gray-200 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Color Palette
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Choose colors that represent your brand
-                </p>
-              </div>
-              <Badge className="bg-healthcare-emerald">
-                Score: {branding.accessibility_score.toFixed(1)}
-              </Badge>
-            </div>
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          SECTION 1: Logo & Brand Colors
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+      >
+        <div className="mb-6 flex items-center gap-2">
+          <ImageIcon className="h-5 w-5 text-indigo-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Logo & Brand Colors
+          </h3>
+        </div>
 
-            {/* Presets */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              {COLOR_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  onClick={() => applyPreset(preset)}
-                  className="flex flex-col items-center p-3 border-2 border-gray-200 rounded-lg hover:border-healthcare-primary transition-all"
-                >
-                  <div className="flex space-x-1 mb-2">
-                    <div
-                      className="w-6 h-6 rounded"
-                      style={{ backgroundColor: preset.primary }}
-                    />
-                    <div
-                      className="w-6 h-6 rounded"
-                      style={{ backgroundColor: preset.secondary }}
-                    />
-                    <div
-                      className="w-6 h-6 rounded"
-                      style={{ backgroundColor: preset.accent }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-gray-700">
-                    {preset.name}
-                  </p>
-                </button>
-              ))}
-            </div>
-
-            {/* Color Pickers */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ColorPicker
-                label="Primary Color"
-                value={branding.colors.primary}
-                onChange={(color) =>
-                  updateData("branding", {
-                    colors: { ...branding.colors, primary: color },
-                  })
-                }
-                help={{
-                  title: "Primary Color",
-                  content:
-                    "Your main brand color. Used for headers, buttons, and key UI elements.",
-                  tips: [
-                    "Choose a color that represents your brand identity",
-                    "Ensure good contrast with white backgrounds",
-                  ],
-                }}
-              />
-
-              <ColorPicker
-                label="Secondary Color"
-                value={branding.colors.secondary}
-                onChange={(color) =>
-                  updateData("branding", {
-                    colors: { ...branding.colors, secondary: color },
-                  })
-                }
-                help={{
-                  title: "Secondary Color",
-                  content:
-                    "Supporting color for accents, links, and secondary actions.",
-                }}
-              />
-
-              <ColorPicker
-                label="Accent Color"
-                value={branding.colors.accent}
-                onChange={(color) =>
-                  updateData("branding", {
-                    colors: { ...branding.colors, accent: color },
-                  })
-                }
-                help={{
-                  title: "Accent Color",
-                  content:
-                    "Used for highlights, success states, and call-to-action elements.",
-                }}
-              />
-
-              <ColorPicker
-                label="Neutral Color"
-                value={branding.colors.neutral}
-                onChange={(color) =>
-                  updateData("branding", {
-                    colors: { ...branding.colors, neutral: color },
-                  })
-                }
-                help={{
-                  title: "Neutral Color",
-                  content: "Used for text, borders, and subtle backgrounds.",
-                }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Contrast Checkers */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <ContrastChecker
-              foreground={branding.colors.primary}
-              background="#FFFFFF"
-              label="Primary on White"
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Logo Upload */}
+          <div className="md:col-span-2">
+            <FileUploadZone
+              label="Hospital Logo"
+              description="Upload your hospital logo for invoices, prescriptions, and reports (PNG, JPG, or SVG, max 2MB)"
+              currentFile={branding?.logo_file}
+              currentUrl={branding?.logo_url}
+              onFileSelect={(file) =>
+                updateData("branding", { logo_file: file })
+              }
+              onFileRemove={() =>
+                updateData("branding", { logo_file: null, logo_url: "" })
+              }
+              onUploadComplete={(url) =>
+                updateData("branding", { logo_url: url })
+              }
+              accept="image/*"
+              maxSizeMB={2}
+              preview
             />
-            <ContrastChecker
-              foreground={branding.colors.secondary}
-              background="#FFFFFF"
-              label="Secondary on White"
-            />
-          </motion.div>
-        </TabsContent>
+          </div>
 
-        {/* TYPOGRAPHY TAB */}
-        <TabsContent value="typography" className="space-y-6 mt-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-gray-200 rounded-lg p-6"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Typography Settings
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Heading Font"
-                help={{
-                  title: "Heading Font",
-                  content: "Font used for headings, titles, and important text",
-                  tips: [
-                    "Choose a bold, readable font",
-                    "Sans-serif fonts work well for healthcare",
-                  ],
-                }}
-              >
-                <Select
-                  value={branding.typography.heading_font}
-                  onValueChange={(value) =>
-                    updateData("branding", {
-                      typography: {
-                        ...branding.typography,
-                        heading_font: value,
-                      },
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FONT_FAMILIES.map((font) => (
-                      <SelectItem
-                        key={font}
-                        value={font}
-                        style={{ fontFamily: font }}
-                      >
-                        {font}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              <FormField
-                label="Body Font"
-                help={{
-                  title: "Body Font",
-                  content:
-                    "Font used for body text, paragraphs, and descriptions",
-                  tips: [
-                    "Choose a highly readable font",
-                    "Can be the same as heading font for consistency",
-                  ],
-                }}
-              >
-                <Select
-                  value={branding.typography.body_font}
-                  onValueChange={(value) =>
-                    updateData("branding", {
-                      typography: { ...branding.typography, body_font: value },
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FONT_FAMILIES.map((font) => (
-                      <SelectItem
-                        key={font}
-                        value={font}
-                        style={{ fontFamily: font }}
-                      >
-                        {font}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </div>
-
-            {/* Typography Preview */}
-            <div className="mt-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-700 mb-4">
-                Preview
-              </h4>
-              <div style={{ fontFamily: branding.typography.heading_font }}>
-                <h1
-                  className="text-3xl font-bold mb-2"
-                  style={{ color: branding.colors.primary }}
-                >
-                  Welcome to Our Hospital
-                </h1>
-                <h2
-                  className="text-2xl font-semibold mb-2"
-                  style={{ color: branding.colors.secondary }}
-                >
-                  Quality Healthcare for Everyone
-                </h2>
-              </div>
-              <div
-                style={{ fontFamily: branding.typography.body_font }}
-                className="mt-4"
-              >
-                <p className="text-base text-gray-700 leading-relaxed">
-                  Our mission is to provide exceptional healthcare services with
-                  compassion and expertise. We combine cutting-edge medical
-                  technology with personalized care to ensure the best possible
-                  outcomes for our patients.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </TabsContent>
-
-        {/* ASSETS TAB */}
-        <TabsContent value="assets" className="space-y-6 mt-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-gray-200 rounded-lg p-6"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Brand Assets
-            </h3>
-
-            <div className="space-y-6">
-              {/* Logo */}
-              <FileUploadZone
-                label="Hospital Logo"
-                description="Upload your hospital logo (PNG, JPG, or SVG)"
-                currentFile={branding.logo_file}
-                currentUrl={branding.logo_url}
-                onFileSelect={(file) =>
-                  updateData("branding", { logo_file: file })
-                }
-                onFileRemove={() =>
-                  updateData("branding", { logo_file: null, logo_url: "" })
-                }
-                onUploadComplete={(url) =>
-                  updateData("branding", { logo_url: url })
-                }
-                accept="image/*"
-                maxSizeMB={2}
-                preview
-              />
-
-              {/* Hero/Background */}
-              <FileUploadZone
-                label="Hero Background Image"
-                description="Large background image for your homepage hero section"
-                currentFile={branding.hero_asset_file}
-                currentUrl={branding.hero_asset_url}
-                onFileSelect={(file) =>
-                  updateData("branding", { hero_asset_file: file })
-                }
-                onFileRemove={() =>
-                  updateData("branding", {
-                    hero_asset_file: null,
-                    hero_asset_url: "",
-                  })
-                }
-                onUploadComplete={(url) =>
-                  updateData("branding", { hero_asset_url: url })
-                }
-                accept="image/*"
-                maxSizeMB={5}
-                preview
-              />
-
-              {/* Favicon */}
-              <FileUploadZone
-                label="Favicon"
-                description="Small icon for browser tabs (PNG, ICO)"
-                currentFile={branding.favicon_file}
-                currentUrl={branding.favicon_url}
-                onFileSelect={(file) =>
-                  updateData("branding", { favicon_file: file })
-                }
-                onFileRemove={() =>
-                  updateData("branding", {
-                    favicon_file: null,
-                    favicon_url: "",
-                  })
-                }
-                onUploadComplete={(url) =>
-                  updateData("branding", { favicon_url: url })
-                }
-                accept="image/png,image/x-icon"
-                maxSizeMB={1}
-                preview={false}
-              />
-            </div>
-          </motion.div>
-
-          {/* Accessibility Summary */}
-          {branding.accessibility_score >= 4.5 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-healthcare-emerald/10 border border-healthcare-emerald/20 rounded-lg p-4"
+          {/* Logo Size on Documents */}
+          <div className="space-y-2">
+            <Label>Logo Size on Documents</Label>
+            <Select
+              value={branding?.logo_size || "medium"}
+              onValueChange={(value: "small" | "medium" | "large") =>
+                updateData("branding", { logo_size: value })
+              }
             >
-              <div className="flex items-center space-x-3">
-                <CheckCircle2 className="w-6 h-6 text-healthcare-emerald" />
-                <div>
-                  <h4 className="text-sm font-semibold text-healthcare-emerald">
-                    Excellent Accessibility!
-                  </h4>
-                  <p className="text-xs text-gray-700 mt-1">
-                    Your color palette meets WCAG AA standards for contrast and
-                    accessibility.
-                  </p>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="small">Small (40px height)</SelectItem>
+                <SelectItem value="medium">Medium (60px height)</SelectItem>
+                <SelectItem value="large">Large (80px height)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Favicon (Optional) */}
+          <div className="space-y-2">
+            <FileUploadZone
+              label="Favicon (Optional)"
+              description="Small icon for browser tabs"
+              currentFile={branding?.favicon_file}
+              currentUrl={branding?.favicon_url}
+              onFileSelect={(file) =>
+                updateData("branding", { favicon_file: file })
+              }
+              onFileRemove={() =>
+                updateData("branding", { favicon_file: null, favicon_url: "" })
+              }
+              onUploadComplete={(url) =>
+                updateData("branding", { favicon_url: url })
+              }
+              accept="image/png,image/x-icon"
+              maxSizeMB={1}
+              preview={false}
+            />
+          </div>
+        </div>
+
+        {/* Color Selection */}
+        <div className="mt-6 border-t border-gray-200 pt-6">
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">
+            Brand Colors
+          </h4>
+
+          {/* Presets */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {COLOR_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                onClick={() => applyPreset(preset)}
+                className="flex flex-col items-center p-3 border-2 border-gray-200 rounded-lg hover:border-indigo-500 transition-all"
+              >
+                <div className="flex space-x-1 mb-2">
+                  <div
+                    className="w-6 h-6 rounded"
+                    style={{ backgroundColor: preset.primary }}
+                  />
+                  <div
+                    className="w-6 h-6 rounded"
+                    style={{ backgroundColor: preset.secondary }}
+                  />
                 </div>
+                <p className="text-xs font-medium text-gray-700">
+                  {preset.name}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Color Pickers */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Primary Color</Label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={branding?.colors?.primary || "#007C7C"}
+                  onChange={(e) =>
+                    updateData("branding", {
+                      colors: { ...(branding?.colors || {}), primary: e.target.value },
+                    })
+                  }
+                  className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
+                />
+                <Input
+                  value={branding?.colors?.primary || "#007C7C"}
+                  onChange={(e) =>
+                    updateData("branding", {
+                      colors: { ...(branding?.colors || {}), primary: e.target.value },
+                    })
+                  }
+                  placeholder="#007C7C"
+                  className="flex-1 font-mono"
+                />
               </div>
-            </motion.div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
+            </div>
 
-interface ColorPickerProps {
-  label: string;
-  value: string;
-  onChange: (color: string) => void;
-  help?: {
-    title: string;
-    content: string;
-    tips?: string[];
-  };
-}
+            <div className="space-y-2">
+              <Label>Secondary Color</Label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={branding?.colors?.secondary || "#20B2AA"}
+                  onChange={(e) =>
+                    updateData("branding", {
+                      colors: { ...(branding?.colors || {}), secondary: e.target.value },
+                    })
+                  }
+                  className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
+                />
+                <Input
+                  value={branding?.colors?.secondary || "#20B2AA"}
+                  onChange={(e) =>
+                    updateData("branding", {
+                      colors: { ...(branding?.colors || {}), secondary: e.target.value },
+                    })
+                  }
+                  placeholder="#20B2AA"
+                  className="flex-1 font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
-function ColorPicker({ label, value, onChange, help }: ColorPickerProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        <Label className="text-sm font-medium text-gray-700">{label}</Label>
-        {help && <HelpPopover {...help} />}
-      </div>
-      <div className="flex items-center space-x-3">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
-        />
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="#007C7C"
-          className="flex-1 font-mono"
-        />
-      </div>
-    </div>
-  );
-}
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          SECTION 2: Report Header Configuration
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+      >
+        <div className="mb-6 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-indigo-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Report Header Configuration
+          </h3>
+        </div>
+        <p className="text-sm text-gray-600 mb-6">
+          Configure what appears in the header of invoices, prescriptions, and
+          medical reports
+        </p>
 
-interface FormFieldProps {
-  label: string;
-  help?: {
-    title: string;
-    content: string;
-    tips?: string[];
-  };
-  children: React.ReactNode;
-}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Header Elements */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700">
+              Header Elements
+            </h4>
 
-function FormField({ label, help, children }: FormFieldProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        <Label className="text-sm font-medium text-gray-700">{label}</Label>
-        {help && <HelpPopover {...help} />}
-      </div>
-      {children}
-    </div>
+            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+              <div>
+                <Label>Show Logo</Label>
+                <p className="text-xs text-gray-500">
+                  Display hospital logo in header
+                </p>
+              </div>
+              <Switch
+                checked={branding?.report_header?.show_logo ?? false}
+                onCheckedChange={(checked) =>
+                  updateReportHeader("show_logo", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+              <div>
+                <Label>Show Address</Label>
+                <p className="text-xs text-gray-500">
+                  Display hospital address
+                </p>
+              </div>
+              <Switch
+                checked={branding?.report_header?.show_address ?? false}
+                onCheckedChange={(checked) =>
+                  updateReportHeader("show_address", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+              <div>
+                <Label>Show Phone Number</Label>
+                <p className="text-xs text-gray-500">Display contact numbers</p>
+              </div>
+              <Switch
+                checked={branding?.report_header?.show_phone ?? false}
+                onCheckedChange={(checked) =>
+                  updateReportHeader("show_phone", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+              <div>
+                <Label>Show Registration Numbers</Label>
+                <p className="text-xs text-gray-500">
+                  Display registration/GSTIN
+                </p>
+              </div>
+              <Switch
+                checked={branding?.report_header?.show_registration ?? false}
+                onCheckedChange={(checked) =>
+                  updateReportHeader("show_registration", checked)
+                }
+              />
+            </div>
+          </div>
+
+          {/* Tagline & Document Formats */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Hospital Tagline (Optional)</Label>
+              <Input
+                value={branding?.report_header?.tagline || ""}
+                onChange={(e) => updateReportHeader("tagline", e.target.value)}
+                placeholder="e.g., Caring for you, always"
+              />
+              <p className="text-xs text-gray-500">
+                Appears below the hospital name in document headers
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Prescription Header Format</Label>
+              <Select
+                value={branding?.prescription_header_format || "standard"}
+                onValueChange={(value: "standard" | "compact" | "detailed") =>
+                  updateData("branding", { prescription_header_format: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="compact">Compact (Less space)</SelectItem>
+                  <SelectItem value="detailed">Detailed (Full info)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Invoice Header Format</Label>
+              <Select
+                value={branding?.invoice_header_format || "standard"}
+                onValueChange={(value: "standard" | "detailed") =>
+                  updateData("branding", { invoice_header_format: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="detailed">
+                    Detailed (with GST breakdown)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Document Watermark (Optional)</Label>
+              <Input
+                value={branding?.watermark_text || ""}
+                onChange={(e) =>
+                  updateData("branding", { watermark_text: e.target.value })
+                }
+                placeholder="e.g., CONFIDENTIAL"
+              />
+              <p className="text-xs text-gray-500">
+                Light watermark text on printed documents
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          SECTION 3: Report Footer Configuration
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+      >
+        <div className="mb-6 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-indigo-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Report Footer Configuration
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Footer Disclaimer Text (Optional)</Label>
+            <Textarea
+              value={branding?.report_footer?.disclaimer_text || ""}
+              onChange={(e) =>
+                updateReportFooter("disclaimer_text", e.target.value)
+              }
+              placeholder="e.g., This document is computer generated and does not require a signature. For any queries, please contact the hospital administration."
+              rows={3}
+            />
+            <p className="text-xs text-gray-500">
+              Legal disclaimer that appears at the bottom of printed documents
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4 h-fit">
+            <div>
+              <Label>Show Signatory Line</Label>
+              <p className="text-xs text-gray-500">
+                Add a signature line for authorized personnel
+              </p>
+            </div>
+            <Switch
+              checked={branding?.report_footer?.signatory_line ?? false}
+              onCheckedChange={(checked) =>
+                updateReportFooter("signatory_line", checked)
+              }
+            />
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

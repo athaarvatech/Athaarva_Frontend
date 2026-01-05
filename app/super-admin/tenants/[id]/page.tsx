@@ -21,6 +21,10 @@ import {
   FileText,
   CreditCard,
   Activity,
+  Shield,
+  User,
+  Stethoscope,
+  UserCheck,
 } from "lucide-react";
 import {
   Card,
@@ -45,11 +49,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
   superAdminAPI,
   type TenantResponse,
   type OnboardingWizardState,
+  type TenantUserResponse,
 } from "@/lib/api";
 
 // Status badge styles
@@ -88,9 +108,16 @@ export default function TenantDetailPage() {
   const [onboarding, setOnboarding] = useState<OnboardingWizardState | null>(
     null
   );
+  const [users, setUsers] = useState<TenantUserResponse[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
+  const [userStatusFilter, setUserStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
   const [editForm, setEditForm] = useState({
     display_name: "",
     contact_name: "",
@@ -126,9 +153,64 @@ export default function TenantDetailPage() {
     }
   }, [tenantId]);
 
+  // Fetch tenant users
+  const fetchUsers = useCallback(async () => {
+    if (!tenantId) return;
+    setUsersLoading(true);
+    try {
+      const params: { user_type?: string; status?: string } = {};
+      if (userTypeFilter !== "all") params.user_type = userTypeFilter;
+      if (userStatusFilter !== "all") params.status = userStatusFilter;
+      
+      const usersData = await superAdminAPI.listTenantUsers(tenantId, params);
+      setUsers(usersData);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [tenantId, userTypeFilter, userStatusFilter]);
+
   useEffect(() => {
     fetchTenant();
   }, [fetchTenant]);
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchUsers();
+    }
+  }, [tenantId, fetchUsers]);
+
+  // Handle approve onboarding
+  const handleApproveOnboarding = async () => {
+    if (!onboarding?.session?.id) return;
+    setActionLoading(true);
+    try {
+      await superAdminAPI.approveOnboarding(onboarding.session.id);
+      await fetchTenant();
+    } catch (err) {
+      console.error("Failed to approve onboarding:", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle reject onboarding
+  const handleRejectOnboarding = async () => {
+    if (!onboarding?.session?.id) return;
+    setActionLoading(true);
+    try {
+      await superAdminAPI.rejectOnboarding(onboarding.session.id, rejectReason);
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      await fetchTenant();
+    } catch (err) {
+      console.error("Failed to reject onboarding:", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Handle update
   const handleUpdate = async () => {
@@ -641,17 +723,69 @@ export default function TenantDetailPage() {
 
                   {onboarding.session.status === "submitted" && (
                     <div className="flex gap-3 pt-4">
-                      <Button className="bg-emerald-600 hover:bg-emerald-700">
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                      <Button 
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        onClick={handleApproveOnboarding}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                        )}
                         Approve Onboarding
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
+                      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                            disabled={actionLoading}
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-slate-900 border-white/10">
+                          <DialogHeader>
+                            <DialogTitle>Reject Onboarding</DialogTitle>
+                            <DialogDescription className="text-white/60">
+                              Provide a reason for rejecting this onboarding application
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4">
+                            <Label>Rejection Reason</Label>
+                            <Textarea
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              placeholder="Enter the reason for rejection..."
+                              className="mt-2 bg-white/5 border-white/10"
+                              rows={4}
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() => setRejectDialogOpen(false)}
+                              className="border-white/20"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handleRejectOnboarding}
+                              disabled={actionLoading}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              {actionLoading ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <XCircle className="h-4 w-4 mr-2" />
+                              )}
+                              Confirm Rejection
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   )}
                 </div>
@@ -671,20 +805,137 @@ export default function TenantDetailPage() {
         <TabsContent value="users" className="space-y-6">
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle>Tenant Users</CardTitle>
-              <CardDescription className="text-white/60">
-                Users associated with this tenant
-              </CardDescription>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>Tenant Users</CardTitle>
+                  <CardDescription className="text-white/60">
+                    Users associated with this tenant ({users.length} total)
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+                    <SelectTrigger className="w-[140px] bg-white/5 border-white/10">
+                      <SelectValue placeholder="User Type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-white/10">
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="hospital_admin">Hospital Admin</SelectItem>
+                      <SelectItem value="doctor">Doctor</SelectItem>
+                      <SelectItem value="patient">Patient</SelectItem>
+                      <SelectItem value="staff">Staff</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={userStatusFilter} onValueChange={setUserStatusFilter}>
+                    <SelectTrigger className="w-[130px] bg-white/5 border-white/10">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-white/10">
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchUsers}
+                    className="border-white/20"
+                    disabled={usersLoading}
+                  >
+                    {usersLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Refresh"
+                    )}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-white/30 mx-auto mb-4" />
-                <p className="text-white/60">User management coming soon</p>
-                <p className="text-white/40 text-sm mt-1">
-                  API endpoint: GET /api/v2/super-admin/tenants/{tenant.id}
-                  /users
-                </p>
-              </div>
+              {usersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-white/30 mx-auto mb-4" />
+                  <p className="text-white/60">No users found for this tenant</p>
+                  <p className="text-white/40 text-sm mt-1">
+                    Users will appear here once they are created
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border border-white/10 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/10 hover:bg-white/5">
+                        <TableHead className="text-white/70">User</TableHead>
+                        <TableHead className="text-white/70">Type</TableHead>
+                        <TableHead className="text-white/70">Status</TableHead>
+                        <TableHead className="text-white/70">Created</TableHead>
+                        <TableHead className="text-white/70">Last Login</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id} className="border-white/10 hover:bg-white/5">
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "h-9 w-9 rounded-full flex items-center justify-center",
+                                user.user_type === "doctor" ? "bg-blue-500/20" :
+                                user.user_type === "patient" ? "bg-green-500/20" :
+                                user.user_type === "hospital_admin" ? "bg-purple-500/20" :
+                                "bg-white/10"
+                              )}>
+                                {user.user_type === "doctor" ? (
+                                  <Stethoscope className="h-4 w-4 text-blue-400" />
+                                ) : user.user_type === "patient" ? (
+                                  <User className="h-4 w-4 text-green-400" />
+                                ) : user.user_type === "hospital_admin" ? (
+                                  <Shield className="h-4 w-4 text-purple-400" />
+                                ) : (
+                                  <UserCheck className="h-4 w-4 text-white/70" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-medium">{user.display_name || "—"}</p>
+                                <p className="text-sm text-white/50">{user.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="border-white/20 capitalize">
+                              {user.user_type?.replace(/_/g, " ") || "Unknown"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={cn(
+                              "gap-1.5",
+                              user.status === "active" ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/20" :
+                              user.status === "inactive" ? "bg-slate-500/20 text-slate-200 border-slate-500/20" :
+                              user.status === "suspended" ? "bg-red-500/20 text-red-200 border-red-500/20" :
+                              "bg-white/10"
+                            )}>
+                              {user.status === "active" && <CheckCircle2 className="h-3 w-3" />}
+                              {user.status === "inactive" && <XCircle className="h-3 w-3" />}
+                              {user.status === "suspended" && <AlertTriangle className="h-3 w-3" />}
+                              {user.status || "Unknown"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-white/60">
+                            {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                          </TableCell>
+                          <TableCell className="text-white/60">
+                            {user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : "Never"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

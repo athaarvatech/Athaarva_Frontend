@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * Hospital Onboarding Page v2 - 12-Step Comprehensive Wizard
+ * Hospital Onboarding Page v2 - 11-Step Comprehensive Wizard
  *
  * This is the refactored version integrating HospitalOnboardingContextV2
- * with all 12 steps. Rename this file to page.tsx to activate.
+ * with all 11 steps (removed Integrations & Preferences).
  *
  * Features:
  * - Token-gated invitation validation
- * - 12-step comprehensive wizard
+ * - 11-step comprehensive wizard
  * - Autosave with localStorage persistence
  * - Activity log sidebar
  * - Contextual help panels
@@ -22,6 +22,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   ArrowLeft,
   ArrowRight,
@@ -41,8 +46,7 @@ import {
   Users,
   Settings,
   Shield,
-  Zap,
-  UserPlus,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -54,18 +58,10 @@ import {
 import InvitationTemplateStep from "./steps/InvitationTemplateStep";
 import OrganizationProfileStep from "./steps/OrganizationProfileStep";
 import LocationsContactsStep from "./steps/LocationsContactsStep";
-import BrandingStudioStep from "./steps/BrandingStudioStep";
-import SiteContentStep from "./steps/SiteContentStep";
-import ServicesPricingStep from "./steps/ServicesPricingStep";
-import LeadershipTeamStep from "./steps/LeadershipTeamStep";
-import OperationalPoliciesStep from "./steps/OperationalPoliciesStep";
-import ComplianceDocumentationStep from "./steps/ComplianceDocumentationStep";
-import IntegrationsPreferencesStep from "./steps/IntegrationsPreferencesStep";
-import AdminStaffInvitationsStep from "./steps/AdminStaffInvitationsStep";
+import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
+import BillingFinancialStep from "./steps/BillingFinancialStep";
+import ClinicalConfigStep from "./steps/ClinicalConfigStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
-
-// Import widgets for contextual panels
-import { ActivityLog } from "./widgets/ActivityLog";
 
 // Import the real API client
 import { onboardingAPI } from "@/lib/api";
@@ -80,6 +76,17 @@ interface StepConfig {
   estimatedMinutes: number;
 }
 
+// Help text for each step
+const STEP_HELP_TEXT: Record<number, string> = {
+  0: "Select a template that best represents your hospital's brand and services. This will be the foundation of your digital presence.",
+  1: "Provide your hospital's legal information including registration numbers, GST, PAN, and official documents. This ensures compliance and authenticity.",
+  2: "Add your hospital's physical locations, contact details, and emergency numbers. This helps patients reach you easily.",
+  3: "Set up medical departments, specialties, and cost centers. Define how your hospital is organized operationally.",
+  4: "Configure billing settings, payment methods, bank details, and invoice preferences for smooth financial operations.",
+  5: "Set up clinical parameters like consultation duration and prescription formats for quality care.",
+  6: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
+};
+
 const STEP_CONFIGS: StepConfig[] = [
   {
     id: 0,
@@ -93,7 +100,7 @@ const STEP_CONFIGS: StepConfig[] = [
   {
     id: 1,
     title: "Organization Profile",
-    description: "Legal info, GST/PAN, timezone",
+    description: "Legal info, GST/PAN, timezone, registrations",
     icon: Building2,
     component: OrganizationProfileStep,
     category: "Setup",
@@ -102,7 +109,7 @@ const STEP_CONFIGS: StepConfig[] = [
   {
     id: 2,
     title: "Locations & Contacts",
-    description: "Multiple locations with geocoding",
+    description: "Hospital addresses, contacts, geocoding",
     icon: Globe,
     component: LocationsContactsStep,
     category: "Setup",
@@ -110,80 +117,35 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 3,
-    title: "Branding Studio",
-    description: "Colors, typography, assets with WCAG",
-    icon: Palette,
-    component: BrandingStudioStep,
-    category: "Branding",
+    title: "Departments & Cost Centers",
+    description: "Clinical departments, specializations, accounting",
+    icon: Users,
+    component: DepartmentsStaffStep,
+    category: "Operations",
     estimatedMinutes: 12,
   },
   {
     id: 4,
-    title: "Site Content",
-    description: "Hero, services, testimonials, FAQ",
-    icon: FileText,
-    component: SiteContentStep,
-    category: "Branding",
+    title: "Billing & Financial",
+    description: "Tax config, payments, TPA panels, banking",
+    icon: DollarSign,
+    component: BillingFinancialStep,
+    category: "Operations",
     estimatedMinutes: 15,
   },
   {
     id: 5,
-    title: "Services & Pricing",
-    description: "Departments, procedures, consultation types",
-    icon: DollarSign,
-    component: ServicesPricingStep,
+    title: "Clinical Configuration",
+    description: "Prescription settings, consultation parameters",
+    icon: Settings,
+    component: ClinicalConfigStep,
     category: "Operations",
-    estimatedMinutes: 12,
+    estimatedMinutes: 10,
   },
   {
     id: 6,
-    title: "Leadership & Team",
-    description: "Leadership cards, staffing plan",
-    icon: Users,
-    component: LeadershipTeamStep,
-    category: "Operations",
-    estimatedMinutes: 10,
-  },
-  {
-    id: 7,
-    title: "Operational Policies",
-    description: "Hours, buffers, cancellation policies",
-    icon: Settings,
-    component: OperationalPoliciesStep,
-    category: "Operations",
-    estimatedMinutes: 8,
-  },
-  {
-    id: 8,
-    title: "Compliance & Documentation",
-    description: "Accreditation uploads, DPO contact",
-    icon: Shield,
-    component: ComplianceDocumentationStep,
-    category: "Operations",
-    estimatedMinutes: 10,
-  },
-  {
-    id: 9,
-    title: "Integrations & Preferences",
-    description: "Messaging, analytics, LLM opt-in",
-    icon: Zap,
-    component: IntegrationsPreferencesStep,
-    category: "Operations",
-    estimatedMinutes: 7,
-  },
-  {
-    id: 10,
-    title: "Admin & Staff Invitations",
-    description: "Invite team members with roles",
-    icon: UserPlus,
-    component: AdminStaffInvitationsStep,
-    category: "Operations",
-    estimatedMinutes: 8,
-  },
-  {
-    id: 11,
     title: "Review & Submission",
-    description: "Final review, acknowledgements, publish plan",
+    description: "Final review, acknowledgements, publish",
     icon: ListChecks,
     component: ReviewSubmissionStep,
     category: "Review",
@@ -399,7 +361,13 @@ function HospitalOnboardingContent({
   }, [data.metadata.last_saved_at]);
 
   const handleNext = () => {
-    if (currentStep === 11) {
+    // TEMPORARY: Validation disabled for testing - can proceed without filling fields
+    // if (!isStepValid(currentStep)) {
+    //   // Don't proceed if validation fails
+    //   return;
+    // }
+    
+    if (currentStep === 6) {
       handleSubmit();
     } else {
       setCurrentStep(currentStep + 1);
@@ -477,8 +445,9 @@ function HospitalOnboardingContent({
         localStorage.setItem("hospital_admin_token", mainAuthToken);
       }
 
-      // Redirect to hospital admin dashboard
-      router.push(`/hospital/${hospitalSubdomain}/admin`);
+      // Show success message and redirect to staff signin page
+      // Admin will receive credentials via email
+      router.push(`/auth/staff/signin?hospital=${hospitalSubdomain}&onboarding=complete`);
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
       setSubmitError(
@@ -554,22 +523,6 @@ function HospitalOnboardingContent({
                   {new Date(data.metadata.last_saved_at).toLocaleTimeString()}
                 </div>
               )}
-
-              {/* Activity Log Toggle */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowActivityLog(!showActivityLog)}
-                className="flex items-center space-x-2"
-              >
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Activity</span>
-                {activityLog.length > 0 && (
-                  <span className="bg-healthcare-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {activityLog.length}
-                  </span>
-                )}
-              </Button>
 
               {/* Progress Indicator */}
               <div className="text-right">
@@ -754,9 +707,19 @@ function HospitalOnboardingContent({
                     </div>
 
                     {/* Contextual Help */}
-                    <div className="text-gray-400 hover:text-gray-600 transition-colors">
-                      <AlertCircle className="w-4 h-4" />
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="text-gray-400 hover:text-healthcare-primary transition-colors rounded-full hover:bg-healthcare-primary/10 p-1.5">
+                          <Info className="w-5 h-5" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent side="left" className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm text-healthcare-primary">About This Step</h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">{STEP_HELP_TEXT[currentStep]}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
@@ -814,7 +777,7 @@ function HospitalOnboardingContent({
                     <Button
                       onClick={handleNext}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 bg-gradient-to-r from-healthcare-primary to-healthcare-teal hover:from-healthcare-teal hover:to-healthcare-primary"
+                      className="flex items-center gap-2 bg-gradient-to-r from-healthcare-primary to-healthcare-teal hover:from-healthcare-teal hover:to-healthcare-primary disabled:opacity-50 disabled:cursor-not-allowed"
                       size="default"
                     >
                       {isSubmitting ? (
@@ -824,7 +787,7 @@ function HospitalOnboardingContent({
                             Submitting...
                           </span>
                         </>
-                      ) : currentStep === 11 ? (
+                      ) : currentStep === 6 ? (
                         <>
                           <span className="hidden sm:inline">Submit</span>
                           <CheckCircle className="w-4 h-4" />
@@ -838,13 +801,13 @@ function HospitalOnboardingContent({
                     </Button>
                   </div>
 
-                  {/* Validation Feedback - Disabled for testing */}
-                  {/* {!isStepValid(currentStep) && (
-                    <div className="mt-3 text-sm text-amber-600 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      Please complete all required fields to continue
+                  {/* Validation Feedback - Temporarily hidden for testing */}
+                  {false && !isStepValid(currentStep) && (
+                    <div className="mt-3 text-sm text-amber-600 flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>Please complete all required fields to continue</span>
                     </div>
-                  )} */}
+                  )}
 
                   {submitError && (
                     <div className="mt-3 text-sm text-red-600 flex items-center">

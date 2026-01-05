@@ -190,14 +190,20 @@ function EditableHeroSection({
       )}
 
       {/* Show logo if uploaded (non-edit mode) */}
-      {!isEditMode && logoImage?.previewUrl && (
+      {!isEditMode && (
         <div className="absolute top-4 left-8 z-20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={logoImage.previewUrl}
-            alt="Hospital Logo"
-            className="h-12 object-contain"
-          />
+          {logoImage?.previewUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={logoImage.previewUrl}
+              alt="Hospital Logo"
+              className="h-12 object-contain"
+            />
+          ) : (
+            <div className="h-12 w-32 rounded-lg bg-white/10 backdrop-blur border-2 border-dashed border-white/30 flex items-center justify-center">
+              <p className="text-[10px] text-white/50">Logo</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -337,9 +343,10 @@ function EditableHeroSection({
                 />
               </div>
             ) : (
-              <div className="h-48 w-64 rounded-2xl bg-black/30 shadow-inner">
-                <div className="flex h-full items-center justify-center">
-                  <PlayCircle className="h-12 w-12 text-white/60" />
+              <div className="h-48 w-64 rounded-2xl bg-white/5 border-2 border-dashed border-white/20 shadow-inner">
+                <div className="flex h-full flex-col items-center justify-center gap-2">
+                  <PlayCircle className="h-12 w-12 text-white/30" />
+                  <p className="text-xs text-white/40">Upload Image/Video</p>
                 </div>
               </div>
             )}

@@ -18,63 +18,26 @@ export default function InvitationTemplateStep() {
 
   return (
     <div className="space-y-8">
-      {/* Invitation Recap */}
+      {/* Welcome Message */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-healthcare-primary/10 via-white to-healthcare-emerald/10 border border-healthcare-primary/20 rounded-xl p-6"
+        className="bg-gradient-to-br from-healthcare-primary/10 via-white to-healthcare-emerald/10 border border-healthcare-primary/20 rounded-xl p-8"
       >
         <div className="flex items-start space-x-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-healthcare-primary rounded-xl flex items-center justify-center">
-            <Mail className="w-6 h-6 text-white" />
+          <div className="flex-shrink-0 w-16 h-16 bg-healthcare-primary rounded-xl flex items-center justify-center">
+            <Mail className="w-8 h-8 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
               Welcome to Athaarva Hospital Onboarding
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              You&apos;ve been invited to set up your hospital&apos;s digital
-              presence. Let&apos;s create something amazing together!
+            <p className="text-base text-gray-700 leading-relaxed">
+              We&apos;re excited to help you set up your hospital&apos;s digital presence. 
+              This onboarding process will guide you through customizing your website, 
+              configuring your services, and preparing your hospital for success on our platform. 
+              Let&apos;s create something amazing together!
             </p>
-
-            {/* Invitation Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <InfoCard
-                icon={Mail}
-                label="Invited Email"
-                value={invitation.email}
-              />
-              <InfoCard
-                icon={Calendar}
-                label="Invitation ID"
-                value={`#${invitation.invitation_id || "N/A"}`}
-              />
-              <InfoCard
-                icon={Clock}
-                label="Expires"
-                value={
-                  invitation.expires_at
-                    ? formatDateTime(invitation.expires_at)
-                    : "No expiry"
-                }
-                alert={isExpired}
-              />
-              <InfoCard icon={Shield} label="Status" value="Active" badge />
-            </div>
-
-            {/* Expiry Warning */}
-            {isExpired && (
-              <div className="mt-4 flex items-start text-sm text-red-700 bg-red-50 p-3 rounded-lg">
-                <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Invitation Expired</p>
-                  <p className="text-xs mt-1">
-                    This invitation has expired. Please contact your
-                    administrator for a new invitation link.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </motion.div>

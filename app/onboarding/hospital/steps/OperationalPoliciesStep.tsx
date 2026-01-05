@@ -1,512 +1,901 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Calendar, FileText, MapPin, Video } from "lucide-react";
-import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
-import { HelpPopover } from "../widgets/HelpPopover";
+import { Calendar, Clock, MapPin, Building2 } from "lucide-react";
+import {
+  useHospitalOnboarding,
+  OperatingHoursData,
+  OPDHours,
+  PharmacyHours,
+  AppointmentPolicies,
+  IPDPolicies,
+} from "@/contexts/HospitalOnboardingContextV2";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface OperatingDay {
-  id: string;
-  day: string;
-  open: string;
-  close: string;
-  is_closed?: boolean;
-}
-
-interface OperatingHours {
-  location_id: string;
-  hours: OperatingDay[];
-}
-
-interface OperationalPolicies {
-  operating_hours: OperatingHours[];
-  appointment_lead_time_hours: number;
-  cancellation_policy: string;
-  no_show_policy: string;
-  telehealth_sop: string;
-  patient_onboarding_steps: string[];
-}
+const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export default function OperationalPoliciesStep() {
   const { data, updateData } = useHospitalOnboarding();
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
 
-  const operationalPolicies: OperationalPolicies = useMemo(
-    () =>
-      data.operationalPolicies || {
-        operating_hours: [],
-        appointment_lead_time_hours: 24,
-        cancellation_policy: "",
-        no_show_policy: "",
-        telehealth_sop: "",
-        patient_onboarding_steps: [],
-      },
-    [data.operationalPolicies]
-  );
-
+  // Safely access data with useMemo
   const locations = useMemo(
     () => (Array.isArray(data.locations) ? data.locations : []),
     [data.locations]
   );
 
-  const daysOfWeek = useMemo(
-    () => [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ],
-    []
-  );
-
-  const operatingHours: OperatingHours[] = useMemo(() => {
-    const hoursArray = operationalPolicies.operating_hours;
-    if (!Array.isArray(hoursArray)) return [];
-
-    return hoursArray.map((h) => ({
-      location_id: h.location_id,
-      hours: (Array.isArray(h.hours) ? h.hours : []).map((dh, idx) => ({
-        id:
-          dh.id ||
-          `${h.location_id || "loc"}-${(
-            dh.day ||
-            daysOfWeek[idx] ||
-            "day"
-          ).toLowerCase()}-${idx}`,
-        day: dh.day || daysOfWeek[idx % daysOfWeek.length] || "",
-        open: dh.open || "09:00",
-        close: dh.close || "18:00",
-        is_closed: dh.is_closed ?? false,
-      })),
-    }));
-  }, [daysOfWeek, operationalPolicies.operating_hours]);
-
-  const patientOnboardingSteps = useMemo(
+  const operationalPolicies = useMemo(
     () =>
-      Array.isArray(operationalPolicies.patient_onboarding_steps)
-        ? operationalPolicies.patient_onboarding_steps
+      data.operationalPolicies || {
+        operating_hours: [],
+        appointment_policies: {
+          min_booking_advance_hours: 2,
+          max_booking_advance_days: 30,
+          cancellation_cutoff_hours: 24,
+          cancellation_charge_percentage: 0,
+          no_show_charge_percentage: 50,
+          reschedule_allowed: true,
+          reschedule_limit: 2,
+          reminder_sms_enabled: true,
+          reminder_hours_before: [24, 2],
+          confirmation_required: false,
+          auto_cancel_unconfirmed: false,
+        },
+        ipd_policies: {
+          checkout_time: "11:00",
+          late_checkout_charge: 500,
+          admission_deposit_required: true,
+          deposit_amount_icu: 50000,
+          deposit_amount_general: 20000,
+          interim_bill_frequency_days: 3,
+          discharge_clearance_departments: ["billing", "pharmacy", "nursing"],
+        },
+        consent_languages: ["english", "hindi"],
+      },
+    [data.operationalPolicies]
+  );
+
+  const operatingHours = useMemo(
+    () =>
+      Array.isArray(operationalPolicies.operating_hours)
+        ? operationalPolicies.operating_hours
         : [],
-    [operationalPolicies.patient_onboarding_steps]
+    [operationalPolicies.operating_hours]
   );
 
-  const initializeHoursForLocation = useCallback(
-    (locationId: string) => {
-      const existingHours = operatingHours.find(
-        (h) => h.location_id === locationId
-      );
-      if (existingHours) return;
+  const appointmentPolicies: AppointmentPolicies = useMemo(
+    () =>
+      operationalPolicies.appointment_policies || {
+        min_booking_advance_hours: 2,
+        max_booking_advance_days: 30,
+        cancellation_cutoff_hours: 24,
+        cancellation_charge_percentage: 0,
+        no_show_charge_percentage: 50,
+        reschedule_allowed: true,
+        reschedule_limit: 2,
+        reminder_sms_enabled: true,
+        reminder_hours_before: [24, 2],
+        confirmation_required: false,
+        auto_cancel_unconfirmed: false,
+      },
+    [operationalPolicies.appointment_policies]
+  );
 
-      const defaultHours: OperatingDay[] = daysOfWeek.map((day, idx) => ({
-        id: `${locationId}-${day.toLowerCase()}-${idx}`,
-        day,
-        open: "09:00",
-        close: "18:00",
-        is_closed: day === "Sunday",
-      }));
+  const ipdPolicies: IPDPolicies = useMemo(
+    () =>
+      operationalPolicies.ipd_policies || {
+        checkout_time: "11:00",
+        late_checkout_charge: 500,
+        admission_deposit_required: true,
+        deposit_amount_icu: 50000,
+        deposit_amount_general: 20000,
+        interim_bill_frequency_days: 3,
+        discharge_clearance_departments: ["billing", "pharmacy", "nursing"],
+      },
+    [operationalPolicies.ipd_policies]
+  );
 
-      const updatedPolicies: OperationalPolicies = {
-        ...operationalPolicies,
-        operating_hours: [
-          ...operatingHours,
-          { location_id: locationId, hours: defaultHours },
-        ],
+  // Initialize selected location
+  useEffect(() => {
+    if (locations.length > 0 && !selectedLocationId) {
+      setSelectedLocationId(locations[0].id);
+    }
+  }, [locations, selectedLocationId]);
+
+  // Create default OPD hours for a day
+  const createDefaultOPDHours = (day: string): OPDHours => ({
+    day,
+    morning_start: "09:00",
+    morning_end: "13:00",
+    evening_start: "16:00",
+    evening_end: "20:00",
+    is_closed: day === "Sunday",
+  });
+
+  // Create default Pharmacy hours for a day
+  const createDefaultPharmacyHours = (day: string): PharmacyHours => ({
+    day,
+    open: "08:00",
+    close: "22:00",
+    is_24x7: false,
+  });
+
+  // Get or create operating hours for a location
+  const getLocationHours = useCallback(
+    (locationId: string): OperatingHoursData => {
+      const existing = operatingHours.find((h) => h.location_id === locationId);
+      if (existing) return existing;
+
+      return {
+        location_id: locationId,
+        opd_hours: DAYS_OF_WEEK.map(createDefaultOPDHours),
+        emergency_24x7: false,
+        pharmacy_hours: DAYS_OF_WEEK.map(createDefaultPharmacyHours),
       };
-
-      updateData("operationalPolicies", updatedPolicies);
     },
-    [daysOfWeek, operatingHours, operationalPolicies, updateData]
+    [operatingHours]
   );
 
-  const updateLocationHours = (
-    locationId: string,
-    dayIndex: number,
-    updates: Partial<{ open: string; close: string; is_closed: boolean }>
-  ) => {
+  // Initialize hours for location if not exists
+  const initializeLocationHours = useCallback(
+    (locationId: string) => {
+      const existing = operatingHours.find((h) => h.location_id === locationId);
+      if (!existing) {
+        const newHours = getLocationHours(locationId);
+        updateData("operationalPolicies", {
+          ...operationalPolicies,
+          operating_hours: [...operatingHours, newHours],
+        });
+      }
+    },
+    [operatingHours, getLocationHours, updateData, operationalPolicies]
+  );
+
+  useEffect(() => {
+    if (selectedLocationId) {
+      initializeLocationHours(selectedLocationId);
+    }
+  }, [selectedLocationId, initializeLocationHours]);
+
+  const currentLocationHours = getLocationHours(selectedLocationId);
+
+  // Update OPD hours
+  const updateOPDHours = (dayIndex: number, updates: Partial<OPDHours>) => {
     const updatedHours = operatingHours.map((h) => {
-      if (h.location_id === locationId) {
+      if (h.location_id === selectedLocationId) {
         return {
           ...h,
-          hours: h.hours.map((dayHours, idx) =>
-            idx === dayIndex ? { ...dayHours, ...updates } : dayHours
+          opd_hours: h.opd_hours.map((dh, idx) =>
+            idx === dayIndex ? { ...dh, ...updates } : dh
           ),
         };
       }
       return h;
     });
 
-    const updatedPolicies: OperationalPolicies = {
+    // If location doesn't exist in array, add it
+    if (!operatingHours.find((h) => h.location_id === selectedLocationId)) {
+      const newHours = {
+        ...getLocationHours(selectedLocationId),
+        opd_hours: getLocationHours(selectedLocationId).opd_hours.map(
+          (dh, idx) => (idx === dayIndex ? { ...dh, ...updates } : dh)
+        ),
+      };
+      updatedHours.push(newHours);
+    }
+
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       operating_hours: updatedHours,
-    };
-
-    updateData("operationalPolicies", updatedPolicies);
+    });
   };
 
+  // Update Pharmacy hours
+  const updatePharmacyHours = (
+    dayIndex: number,
+    updates: Partial<PharmacyHours>
+  ) => {
+    const updatedHours = operatingHours.map((h) => {
+      if (h.location_id === selectedLocationId) {
+        return {
+          ...h,
+          pharmacy_hours: h.pharmacy_hours.map((ph, idx) =>
+            idx === dayIndex ? { ...ph, ...updates } : ph
+          ),
+        };
+      }
+      return h;
+    });
+
+    if (!operatingHours.find((h) => h.location_id === selectedLocationId)) {
+      const newHours = {
+        ...getLocationHours(selectedLocationId),
+        pharmacy_hours: getLocationHours(selectedLocationId).pharmacy_hours.map(
+          (ph, idx) => (idx === dayIndex ? { ...ph, ...updates } : ph)
+        ),
+      };
+      updatedHours.push(newHours);
+    }
+
+    updateData("operationalPolicies", {
+      ...operationalPolicies,
+      operating_hours: updatedHours,
+    });
+  };
+
+  // Toggle 24x7 emergency
+  const toggleEmergency24x7 = (enabled: boolean) => {
+    const updatedHours = operatingHours.map((h) => {
+      if (h.location_id === selectedLocationId) {
+        return { ...h, emergency_24x7: enabled };
+      }
+      return h;
+    });
+
+    if (!operatingHours.find((h) => h.location_id === selectedLocationId)) {
+      updatedHours.push({
+        ...getLocationHours(selectedLocationId),
+        emergency_24x7: enabled,
+      });
+    }
+
+    updateData("operationalPolicies", {
+      ...operationalPolicies,
+      operating_hours: updatedHours,
+    });
+  };
+
+  // Update Appointment Policies
+  const updateAppointmentPolicy = (updates: Partial<AppointmentPolicies>) => {
+    updateData("operationalPolicies", {
+      ...operationalPolicies,
+      appointment_policies: { ...appointmentPolicies, ...updates },
+    });
+  };
+
+  // Update IPD Policies
+  const updateIPDPolicy = (updates: Partial<IPDPolicies>) => {
+    updateData("operationalPolicies", {
+      ...operationalPolicies,
+      ipd_policies: { ...ipdPolicies, ...updates },
+    });
+  };
+
+  // Copy hours to all locations
   const copyHoursToAllLocations = () => {
-    if (!selectedLocation) return;
+    if (!selectedLocationId) return;
 
-    const sourceHours = operatingHours.find(
-      (h) => h.location_id === selectedLocation
-    );
-    if (!sourceHours) return;
-
+    const sourceHours = currentLocationHours;
     const updatedHours = locations.map((loc) => ({
+      ...sourceHours,
       location_id: loc.id,
-      hours: sourceHours.hours.map((dh, idx) => ({
-        ...dh,
-        id:
-          dh.id ||
-          `${loc.id || "loc"}-${(
-            dh.day ||
-            daysOfWeek[idx] ||
-            "day"
-          ).toLowerCase()}-${idx}`,
-      })),
     }));
 
-    const updatedPolicies: OperationalPolicies = {
+    updateData("operationalPolicies", {
       ...operationalPolicies,
       operating_hours: updatedHours,
-    };
-
-    updateData("operationalPolicies", updatedPolicies);
+    });
   };
-
-  const addOnboardingStep = () => {
-    const updatedPolicies: OperationalPolicies = {
-      ...operationalPolicies,
-      patient_onboarding_steps: [...patientOnboardingSteps, ""],
-    };
-
-    updateData("operationalPolicies", updatedPolicies);
-  };
-
-  const updateOnboardingStep = (index: number, value: string) => {
-    const updated = [...patientOnboardingSteps];
-    updated[index] = value;
-
-    const updatedPolicies: OperationalPolicies = {
-      ...operationalPolicies,
-      patient_onboarding_steps: updated,
-    };
-
-    updateData("operationalPolicies", updatedPolicies);
-  };
-
-  const removeOnboardingStep = (index: number) => {
-    const updatedPolicies: OperationalPolicies = {
-      ...operationalPolicies,
-      patient_onboarding_steps: patientOnboardingSteps.filter(
-        (_, idx) => idx !== index
-      ),
-    };
-
-    updateData("operationalPolicies", updatedPolicies);
-  };
-
-  useEffect(() => {
-    if (locations.length > 0 && !selectedLocation) {
-      setSelectedLocation(locations[0].id);
-      initializeHoursForLocation(locations[0].id);
-    }
-  }, [initializeHoursForLocation, locations, selectedLocation]);
-
-  const currentLocationHours = operatingHours.find(
-    (h) => h.location_id === selectedLocation
-  );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900">
           Operational Policies
-        </h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Define operating hours, policies, and patient onboarding procedures
+        </h2>
+        <p className="text-gray-600 mt-1">
+          Configure operating hours, appointment policies, and IPD guidelines
         </p>
       </div>
 
-      {/* Operating Hours */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Operating Hours</Label>
-          <HelpPopover
-            title="Operating Hours"
-            content="Set operating hours for each location. You can copy hours to all locations for consistency."
-          />
-        </div>
+      <Tabs defaultValue="hours" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="hours" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Operating Hours
+          </TabsTrigger>
+          <TabsTrigger value="appointments" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            Appointments
+          </TabsTrigger>
+          <TabsTrigger value="ipd" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            IPD Policies
+          </TabsTrigger>
+        </TabsList>
 
-        {locations.length > 0 ? (
-          <>
-            {/* Location Selector */}
-            <div className="flex items-center gap-3">
-              <Label className="text-sm">Location:</Label>
-              <select
-                value={selectedLocation}
-                onChange={(e) => {
-                  setSelectedLocation(e.target.value);
-                  initializeHoursForLocation(e.target.value);
-                }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-healthcare-primary focus:border-transparent"
-              >
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name || `Location ${loc.id}`}
-                  </option>
-                ))}
-              </select>
-
-              {locations.length > 1 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyHoursToAllLocations}
-                  className="whitespace-nowrap"
+        {/* Operating Hours Tab */}
+        <TabsContent value="hours" className="space-y-6 mt-6">
+          {locations.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <MapPin className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No locations configured
+                </h3>
+                <p className="text-gray-500 text-center">
+                  Add locations in Step 2 to configure operating hours
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Location Selector */}
+              <div className="flex items-center gap-4">
+                <Label>Select Location:</Label>
+                <select
+                  value={selectedLocationId}
+                  onChange={(e) => setSelectedLocationId(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                 >
-                  Copy to All
-                </Button>
-              )}
-            </div>
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name || `Location ${loc.id.slice(0, 8)}`}
+                    </option>
+                  ))}
+                </select>
+                {locations.length > 1 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyHoursToAllLocations}
+                  >
+                    Copy to All Locations
+                  </Button>
+                )}
+              </div>
 
-            {/* Hours Grid */}
-            {currentLocationHours && (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <div className="grid grid-cols-4 gap-0 divide-y divide-gray-200">
-                  {/* Header */}
-                  <div className="col-span-4 bg-gray-50 px-4 py-3 grid grid-cols-4 gap-4 font-medium text-sm text-gray-700">
-                    <div>Day</div>
-                    <div>Opening Time</div>
-                    <div>Closing Time</div>
-                    <div>Closed</div>
+              {/* Emergency 24x7 Toggle */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">
+                        24x7 Emergency Services
+                      </CardTitle>
+                      <CardDescription>
+                        Enable if this location has round-the-clock emergency
+                        services
+                      </CardDescription>
+                    </div>
+                    <Switch
+                      checked={currentLocationHours.emergency_24x7}
+                      onCheckedChange={toggleEmergency24x7}
+                    />
                   </div>
+                </CardHeader>
+              </Card>
 
-                  {/* Days */}
-                  {currentLocationHours.hours.map((dayHours, index) => (
-                    <div
-                      key={dayHours.day}
-                      className="col-span-4 px-4 py-3 grid grid-cols-4 gap-4 items-center"
-                    >
-                      <div className="font-medium text-gray-900">
-                        {dayHours.day}
-                      </div>
-
-                      <Input
-                        type="time"
-                        value={dayHours.open}
-                        onChange={(e) =>
-                          updateLocationHours(selectedLocation, index, {
-                            open: e.target.value,
-                          })
-                        }
-                        disabled={dayHours.is_closed}
-                        className={cn(dayHours.is_closed && "opacity-50")}
-                      />
-
-                      <Input
-                        type="time"
-                        value={dayHours.close}
-                        onChange={(e) =>
-                          updateLocationHours(selectedLocation, index, {
-                            close: e.target.value,
-                          })
-                        }
-                        disabled={dayHours.is_closed}
-                        className={cn(dayHours.is_closed && "opacity-50")}
-                      />
-
-                      <div className="flex items-center">
-                        <Checkbox
-                          checked={dayHours.is_closed}
-                          onCheckedChange={(checked) =>
-                            updateLocationHours(selectedLocation, index, {
-                              is_closed: Boolean(checked),
+              {/* OPD Hours */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">OPD Hours</CardTitle>
+                  <CardDescription>
+                    Set outpatient department timings (morning and evening
+                    sessions)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-6 gap-2 text-sm font-medium text-gray-500 pb-2 border-b">
+                      <div>Day</div>
+                      <div>Morning Start</div>
+                      <div>Morning End</div>
+                      <div>Evening Start</div>
+                      <div>Evening End</div>
+                      <div>Closed</div>
+                    </div>
+                    {currentLocationHours.opd_hours.map((dh, index) => (
+                      <div
+                        key={dh.day}
+                        className="grid grid-cols-6 gap-2 items-center"
+                      >
+                        <div className="font-medium text-sm">{dh.day}</div>
+                        <Input
+                          type="time"
+                          value={dh.morning_start}
+                          onChange={(e) =>
+                            updateOPDHours(index, {
+                              morning_start: e.target.value,
                             })
+                          }
+                          disabled={dh.is_closed}
+                          className={cn(
+                            "text-sm",
+                            dh.is_closed && "opacity-50"
+                          )}
+                        />
+                        <Input
+                          type="time"
+                          value={dh.morning_end}
+                          onChange={(e) =>
+                            updateOPDHours(index, {
+                              morning_end: e.target.value,
+                            })
+                          }
+                          disabled={dh.is_closed}
+                          className={cn(
+                            "text-sm",
+                            dh.is_closed && "opacity-50"
+                          )}
+                        />
+                        <Input
+                          type="time"
+                          value={dh.evening_start}
+                          onChange={(e) =>
+                            updateOPDHours(index, {
+                              evening_start: e.target.value,
+                            })
+                          }
+                          disabled={dh.is_closed}
+                          className={cn(
+                            "text-sm",
+                            dh.is_closed && "opacity-50"
+                          )}
+                        />
+                        <Input
+                          type="time"
+                          value={dh.evening_end}
+                          onChange={(e) =>
+                            updateOPDHours(index, {
+                              evening_end: e.target.value,
+                            })
+                          }
+                          disabled={dh.is_closed}
+                          className={cn(
+                            "text-sm",
+                            dh.is_closed && "opacity-50"
+                          )}
+                        />
+                        <Checkbox
+                          checked={dh.is_closed}
+                          onCheckedChange={(checked) =>
+                            updateOPDHours(index, { is_closed: !!checked })
                           }
                         />
                       </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pharmacy Hours */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Pharmacy Hours</CardTitle>
+                  <CardDescription>
+                    Set pharmacy operating hours for each day
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-500 pb-2 border-b">
+                      <div>Day</div>
+                      <div>Opening</div>
+                      <div>Closing</div>
+                      <div>24x7</div>
                     </div>
-                  ))}
+                    {currentLocationHours.pharmacy_hours.map((ph, index) => (
+                      <div
+                        key={ph.day}
+                        className="grid grid-cols-4 gap-4 items-center"
+                      >
+                        <div className="font-medium">{ph.day}</div>
+                        <Input
+                          type="time"
+                          value={ph.open}
+                          onChange={(e) =>
+                            updatePharmacyHours(index, { open: e.target.value })
+                          }
+                          disabled={ph.is_24x7}
+                          className={cn(ph.is_24x7 && "opacity-50")}
+                        />
+                        <Input
+                          type="time"
+                          value={ph.close}
+                          onChange={(e) =>
+                            updatePharmacyHours(index, {
+                              close: e.target.value,
+                            })
+                          }
+                          disabled={ph.is_24x7}
+                          className={cn(ph.is_24x7 && "opacity-50")}
+                        />
+                        <Checkbox
+                          checked={ph.is_24x7}
+                          onCheckedChange={(checked) =>
+                            updatePharmacyHours(index, { is_24x7: !!checked })
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Appointment Policies Tab */}
+        <TabsContent value="appointments" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Booking Rules</CardTitle>
+              <CardDescription>
+                Configure advance booking and scheduling rules
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Minimum Booking Advance (Hours)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={appointmentPolicies.min_booking_advance_hours}
+                    onChange={(e) =>
+                      updateAppointmentPolicy({
+                        min_booking_advance_hours:
+                          parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    How early must patients book?
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Maximum Advance Booking (Days)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={appointmentPolicies.max_booking_advance_days}
+                    onChange={(e) =>
+                      updateAppointmentPolicy({
+                        max_booking_advance_days: parseInt(e.target.value) || 1,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    How far in advance can patients book?
+                  </p>
                 </div>
               </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-            <MapPin className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600 text-sm">
-              Add locations in Step 2 to set operating hours
-            </p>
-          </div>
-        )}
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Appointment Lead Time */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Appointment Lead Time</Label>
-          <HelpPopover
-            title="Lead Time"
-            content="Minimum hours in advance patients must book appointments"
-          />
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Cancellation & No-Show</CardTitle>
+              <CardDescription>
+                Configure cancellation rules and fees
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Cancellation Cutoff (Hours)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={appointmentPolicies.cancellation_cutoff_hours}
+                    onChange={(e) =>
+                      updateAppointmentPolicy({
+                        cancellation_cutoff_hours:
+                          parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    Free cancellation deadline before appointment
+                  </p>
+                </div>
 
-        <div className="flex items-center gap-3">
-          <Input
-            type="number"
-            value={operationalPolicies.appointment_lead_time_hours}
-            onChange={(e) =>
-              updateData("operationalPolicies", {
-                ...operationalPolicies,
-                appointment_lead_time_hours: parseInt(e.target.value, 10) || 0,
-              })
-            }
-            min="0"
-            className="w-32"
-          />
-          <span className="text-sm text-gray-600">hours in advance</span>
-        </div>
-      </div>
+                <div className="space-y-2">
+                  <Label>Cancellation Charge (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={appointmentPolicies.cancellation_charge_percentage}
+                    onChange={(e) =>
+                      updateAppointmentPolicy({
+                        cancellation_charge_percentage:
+                          parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    Fee if cancelled after cutoff
+                  </p>
+                </div>
 
-      {/* Cancellation Policy */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">Cancellation Policy</Label>
-          <HelpPopover
-            title="Cancellation Policy"
-            content="Explain your appointment cancellation rules, fees, and notice requirements"
-          />
-        </div>
-
-        <Textarea
-          value={operationalPolicies.cancellation_policy}
-          onChange={(e) =>
-            updateData("operationalPolicies", {
-              ...operationalPolicies,
-              cancellation_policy: e.target.value,
-            })
-          }
-          placeholder="e.g., Patients may cancel appointments up to 24 hours in advance without penalty..."
-          rows={4}
-        />
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <FileText className="w-4 h-4" />
-          {operationalPolicies.cancellation_policy.length} characters
-        </div>
-      </div>
-
-      {/* No-Show Policy */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">No-Show Policy</Label>
-          <HelpPopover
-            title="No-Show Policy"
-            content="Describe consequences and fees for missed appointments without notice"
-          />
-        </div>
-
-        <Textarea
-          value={operationalPolicies.no_show_policy}
-          onChange={(e) =>
-            updateData("operationalPolicies", {
-              ...operationalPolicies,
-              no_show_policy: e.target.value,
-            })
-          }
-          placeholder="e.g., Patients who miss appointments without prior notice may be charged a no-show fee..."
-          rows={4}
-        />
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <FileText className="w-4 h-4" />
-          {operationalPolicies.no_show_policy.length} characters
-        </div>
-      </div>
-
-      {/* Telehealth SOP */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">
-            Telehealth Standard Operating Procedure
-          </Label>
-          <HelpPopover
-            title="Telehealth SOP"
-            content="Outline procedures for virtual consultations, technical requirements, and patient guidelines"
-          />
-        </div>
-
-        <Textarea
-          value={operationalPolicies.telehealth_sop}
-          onChange={(e) =>
-            updateData("operationalPolicies", {
-              ...operationalPolicies,
-              telehealth_sop: e.target.value,
-            })
-          }
-          placeholder="e.g., Patients must have stable internet connection, camera, and microphone. Platform: [Name]. Appointment reminders sent 1 hour before..."
-          rows={5}
-        />
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Video className="w-4 h-4" />
-          {operationalPolicies.telehealth_sop.length} characters
-        </div>
-      </div>
-
-      {/* Patient Onboarding Steps */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">
-            Patient Onboarding Steps
-          </Label>
-          <Button onClick={addOnboardingStep} size="sm" variant="outline">
-            Add Step
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          {patientOnboardingSteps.map((step, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-healthcare-primary/10 rounded-full flex items-center justify-center text-sm font-medium text-healthcare-primary">
-                {index + 1}
+                <div className="space-y-2">
+                  <Label>No-Show Charge (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={appointmentPolicies.no_show_charge_percentage}
+                    onChange={(e) =>
+                      updateAppointmentPolicy({
+                        no_show_charge_percentage:
+                          parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    Fee for missed appointments
+                  </p>
+                </div>
               </div>
-              <Input
-                value={step}
-                onChange={(e) => updateOnboardingStep(index, e.target.value)}
-                placeholder={`Step ${index + 1}`}
-                className="flex-1"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeOnboardingStep(index)}
-                className="text-red-600 hover:text-red-700"
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
 
-          {patientOnboardingSteps.length === 0 && (
-            <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 text-sm mb-3">
-                No onboarding steps defined
-              </p>
-              <Button onClick={addOnboardingStep} variant="outline" size="sm">
-                Add First Step
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Allow Rescheduling</Label>
+                    <p className="text-xs text-gray-500">
+                      Patients can reschedule appointments
+                    </p>
+                  </div>
+                  <Switch
+                    checked={appointmentPolicies.reschedule_allowed}
+                    onCheckedChange={(checked) =>
+                      updateAppointmentPolicy({ reschedule_allowed: checked })
+                    }
+                  />
+                </div>
+
+                {appointmentPolicies.reschedule_allowed && (
+                  <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                    <Label>Reschedule Limit</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      className="w-32"
+                      value={appointmentPolicies.reschedule_limit || 2}
+                      onChange={(e) =>
+                        updateAppointmentPolicy({
+                          reschedule_limit: parseInt(e.target.value) || 1,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Reminders & Confirmation</CardTitle>
+              <CardDescription>
+                Configure appointment reminders and confirmation settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>SMS Reminders</Label>
+                  <p className="text-xs text-gray-500">
+                    Send reminder SMS to patients
+                  </p>
+                </div>
+                <Switch
+                  checked={appointmentPolicies.reminder_sms_enabled}
+                  onCheckedChange={(checked) =>
+                    updateAppointmentPolicy({ reminder_sms_enabled: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Require Confirmation</Label>
+                  <p className="text-xs text-gray-500">
+                    Patients must confirm appointments
+                  </p>
+                </div>
+                <Switch
+                  checked={appointmentPolicies.confirmation_required}
+                  onCheckedChange={(checked) =>
+                    updateAppointmentPolicy({ confirmation_required: checked })
+                  }
+                />
+              </div>
+
+              {appointmentPolicies.confirmation_required && (
+                <div className="flex items-center justify-between pl-4 border-l-2 border-gray-200">
+                  <div>
+                    <Label>Auto-Cancel Unconfirmed</Label>
+                    <p className="text-xs text-gray-500">
+                      Cancel if not confirmed before cutoff
+                    </p>
+                  </div>
+                  <Switch
+                    checked={appointmentPolicies.auto_cancel_unconfirmed}
+                    onCheckedChange={(checked) =>
+                      updateAppointmentPolicy({
+                        auto_cancel_unconfirmed: checked,
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* IPD Policies Tab */}
+        <TabsContent value="ipd" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Checkout & Timing</CardTitle>
+              <CardDescription>
+                Configure IPD checkout times and late fees
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Standard Checkout Time</Label>
+                  <Input
+                    type="time"
+                    value={ipdPolicies.checkout_time}
+                    onChange={(e) =>
+                      updateIPDPolicy({ checkout_time: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Late Checkout Charge (₹)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={ipdPolicies.late_checkout_charge || 0}
+                    onChange={(e) =>
+                      updateIPDPolicy({
+                        late_checkout_charge: parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Admission Deposits</CardTitle>
+              <CardDescription>
+                Configure deposit requirements for admissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Require Admission Deposit</Label>
+                  <p className="text-xs text-gray-500">
+                    Collect deposit at the time of admission
+                  </p>
+                </div>
+                <Switch
+                  checked={ipdPolicies.admission_deposit_required}
+                  onCheckedChange={(checked) =>
+                    updateIPDPolicy({ admission_deposit_required: checked })
+                  }
+                />
+              </div>
+
+              {ipdPolicies.admission_deposit_required && (
+                <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
+                  <div className="space-y-2">
+                    <Label>ICU Deposit Amount (₹)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={ipdPolicies.deposit_amount_icu || 0}
+                      onChange={(e) =>
+                        updateIPDPolicy({
+                          deposit_amount_icu: parseInt(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>General Ward Deposit (₹)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={ipdPolicies.deposit_amount_general || 0}
+                      onChange={(e) =>
+                        updateIPDPolicy({
+                          deposit_amount_general: parseInt(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing & Discharge</CardTitle>
+              <CardDescription>
+                Configure billing frequency and discharge clearance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Interim Bill Frequency (Days)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  className="w-32"
+                  value={ipdPolicies.interim_bill_frequency_days}
+                  onChange={(e) =>
+                    updateIPDPolicy({
+                      interim_bill_frequency_days:
+                        parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+                <p className="text-xs text-gray-500">
+                  How often to generate interim bills during stay
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Discharge Clearance Departments</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Departments that must clear before discharge
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(ipdPolicies.discharge_clearance_departments || []).map(
+                    (dept) => (
+                      <Badge
+                        key={dept}
+                        variant="secondary"
+                        className="capitalize"
+                      >
+                        {dept}
+                      </Badge>
+                    )
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

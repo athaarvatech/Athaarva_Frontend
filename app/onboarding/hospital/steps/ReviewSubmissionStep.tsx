@@ -59,7 +59,7 @@ export default function ReviewSubmissionStep() {
     { type: "Logo", url: data.branding.logo_url },
     { type: "Hero Background", url: data.branding.hero_asset_url },
     { type: "Favicon", url: data.branding.favicon_url },
-    ...data.leadershipTeam.leadership_cards.map((card) => ({
+    ...(data.leadershipTeam?.leadership_cards ?? []).map((card) => ({
       type: `Profile: ${card.full_name}`,
       url: card.profile_photo_url,
     })),
@@ -338,12 +338,13 @@ export default function ReviewSubmissionStep() {
           >
             <PhasedPublishSelector
               value={review.publication_plan.launch_mode}
-              scheduledAt={review.publication_plan.scheduled_at}
-              onChange={(mode, scheduledAt) =>
+              scheduledDate={review.publication_plan.scheduled_date}
+              onChange={(mode, scheduledDate) =>
                 updateData("review", {
                   publication_plan: {
+                    ...review.publication_plan,
                     launch_mode: mode,
-                    scheduled_at: scheduledAt,
+                    scheduled_date: scheduledDate,
                   },
                 })
               }
