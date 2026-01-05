@@ -361,11 +361,11 @@ function HospitalOnboardingContent({
   }, [data.metadata.last_saved_at]);
 
   const handleNext = () => {
-    // Check if current step is valid before proceeding
-    if (!isStepValid(currentStep)) {
-      // Don't proceed if validation fails
-      return;
-    }
+    // TEMPORARY: Validation disabled for testing - can proceed without filling fields
+    // if (!isStepValid(currentStep)) {
+    //   // Don't proceed if validation fails
+    //   return;
+    // }
     
     if (currentStep === 6) {
       handleSubmit();
@@ -775,7 +775,7 @@ function HospitalOnboardingContent({
 
                     <Button
                       onClick={handleNext}
-                      disabled={isSubmitting || !isStepValid(currentStep)}
+                      disabled={isSubmitting}
                       className="flex items-center gap-2 bg-gradient-to-r from-healthcare-primary to-healthcare-teal hover:from-healthcare-teal hover:to-healthcare-primary disabled:opacity-50 disabled:cursor-not-allowed"
                       size="default"
                     >
@@ -800,8 +800,8 @@ function HospitalOnboardingContent({
                     </Button>
                   </div>
 
-                  {/* Validation Feedback */}
-                  {!isStepValid(currentStep) && (
+                  {/* Validation Feedback - Temporarily hidden for testing */}
+                  {false && !isStepValid(currentStep) && (
                     <div className="mt-3 text-sm text-amber-600 flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>Please complete all required fields to continue</span>
