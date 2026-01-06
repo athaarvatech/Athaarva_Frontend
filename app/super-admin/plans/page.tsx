@@ -52,14 +52,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -91,14 +83,18 @@ interface PlanFormData {
 
 // API helpers
 const getAuthHeaders = () => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("super_admin_token") : null;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("super_admin_token")
+      : null;
   return {
     "Content-Type": "application/json",
     Authorization: token ? `Bearer ${token}` : "",
   };
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
 
 async function fetchPlans(isActive?: boolean): Promise<Plan[]> {
   const params = new URLSearchParams();
@@ -123,7 +119,10 @@ async function createPlan(data: PlanFormData): Promise<Plan> {
   return response.json();
 }
 
-async function updatePlan(planId: string, data: Partial<PlanFormData>): Promise<Plan> {
+async function updatePlan(
+  planId: string,
+  data: Partial<PlanFormData>
+): Promise<Plan> {
   const response = await fetch(`${BASE_URL}/plans/${planId}`, {
     method: "PATCH",
     headers: getAuthHeaders(),
@@ -174,7 +173,9 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [filterActive, setFilterActive] = useState<boolean | undefined>(undefined);
+  const [filterActive, setFilterActive] = useState<boolean | undefined>(
+    undefined
+  );
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -212,6 +213,7 @@ export default function PlansPage() {
 
   useEffect(() => {
     loadPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterActive]);
 
   // Handle create
@@ -322,7 +324,8 @@ export default function PlansPage() {
   // Format price
   const formatPrice = (price: number, currency: string, cycle: string) => {
     const symbol = currency === "INR" ? "₹" : "$";
-    const suffix = cycle === "monthly" ? "/mo" : cycle === "quarterly" ? "/qtr" : "/yr";
+    const suffix =
+      cycle === "monthly" ? "/mo" : cycle === "quarterly" ? "/qtr" : "/yr";
     return `${symbol}${price.toLocaleString()}${suffix}`;
   };
 
@@ -386,7 +389,11 @@ export default function PlansPage() {
                 disabled={saving || !formData.code || !formData.name}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
                 Create Plan
               </Button>
             </DialogFooter>
@@ -426,7 +433,9 @@ export default function PlansPage() {
             </div>
             <Select
               value={filterActive === undefined ? "all" : String(filterActive)}
-              onValueChange={(v) => setFilterActive(v === "all" ? undefined : v === "true")}
+              onValueChange={(v) =>
+                setFilterActive(v === "all" ? undefined : v === "true")
+              }
             >
               <SelectTrigger className="w-[150px] bg-white/5 border-white/10">
                 <SelectValue placeholder="Status" />
@@ -481,7 +490,10 @@ export default function PlansPage() {
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-slate-900 border-white/10">
+                  <DropdownMenuContent
+                    align="end"
+                    className="bg-slate-900 border-white/10"
+                  >
                     <DropdownMenuItem onClick={() => openEditDialog(plan)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
@@ -502,11 +514,17 @@ export default function PlansPage() {
             <CardContent className="space-y-4">
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold">
-                  {formatPrice(plan.base_price, plan.currency, plan.billing_cycle)}
+                  {formatPrice(
+                    plan.base_price,
+                    plan.currency,
+                    plan.billing_cycle
+                  )}
                 </span>
               </div>
               {plan.description && (
-                <p className="text-sm text-white/60 line-clamp-2">{plan.description}</p>
+                <p className="text-sm text-white/60 line-clamp-2">
+                  {plan.description}
+                </p>
               )}
               <div className="flex items-center gap-4 text-sm text-white/60">
                 <span className="flex items-center gap-1">
@@ -525,13 +543,26 @@ export default function PlansPage() {
                     .filter(([, v]) => v === true)
                     .slice(0, 4)
                     .map(([key]) => (
-                      <Badge key={key} variant="secondary" className="text-[10px] bg-white/10">
+                      <Badge
+                        key={key}
+                        variant="secondary"
+                        className="text-[10px] bg-white/10"
+                      >
                         {key.replace(/_/g, " ")}
                       </Badge>
                     ))}
-                  {Object.entries(plan.feature_set).filter(([, v]) => v === true).length > 4 && (
-                    <Badge variant="secondary" className="text-[10px] bg-white/10">
-                      +{Object.entries(plan.feature_set).filter(([, v]) => v === true).length - 4} more
+                  {Object.entries(plan.feature_set).filter(
+                    ([, v]) => v === true
+                  ).length > 4 && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-white/10"
+                    >
+                      +
+                      {Object.entries(plan.feature_set).filter(
+                        ([, v]) => v === true
+                      ).length - 4}{" "}
+                      more
                     </Badge>
                   )}
                 </div>
@@ -546,7 +577,9 @@ export default function PlansPage() {
               <CreditCard className="h-12 w-12 text-white/30 mx-auto mb-4" />
               <p className="text-white/60">No plans found</p>
               <p className="text-white/40 text-sm mt-1">
-                {search ? "Try a different search term" : "Create your first plan to get started"}
+                {search
+                  ? "Try a different search term"
+                  : "Create your first plan to get started"}
               </p>
             </CardContent>
           </Card>
@@ -585,7 +618,11 @@ export default function PlansPage() {
               disabled={saving}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Edit className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Edit className="h-4 w-4 mr-2" />
+              )}
               Update Plan
             </Button>
           </DialogFooter>
@@ -601,7 +638,8 @@ export default function PlansPage() {
               Are you sure you want to archive &quot;{selectedPlan?.name}&quot;?
               {selectedPlan?.tenant_count ? (
                 <span className="block mt-2 text-red-400">
-                  ⚠️ This plan has {selectedPlan.tenant_count} active tenant(s) and cannot be archived.
+                  ⚠️ This plan has {selectedPlan.tenant_count} active tenant(s)
+                  and cannot be archived.
                 </span>
               ) : (
                 " This action can be undone by a database administrator."
@@ -624,7 +662,11 @@ export default function PlansPage() {
               disabled={saving || (selectedPlan?.tenant_count ?? 0) > 0}
               className="bg-red-600 hover:bg-red-700"
             >
-              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
               Archive Plan
             </Button>
           </DialogFooter>
@@ -653,7 +695,9 @@ function PlanForm({
           <Label>Plan Code</Label>
           <Input
             value={formData.code}
-            onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, code: e.target.value }))
+            }
             placeholder="e.g., professional"
             className="bg-white/5 border-white/10 font-mono"
             disabled={isEdit}
@@ -663,7 +707,9 @@ function PlanForm({
           <Label>Plan Name</Label>
           <Input
             value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
             placeholder="e.g., Professional"
             className="bg-white/5 border-white/10"
           />
@@ -674,7 +720,9 @@ function PlanForm({
         <Label>Description</Label>
         <Textarea
           value={formData.description}
-          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          }
           placeholder="Plan description..."
           className="bg-white/5 border-white/10"
           rows={2}
@@ -689,7 +737,12 @@ function PlanForm({
             <Input
               type="number"
               value={formData.base_price}
-              onChange={(e) => setFormData((prev) => ({ ...prev, base_price: Number(e.target.value) }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  base_price: Number(e.target.value),
+                }))
+              }
               className="pl-9 bg-white/5 border-white/10"
               min={0}
             />
@@ -699,7 +752,9 @@ function PlanForm({
           <Label>Currency</Label>
           <Select
             value={formData.currency}
-            onValueChange={(v) => setFormData((prev) => ({ ...prev, currency: v }))}
+            onValueChange={(v) =>
+              setFormData((prev) => ({ ...prev, currency: v }))
+            }
           >
             <SelectTrigger className="bg-white/5 border-white/10">
               <SelectValue />
@@ -714,7 +769,9 @@ function PlanForm({
           <Label>Billing Cycle</Label>
           <Select
             value={formData.billing_cycle}
-            onValueChange={(v) => setFormData((prev) => ({ ...prev, billing_cycle: v }))}
+            onValueChange={(v) =>
+              setFormData((prev) => ({ ...prev, billing_cycle: v }))
+            }
           >
             <SelectTrigger className="bg-white/5 border-white/10">
               <SelectValue />
@@ -733,11 +790,15 @@ function PlanForm({
       <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
         <div>
           <Label>Active</Label>
-          <p className="text-xs text-white/50">Plan is available for new subscriptions</p>
+          <p className="text-xs text-white/50">
+            Plan is available for new subscriptions
+          </p>
         </div>
         <Switch
           checked={formData.is_active}
-          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_active: checked }))}
+          onCheckedChange={(checked) =>
+            setFormData((prev) => ({ ...prev, is_active: checked }))
+          }
         />
       </div>
 
@@ -749,8 +810,10 @@ function PlanForm({
             <Label className="text-xs">Max Doctors</Label>
             <Input
               type="number"
-              value={formData.feature_set.max_doctors as number || 0}
-              onChange={(e) => updateFeature("max_doctors", Number(e.target.value))}
+              value={(formData.feature_set.max_doctors as number) || 0}
+              onChange={(e) =>
+                updateFeature("max_doctors", Number(e.target.value))
+              }
               className="bg-white/5 border-white/10 h-8"
               min={0}
             />
@@ -759,8 +822,10 @@ function PlanForm({
             <Label className="text-xs">Max Patients</Label>
             <Input
               type="number"
-              value={formData.feature_set.max_patients as number || 0}
-              onChange={(e) => updateFeature("max_patients", Number(e.target.value))}
+              value={(formData.feature_set.max_patients as number) || 0}
+              onChange={(e) =>
+                updateFeature("max_patients", Number(e.target.value))
+              }
               className="bg-white/5 border-white/10 h-8"
               min={0}
             />
@@ -769,8 +834,10 @@ function PlanForm({
             <Label className="text-xs">Storage (GB)</Label>
             <Input
               type="number"
-              value={formData.feature_set.max_storage_gb as number || 0}
-              onChange={(e) => updateFeature("max_storage_gb", Number(e.target.value))}
+              value={(formData.feature_set.max_storage_gb as number) || 0}
+              onChange={(e) =>
+                updateFeature("max_storage_gb", Number(e.target.value))
+              }
               className="bg-white/5 border-white/10 h-8"
               min={0}
             />
@@ -797,7 +864,9 @@ function PlanForm({
               <span className="text-sm">{feature.label}</span>
               <Switch
                 checked={formData.feature_set[feature.key] === true}
-                onCheckedChange={(checked) => updateFeature(feature.key, checked)}
+                onCheckedChange={(checked) =>
+                  updateFeature(feature.key, checked)
+                }
               />
             </div>
           ))}

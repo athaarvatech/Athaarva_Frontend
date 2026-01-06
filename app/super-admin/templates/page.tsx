@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +37,6 @@ import {
   Edit,
   Trash2,
   Building2,
-  Code,
   CheckCircle,
   Eye,
   Palette,
@@ -46,7 +51,7 @@ interface Template {
   name: string;
   description?: string;
   version_tag: string;
-  capabilities: Record<string, any>;
+  capabilities: Record<string, unknown>;
   is_active: boolean;
   tenant_count: number;
   created_at: string;
@@ -81,7 +86,7 @@ export default function TemplatesPage() {
       } else {
         setError("Failed to fetch templates");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setLoading(false);
@@ -122,7 +127,7 @@ export default function TemplatesPage() {
         const err = await res.json();
         setError(err.detail || "Failed to create template");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setCreating(false);
@@ -136,10 +141,13 @@ export default function TemplatesPage() {
     if (!confirm("Are you sure you want to archive this template?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/v2/super-admin/templates/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v2/super-admin/templates/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (res.ok || res.status === 204) {
         fetchTemplates();
@@ -147,7 +155,7 @@ export default function TemplatesPage() {
         const err = await res.json();
         setError(err.detail || "Failed to archive template");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     }
   };
@@ -164,8 +172,12 @@ export default function TemplatesPage() {
             <LayoutTemplate className="h-6 w-6 text-pink-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Template Catalog</h1>
-            <p className="text-gray-500">Hospital website templates and themes</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Template Catalog
+            </h1>
+            <p className="text-gray-500">
+              Hospital website templates and themes
+            </p>
           </div>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -365,11 +377,17 @@ export default function TemplatesPage() {
                   <div>
                     <p className="text-sm text-gray-500 mb-2">Capabilities</p>
                     <div className="flex flex-wrap gap-1">
-                      {Object.keys(template.capabilities).slice(0, 4).map((cap) => (
-                        <Badge key={cap} variant="outline" className="text-xs">
-                          {cap}
-                        </Badge>
-                      ))}
+                      {Object.keys(template.capabilities)
+                        .slice(0, 4)
+                        .map((cap) => (
+                          <Badge
+                            key={cap}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {cap}
+                          </Badge>
+                        ))}
                       {Object.keys(template.capabilities).length > 4 && (
                         <Badge variant="outline" className="text-xs">
                           +{Object.keys(template.capabilities).length - 4} more

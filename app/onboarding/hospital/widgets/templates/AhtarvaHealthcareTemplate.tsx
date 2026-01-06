@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-page-custom-font */
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,11 @@ import type {
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
+import {
+  HeroImageUploader,
+  AvatarUploader,
+  FacilityImageUploader,
+} from "../ImageUploader";
 import {
   Phone,
   Mail,
@@ -277,8 +282,14 @@ export function AhtarvaHealthcareTemplate({
   };
 
   // Device scaling - only apply when not using responsive mode
-  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
-  
+  const scale = useResponsive
+    ? 1
+    : device === "desktop"
+    ? 1
+    : device === "tablet"
+    ? 0.92
+    : 0.7;
+
   // Responsive breakpoint classes
   const isMobile = useResponsive && device === "mobile";
   const isTablet = useResponsive && device === "tablet";
@@ -1430,10 +1441,17 @@ interface FacilitiesSectionProps {
   blueprint: TemplateBlueprint;
   colors: ColorScheme;
   isEditMode: boolean;
-  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
+  onImageUpdate: (
+    updates: Partial<NonNullable<TemplateBlueprint["images"]>>
+  ) => void;
 }
 
-function FacilitiesSection({ blueprint, colors, isEditMode, onImageUpdate }: FacilitiesSectionProps) {
+function FacilitiesSection({
+  blueprint,
+  colors,
+  isEditMode,
+  onImageUpdate,
+}: FacilitiesSectionProps) {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1469,15 +1487,21 @@ function FacilitiesSection({ blueprint, colors, isEditMode, onImageUpdate }: Fac
                   {isEditMode ? (
                     <div className="relative rounded-3xl overflow-hidden shadow-xl">
                       <FacilityImageUploader
-                        value={blueprint.images?.facilityImages?.[index] || null}
+                        value={
+                          blueprint.images?.facilityImages?.[index] || null
+                        }
                         onChange={(img) => {
-                          const facilityImages = blueprint.images?.facilityImages || [];
+                          const facilityImages =
+                            blueprint.images?.facilityImages || [];
                           if (img) {
                             facilityImages[index] = img;
                           } else {
-                            facilityImages[index] = undefined as unknown as UploadedImageData;
+                            facilityImages[index] =
+                              undefined as unknown as UploadedImageData;
                           }
-                          onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                          onImageUpdate({
+                            facilityImages: facilityImages.filter(Boolean),
+                          });
                         }}
                         className="w-full h-[350px]"
                       />

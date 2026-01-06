@@ -2,15 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  Stethoscope,
-  FileText,
-  Clock,
-  AlertTriangle,
-  Pill,
-  Calendar,
-  Settings,
-} from "lucide-react";
+import { Stethoscope, Clock, Pill, Calendar } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
