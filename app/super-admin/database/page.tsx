@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   Database,
   Table2,
@@ -12,7 +12,6 @@ import {
   Columns,
   Loader2,
   AlertTriangle,
-  Copy,
   Download,
 } from "lucide-react";
 import {
@@ -85,24 +84,34 @@ interface QueryResult {
 
 // API functions
 const getAuthHeaders = () => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("super_admin_token") : null;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("super_admin_token")
+      : null;
   return {
     "Content-Type": "application/json",
     Authorization: token ? `Bearer ${token}` : "",
   };
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
 
 async function fetchTables(schemaName = "public"): Promise<TableInfo[]> {
-  const response = await fetch(`${BASE_URL}/database/tables?schema_name=${schemaName}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/database/tables?schema_name=${schemaName}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
   if (!response.ok) throw new Error("Failed to fetch tables");
   return response.json();
 }
 
-async function fetchTableColumns(tableName: string, schemaName = "public"): Promise<ColumnInfo[]> {
+async function fetchTableColumns(
+  tableName: string,
+  schemaName = "public"
+): Promise<ColumnInfo[]> {
   const response = await fetch(
     `${BASE_URL}/database/tables/${tableName}/columns?schema_name=${schemaName}`,
     { headers: getAuthHeaders() }
@@ -128,9 +137,12 @@ async function fetchTableData(
     params.append("sort_by", sortBy);
     params.append("sort_order", sortOrder);
   }
-  const response = await fetch(`${BASE_URL}/database/tables/${tableName}/data?${params}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/database/tables/${tableName}/data?${params}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
   if (!response.ok) throw new Error("Failed to fetch table data");
   return response.json();
 }
@@ -154,7 +166,9 @@ export default function DatabaseGUIPage() {
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [tableData, setTableData] = useState<TableDataResponse | null>(null);
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
-  const [tableColumns, setTableColumns] = useState<Record<string, ColumnInfo[]>>({});
+  const [tableColumns, setTableColumns] = useState<
+    Record<string, ColumnInfo[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -181,7 +195,9 @@ export default function DatabaseGUIPage() {
         setError(null);
       } catch (err) {
         console.error("Failed to load tables:", err);
-        setError("Failed to load database tables. Please check your connection.");
+        setError(
+          "Failed to load database tables. Please check your connection."
+        );
       } finally {
         setLoading(false);
       }
@@ -237,7 +253,14 @@ export default function DatabaseGUIPage() {
     if (!selectedTable) return;
     setDataLoading(true);
     try {
-      const data = await fetchTableData(selectedTable, newPage, pageSize, "public", sortBy, sortOrder);
+      const data = await fetchTableData(
+        selectedTable,
+        newPage,
+        pageSize,
+        "public",
+        sortBy,
+        sortOrder
+      );
       setTableData(data);
       setPage(newPage);
     } catch (err) {
@@ -255,7 +278,14 @@ export default function DatabaseGUIPage() {
     setSortOrder(newOrder);
     setDataLoading(true);
     try {
-      const data = await fetchTableData(selectedTable, 1, pageSize, "public", column, newOrder);
+      const data = await fetchTableData(
+        selectedTable,
+        1,
+        pageSize,
+        "public",
+        column,
+        newOrder
+      );
       setTableData(data);
       setPage(1);
     } catch (err) {
@@ -275,7 +305,9 @@ export default function DatabaseGUIPage() {
       setQueryResult(result);
     } catch (err: unknown) {
       console.error("Query failed:", err);
-      setQueryError(err instanceof Error ? err.message : "Query execution failed");
+      setQueryError(
+        err instanceof Error ? err.message : "Query execution failed"
+      );
     } finally {
       setQueryLoading(false);
     }
@@ -291,14 +323,18 @@ export default function DatabaseGUIPage() {
     if (queryMode && queryResult) {
       const csv = [
         queryResult.columns.join(","),
-        ...queryResult.rows.map((row) => row.map((v) => `"${String(v ?? "")}"`).join(",")),
+        ...queryResult.rows.map((row) =>
+          row.map((v) => `"${String(v ?? "")}"`).join(",")
+        ),
       ].join("\n");
       downloadCSV(csv, "query_result.csv");
     } else if (tableData) {
       const csv = [
         tableData.columns.map((c) => c.name).join(","),
         ...tableData.rows.map((row) =>
-          tableData.columns.map((c) => `"${String(row[c.name] ?? "")}"`).join(",")
+          tableData.columns
+            .map((c) => `"${String(row[c.name] ?? "")}"`)
+            .join(",")
         ),
       ].join("\n");
       downloadCSV(csv, `${selectedTable}.csv`);
@@ -321,7 +357,9 @@ export default function DatabaseGUIPage() {
   );
 
   // Total pages
-  const totalPages = tableData ? Math.ceil(tableData.total_count / pageSize) : 0;
+  const totalPages = tableData
+    ? Math.ceil(tableData.total_count / pageSize)
+    : 0;
 
   if (loading) {
     return (
@@ -352,7 +390,9 @@ export default function DatabaseGUIPage() {
             variant={queryMode ? "default" : "outline"}
             onClick={() => setQueryMode(!queryMode)}
             className={cn(
-              queryMode ? "bg-emerald-600 hover:bg-emerald-700" : "border-white/20"
+              queryMode
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "border-white/20"
             )}
           >
             <Play className="h-4 w-4 mr-2" />
@@ -406,12 +446,15 @@ export default function DatabaseGUIPage() {
                       <div
                         className={cn(
                           "group rounded-md hover:bg-white/5 transition-colors",
-                          selectedTable === table.table_name && "bg-emerald-500/10"
+                          selectedTable === table.table_name &&
+                            "bg-emerald-500/10"
                         )}
                       >
                         <div className="flex items-center">
                           <button
-                            onClick={() => toggleTableExpanded(table.table_name)}
+                            onClick={() =>
+                              toggleTableExpanded(table.table_name)
+                            }
                             className="p-1.5 hover:bg-white/10 rounded"
                           >
                             {expandedTables.has(table.table_name) ? (
@@ -425,7 +468,9 @@ export default function DatabaseGUIPage() {
                             className="flex-1 flex items-center gap-2 py-1.5 pr-2 text-left"
                           >
                             <Table2 className="h-4 w-4 text-white/50" />
-                            <span className="text-sm truncate">{table.table_name}</span>
+                            <span className="text-sm truncate">
+                              {table.table_name}
+                            </span>
                           </button>
                           <TooltipProvider>
                             <Tooltip>
@@ -473,7 +518,9 @@ export default function DatabaseGUIPage() {
             <div className="space-y-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">SQL Query Editor</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    SQL Query Editor
+                  </CardTitle>
                   <CardDescription className="text-white/50">
                     Execute read-only SELECT queries against the database
                   </CardDescription>
@@ -487,7 +534,8 @@ export default function DatabaseGUIPage() {
                   />
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-white/40">
-                      Only SELECT queries are allowed. Results limited to 1000 rows.
+                      Only SELECT queries are allowed. Results limited to 1000
+                      rows.
                     </p>
                     <Button
                       onClick={handleExecuteQuery}
@@ -508,7 +556,9 @@ export default function DatabaseGUIPage() {
               {queryError && (
                 <Card className="bg-red-500/10 border-red-500/20">
                   <CardContent className="py-4">
-                    <p className="text-red-200 font-mono text-sm">{queryError}</p>
+                    <p className="text-red-200 font-mono text-sm">
+                      {queryError}
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -524,7 +574,10 @@ export default function DatabaseGUIPage() {
                         <span>{queryResult.row_count} rows</span>
                         <span>{queryResult.execution_time_ms}ms</span>
                         {queryResult.truncated && (
-                          <Badge variant="outline" className="text-yellow-400 border-yellow-500/50">
+                          <Badge
+                            variant="outline"
+                            className="text-yellow-400 border-yellow-500/50"
+                          >
                             Truncated
                           </Badge>
                         )}
@@ -537,7 +590,10 @@ export default function DatabaseGUIPage() {
                         <TableHeader>
                           <TableRow className="border-white/10 hover:bg-transparent">
                             {queryResult.columns.map((col) => (
-                              <TableHead key={col} className="text-white/70 font-medium">
+                              <TableHead
+                                key={col}
+                                className="text-white/70 font-medium"
+                              >
                                 {col}
                               </TableHead>
                             ))}
@@ -545,7 +601,10 @@ export default function DatabaseGUIPage() {
                         </TableHeader>
                         <TableBody>
                           {queryResult.rows.map((row, idx) => (
-                            <TableRow key={idx} className="border-white/10 hover:bg-white/5">
+                            <TableRow
+                              key={idx}
+                              className="border-white/10 hover:bg-white/5"
+                            >
                               {row.map((val, colIdx) => (
                                 <TableCell
                                   key={colIdx}
@@ -562,7 +621,9 @@ export default function DatabaseGUIPage() {
                                         </span>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        <p className="max-w-[300px] break-all">{String(val ?? "null")}</p>
+                                        <p className="max-w-[300px] break-all">
+                                          {String(val ?? "null")}
+                                        </p>
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
@@ -617,7 +678,9 @@ export default function DatabaseGUIPage() {
                       className="border-white/20"
                       disabled={dataLoading}
                     >
-                      <RefreshCw className={cn("h-4 w-4", dataLoading && "animate-spin")} />
+                      <RefreshCw
+                        className={cn("h-4 w-4", dataLoading && "animate-spin")}
+                      />
                     </Button>
                   </div>
                 </div>
@@ -656,7 +719,10 @@ export default function DatabaseGUIPage() {
                         </TableHeader>
                         <TableBody>
                           {tableData.rows.map((row, idx) => (
-                            <TableRow key={idx} className="border-white/10 hover:bg-white/5">
+                            <TableRow
+                              key={idx}
+                              className="border-white/10 hover:bg-white/5"
+                            >
                               {tableData.columns.map((col) => (
                                 <TableCell
                                   key={col.name}
@@ -667,10 +733,14 @@ export default function DatabaseGUIPage() {
                                       <TooltipTrigger asChild>
                                         <span
                                           className="cursor-pointer hover:text-emerald-400"
-                                          onClick={() => copyToClipboard(row[col.name])}
+                                          onClick={() =>
+                                            copyToClipboard(row[col.name])
+                                          }
                                         >
                                           {row[col.name] === null ? (
-                                            <span className="text-white/30">null</span>
+                                            <span className="text-white/30">
+                                              null
+                                            </span>
                                           ) : (
                                             String(row[col.name])
                                           )}
@@ -697,7 +767,7 @@ export default function DatabaseGUIPage() {
                     {/* Pagination */}
                     <div className="flex items-center justify-between px-4 py-3 border-t border-white/10">
                       <p className="text-sm text-white/60">
-                        Showing {((page - 1) * pageSize) + 1} -{" "}
+                        Showing {(page - 1) * pageSize + 1} -{" "}
                         {Math.min(page * pageSize, tableData.total_count)} of{" "}
                         {tableData.total_count.toLocaleString()}
                       </p>
@@ -743,8 +813,8 @@ export default function DatabaseGUIPage() {
                   Select a Table
                 </h3>
                 <p className="text-white/50 mt-2 max-w-sm">
-                  Choose a table from the sidebar to view its data, or use the SQL
-                  Query mode to run custom queries.
+                  Choose a table from the sidebar to view its data, or use the
+                  SQL Query mode to run custom queries.
                 </p>
               </div>
             </Card>

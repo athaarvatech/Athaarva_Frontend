@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Save,
-  X,
   Check,
 } from "lucide-react";
 import {
@@ -78,20 +77,28 @@ interface SystemSetting {
 
 // API helpers
 const getAuthHeaders = () => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("super_admin_token") : null;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("super_admin_token")
+      : null;
   return {
     "Content-Type": "application/json",
     Authorization: token ? `Bearer ${token}` : "",
   };
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
 
-async function fetchSettings(params: { is_public?: boolean; search?: string }): Promise<SystemSetting[]> {
+async function fetchSettings(params: {
+  is_public?: boolean;
+  search?: string;
+}): Promise<SystemSetting[]> {
   const searchParams = new URLSearchParams();
-  if (params.is_public !== undefined) searchParams.append("is_public", String(params.is_public));
+  if (params.is_public !== undefined)
+    searchParams.append("is_public", String(params.is_public));
   if (params.search) searchParams.append("search", params.search);
-  
+
   const response = await fetch(`${BASE_URL}/settings?${searchParams}`, {
     headers: getAuthHeaders(),
   });
@@ -122,17 +129,23 @@ async function createSetting(data: {
   return response.json();
 }
 
-async function updateSetting(key: string, data: {
-  setting_value?: unknown;
-  setting_type?: string;
-  description?: string;
-  is_public?: boolean;
-}): Promise<SystemSetting> {
-  const response = await fetch(`${BASE_URL}/settings/${encodeURIComponent(key)}`, {
-    method: "PATCH",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
+async function updateSetting(
+  key: string,
+  data: {
+    setting_value?: unknown;
+    setting_type?: string;
+    description?: string;
+    is_public?: boolean;
+  }
+): Promise<SystemSetting> {
+  const response = await fetch(
+    `${BASE_URL}/settings/${encodeURIComponent(key)}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    }
+  );
   if (!response.ok) {
     const err = await response.json();
     throw new Error(err.detail || "Failed to update setting");
@@ -141,10 +154,13 @@ async function updateSetting(key: string, data: {
 }
 
 async function deleteSetting(key: string): Promise<void> {
-  const response = await fetch(`${BASE_URL}/settings/${encodeURIComponent(key)}`, {
-    method: "DELETE",
-    headers: getAuthHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/settings/${encodeURIComponent(key)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
   if (!response.ok) throw new Error("Failed to delete setting");
 }
 
@@ -178,13 +194,15 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  
+
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSetting, setSelectedSetting] = useState<SystemSetting | null>(null);
-  
+  const [selectedSetting, setSelectedSetting] = useState<SystemSetting | null>(
+    null
+  );
+
   // Form state
   const [formKey, setFormKey] = useState("");
   const [formValue, setFormValue] = useState("");
@@ -210,6 +228,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle search
@@ -246,7 +265,7 @@ export default function SettingsPage() {
   // Handle create
   const handleCreate = async () => {
     if (!formKey.trim()) return;
-    
+
     setSaving(true);
     try {
       await createSetting({
@@ -268,7 +287,7 @@ export default function SettingsPage() {
   // Handle update
   const handleUpdate = async () => {
     if (!selectedSetting) return;
-    
+
     setSaving(true);
     try {
       await updateSetting(selectedSetting.setting_key, {
@@ -289,7 +308,7 @@ export default function SettingsPage() {
   // Handle delete
   const handleDelete = async () => {
     if (!selectedSetting) return;
-    
+
     setSaving(true);
     try {
       await deleteSetting(selectedSetting.setting_key);
@@ -349,10 +368,15 @@ export default function SettingsPage() {
             disabled={loading}
             className="border-white/20"
           >
-            <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+            <RefreshCw
+              className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+            />
             Refresh
           </Button>
-          <Button onClick={openCreateDialog} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button
+            onClick={openCreateDialog}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Setting
           </Button>
@@ -390,7 +414,10 @@ export default function SettingsPage() {
                 className="pl-9 bg-white/5 border-white/10"
               />
             </div>
-            <Button onClick={handleSearch} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={handleSearch}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               Search
             </Button>
           </div>
@@ -412,7 +439,9 @@ export default function SettingsPage() {
             <div className="text-center py-12">
               <Settings className="h-12 w-12 text-white/30 mx-auto mb-4" />
               <p className="text-white/60">No settings found</p>
-              <p className="text-white/40 text-sm mt-1">Create your first setting to get started</p>
+              <p className="text-white/40 text-sm mt-1">
+                Create your first setting to get started
+              </p>
             </div>
           ) : (
             <Table>
@@ -423,15 +452,22 @@ export default function SettingsPage() {
                   <TableHead className="text-white/70">Type</TableHead>
                   <TableHead className="text-white/70">Visibility</TableHead>
                   <TableHead className="text-white/70">Updated</TableHead>
-                  <TableHead className="text-white/70 text-right">Actions</TableHead>
+                  <TableHead className="text-white/70 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {settings.map((setting) => (
-                  <TableRow key={setting.id} className="border-white/10 hover:bg-white/5">
+                  <TableRow
+                    key={setting.id}
+                    className="border-white/10 hover:bg-white/5"
+                  >
                     <TableCell>
                       <div>
-                        <p className="font-mono text-sm">{setting.setting_key}</p>
+                        <p className="font-mono text-sm">
+                          {setting.setting_key}
+                        </p>
                         {setting.description && (
                           <p className="text-xs text-white/50 mt-0.5 truncate max-w-[200px]">
                             {setting.description}
@@ -447,7 +483,9 @@ export default function SettingsPage() {
                       </code>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getTypeBadgeColor(setting.setting_type)}>
+                      <Badge
+                        className={getTypeBadgeColor(setting.setting_type)}
+                      >
                         {setting.setting_type}
                       </Badge>
                     </TableCell>
@@ -586,7 +624,11 @@ export default function SettingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)} className="border-white/20">
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+              className="border-white/20"
+            >
               Cancel
             </Button>
             <Button
@@ -594,7 +636,11 @@ export default function SettingsPage() {
               disabled={!formKey.trim() || saving}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
               Create
             </Button>
           </DialogFooter>
@@ -607,7 +653,10 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle>Edit Setting</DialogTitle>
             <DialogDescription className="text-white/60">
-              Update <code className="text-emerald-400">{selectedSetting?.setting_key}</code>
+              Update{" "}
+              <code className="text-emerald-400">
+                {selectedSetting?.setting_key}
+              </code>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -671,7 +720,11 @@ export default function SettingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-white/20">
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              className="border-white/20"
+            >
               Cancel
             </Button>
             <Button
@@ -679,7 +732,11 @@ export default function SettingsPage() {
               disabled={saving}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Check className="h-4 w-4 mr-2" />
+              )}
               Save Changes
             </Button>
           </DialogFooter>
@@ -692,18 +749,27 @@ export default function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Setting</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              Are you sure you want to delete <code className="text-red-400">{selectedSetting?.setting_key}</code>?
-              This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <code className="text-red-400">
+                {selectedSetting?.setting_key}
+              </code>
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/20">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-white/20">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={saving}
               className="bg-red-600 hover:bg-red-700"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

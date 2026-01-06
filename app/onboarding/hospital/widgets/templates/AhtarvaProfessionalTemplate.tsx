@@ -1,4 +1,8 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-page-custom-font */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -7,7 +11,11 @@ import type {
   UploadedImageData,
 } from "../templateBlueprints";
 import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
+import {
+  HeroImageUploader,
+  AvatarUploader,
+  FacilityImageUploader,
+} from "../ImageUploader";
 import {
   Phone,
   ArrowRight,
@@ -95,8 +103,14 @@ export function AhtarvaProfessionalTemplate({
   };
 
   // Device scaling - only apply when not using responsive mode
-  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
-  
+  const scale = useResponsive
+    ? 1
+    : device === "desktop"
+    ? 1
+    : device === "tablet"
+    ? 0.92
+    : 0.7;
+
   // Responsive breakpoint classes
   const isMobile = useResponsive && device === "mobile";
   const isTablet = useResponsive && device === "tablet";
@@ -978,7 +992,9 @@ interface ProfessionalAboutProps {
   colors: ColorScheme;
   isEditMode: boolean;
   onUpdate: (about: TemplateBlueprint["about"]) => void;
-  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
+  onImageUpdate: (
+    updates: Partial<NonNullable<TemplateBlueprint["images"]>>
+  ) => void;
 }
 
 function ProfessionalAbout({
@@ -1079,13 +1095,17 @@ function ProfessionalAbout({
                 <FacilityImageUploader
                   value={blueprint.images?.facilityImages?.[0] || null}
                   onChange={(img) => {
-                    const facilityImages = blueprint.images?.facilityImages || [];
+                    const facilityImages =
+                      blueprint.images?.facilityImages || [];
                     if (img) {
                       facilityImages[0] = img;
                     } else {
-                      facilityImages[0] = undefined as unknown as UploadedImageData;
+                      facilityImages[0] =
+                        undefined as unknown as UploadedImageData;
                     }
-                    onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                    onImageUpdate({
+                      facilityImages: facilityImages.filter(Boolean),
+                    });
                   }}
                   className="h-full"
                 />

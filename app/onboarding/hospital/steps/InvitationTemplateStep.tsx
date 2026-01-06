@@ -2,12 +2,10 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Calendar, Mail, Clock, Shield, AlertCircle } from "lucide-react";
+import { Mail, Shield } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { TemplateGallery } from "../widgets/TemplateGallery";
-import { Badge } from "@/components/ui/badge";
-import { formatDateTime, isDateExpired } from "@/lib/onboarding-utils";
-import { cn } from "@/lib/utils";
+import { isDateExpired } from "@/lib/onboarding-utils";
 
 export default function InvitationTemplateStep() {
   const { data, updateData } = useHospitalOnboarding();
@@ -33,10 +31,11 @@ export default function InvitationTemplateStep() {
               Welcome to Athaarva Hospital Onboarding
             </h3>
             <p className="text-base text-gray-700 leading-relaxed">
-              We&apos;re excited to help you set up your hospital&apos;s digital presence. 
-              This onboarding process will guide you through customizing your website, 
-              configuring your services, and preparing your hospital for success on our platform. 
-              Let&apos;s create something amazing together!
+              We&apos;re excited to help you set up your hospital&apos;s digital
+              presence. This onboarding process will guide you through
+              customizing your website, configuring your services, and preparing
+              your hospital for success on our platform. Let&apos;s create
+              something amazing together!
             </p>
           </div>
         </div>
@@ -117,51 +116,6 @@ export default function InvitationTemplateStep() {
           </ul>
         </motion.div>
       )}
-    </div>
-  );
-}
-
-interface InfoCardProps {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  alert?: boolean;
-  badge?: boolean;
-}
-
-function InfoCard({ icon: Icon, label, value, alert, badge }: InfoCardProps) {
-  return (
-    <div
-      className={cn(
-        "flex items-center space-x-3 p-3 rounded-lg border",
-        alert ? "bg-red-50 border-red-200" : "bg-white border-gray-200"
-      )}
-    >
-      <div
-        className={cn(
-          "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center",
-          alert ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"
-        )}
-      >
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500">{label}</p>
-        {badge ? (
-          <Badge className="mt-1 bg-healthcare-emerald text-white">
-            {value}
-          </Badge>
-        ) : (
-          <p
-            className={cn(
-              "text-sm font-medium truncate",
-              alert ? "text-red-900" : "text-gray-900"
-            )}
-          >
-            {value}
-          </p>
-        )}
-      </div>
     </div>
   );
 }
