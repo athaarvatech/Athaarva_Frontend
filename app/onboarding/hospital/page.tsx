@@ -44,6 +44,7 @@ import {
   Users,
   Settings,
   Info,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -58,6 +59,7 @@ import LocationsContactsStep from "./steps/LocationsContactsStep";
 import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
 import BillingFinancialStep from "./steps/BillingFinancialStep";
 import ClinicalConfigStep from "./steps/ClinicalConfigStep";
+import AdminControlStep from "./steps/AdminControlStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 
 // Import widgets
@@ -84,7 +86,8 @@ const STEP_HELP_TEXT: Record<number, string> = {
   3: "Set up medical departments, specialties, and cost centers. Define how your hospital is organized operationally.",
   4: "Configure billing settings, payment methods, bank details, and invoice preferences for smooth financial operations.",
   5: "Set up clinical parameters like consultation duration and prescription formats for quality care.",
-  6: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
+  6: "Create your administrator account, generate secure credentials, and choose a unique subdomain for your hospital's web presence.",
+  7: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
 };
 
 const STEP_CONFIGS: StepConfig[] = [
@@ -144,6 +147,15 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 6,
+    title: "Admin Control & Domain",
+    description: "Admin credentials, domain selection",
+    icon: Shield,
+    component: AdminControlStep,
+    category: "Setup",
+    estimatedMinutes: 5,
+  },
+  {
+    id: 7,
     title: "Review & Submission",
     description: "Final review, acknowledgements, publish",
     icon: ListChecks,
