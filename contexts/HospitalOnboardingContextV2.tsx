@@ -676,6 +676,14 @@ export interface HospitalOnboardingData {
     alerts_config: ClinicalAlertsConfiguration;
   };
 
+  // Step 7.5: Licensing & Certification (NEW) - Simplified
+  licenses: Array<{
+    id: string;
+    name: string;
+    certificate_file?: File | string;
+    certificate_file_name?: string;
+  }>;
+
   // Step 8: Pharmacy & Inventory Configuration (NEW)
   pharmacy: {
     license: PharmacyLicense;
@@ -827,6 +835,8 @@ export interface HospitalOnboardingContextType {
   currentStep: number;
   activityLog: ActivityLogEntry[];
   collaborators: CollaboratorData[];
+  lastSaved: Date | null;
+  isSaving: boolean;
   isStepValid: (step: number) => boolean;
   getStepCompletion: () => { [step: number]: boolean };
   updateData: <T extends keyof HospitalOnboardingData>(
@@ -1009,6 +1019,9 @@ const initialData: HospitalOnboardingData = {
     },
   },
 
+  // Step 7.5: Licensing & Certification (NEW)
+  licenses: [],
+
   // Step 8: Pharmacy & Inventory (NEW)
   pharmacy: {
     license: {
@@ -1167,7 +1180,7 @@ const initialData: HospitalOnboardingData = {
   },
 };
 
-const TOTAL_STEPS = 11; // 0-10 (removed integrations step)
+const TOTAL_STEPS = 8; // 0-7 (added licensing step)
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -1223,6 +1236,8 @@ export const HospitalOnboardingProvider: React.FC<
   const [currentStep, setCurrentStep] = useState(0);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [collaborators, setCollaborators] = useState<CollaboratorData[]>([]);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ============================================================================
@@ -1297,123 +1312,70 @@ export const HospitalOnboardingProvider: React.FC<
   const isStepValid = useCallback(
     (step: number): boolean => {
       switch (step) {
-        case 0: // Template Selection (UNCHANGED)
+        case 0: // Invitation & Template Selection
           return !!data.template.selected_template;
 
-        case 1: // Organization Profile (Enhanced)
+        case 1: // Organization Profile - Only check fields that exist in form
           const org = data.organizationProfile;
           return !!(
             org.legal_name &&
             org.registration_number &&
-            org.gst_number &&
-            org.pan_number &&
-            org.clinical_establishment_number &&
             org.established_date &&
-            org.ownership_model &&
-            org.bed_count_licensed > 0 &&
             org.timezone &&
             org.locale
           );
 
-        case 2: // Locations & Contacts (Enhanced)
+        case 2: // Locations & Contacts
           return (
             data.locations.length > 0 &&
             data.locations.every(
               (loc) =>
                 loc.name &&
-                loc.location_code &&
                 loc.address_line_1 &&
                 loc.city &&
                 loc.state &&
                 loc.pincode &&
-                isValidPhone(loc.contact_phone) &&
-                isValidEmail(loc.contact_email)
+                loc.contact_phone
             )
           );
 
-        case 3: // Branding & Report Configuration (Reduced)
-          const branding = data.branding;
-          return !!(
-            (branding.logo_url || branding.logo_file) &&
-            isValidHexColor(branding.colors.primary) &&
-            isValidHexColor(branding.colors.secondary)
-          );
-
-        case 4: // Facility Management (NEW)
-          // At least one wing with one ward and one bed
-          return (
-            data.facility.wings.length > 0 &&
-            data.facility.wings.some(
-              (wing) =>
-                wing.floors.length > 0 &&
-                wing.floors.some(
-                  (floor) =>
-                    floor.wards.length > 0 &&
-                    floor.wards.some((ward) => ward.beds.length > 0)
-                )
-            )
-          );
-
-        case 5: // Clinical Departments & Cost Centers (NEW)
+        case 3: // Departments - Only check what exists in form
           return (
             data.departments.length > 0 &&
-            data.departments.some((dept) => dept.is_opd_enabled) &&
             data.departments.every(
               (dept) =>
                 dept.name &&
-                dept.code &&
-                dept.cost_center_code &&
-                dept.default_consultation_duration > 0
+                dept.code
             )
           );
 
-        case 6: // Billing & Financial Configuration (NEW)
+        case 4: // Billing & Financial - Only bank details
           const billing = data.billing;
           return !!(
             billing.bank_details.bank_name &&
             billing.bank_details.account_number &&
             billing.bank_details.ifsc_code &&
-            billing.bank_details.beneficiary_name &&
-            billing.invoice_config.invoice_prefix &&
-            billing.invoice_config.receipt_prefix
+            billing.bank_details.beneficiary_name
           );
 
-        case 7: // Clinical Configuration (NEW)
+        case 5: // Clinical Configuration - prescription only
           const clinical = data.clinical;
           return !!(
-            clinical.consultation_params.default_opd_slot_duration > 0 &&
-            clinical.consultation_params.new_patient_slot_duration > 0 &&
             clinical.prescription_config.default_prescription_language
           );
 
-        case 8: // Pharmacy & Inventory Configuration (NEW)
-          const pharmacy = data.pharmacy;
-          return !!(
-            pharmacy.license.drug_license_number_retail &&
-            pharmacy.license.pharmacist_registration_number &&
-            pharmacy.license.pharmacist_name &&
-            pharmacy.stores.length > 0 &&
-            pharmacy.stores.some((store) => store.is_dispensing_point)
+        case 6: // Licensing & Certification - at least one license with name and PDF
+          return (
+            data.licenses &&
+            data.licenses.length > 0 &&
+            data.licenses.some((license) => license.name && license.certificate_file)
           );
 
-        case 9: // Operational Policies & Scheduling (Enhanced)
-          const policies = data.operationalPolicies;
-          return !!(
-            policies.operating_hours.length > 0 &&
-            policies.appointment_policies.min_booking_advance_hours >= 0 &&
-            policies.ipd_policies.checkout_time
-          );
-
-        case 10: // Review & Submission (Enhanced)
+        case 7: // Review & Submission - basic acknowledgements
           const review = data.review;
           return !!(
             review.acknowledgements.terms &&
-            review.acknowledgements.privacy &&
-            review.acknowledgements.dpa &&
-            review.acknowledgements.baa &&
-            review.acknowledgements.sla &&
-            review.publication_plan.launch_mode &&
-            review.publication_plan.go_live_checklist_completed
+            review.acknowledgements.privacy
           );
 
         default:
@@ -1492,6 +1454,7 @@ export const HospitalOnboardingProvider: React.FC<
 
   const saveToLocalStorage = useCallback(() => {
     try {
+      setIsSaving(true);
       const invitationId = data.invitation.invitation_id || "default";
       const storageKey = `hospital-onboarding-${invitationId}`;
 
@@ -1514,8 +1477,12 @@ export const HospitalOnboardingProvider: React.FC<
         `${storageKey}-collaborators`,
         JSON.stringify(collaborators)
       );
+      
+      setLastSaved(new Date());
+      setTimeout(() => setIsSaving(false), 300);
     } catch (error) {
       console.error("Failed to save onboarding data:", error);
+      setIsSaving(false);
     }
   }, [data, currentStep, activityLog, collaborators]);
 
@@ -1796,6 +1763,8 @@ export const HospitalOnboardingProvider: React.FC<
       currentStep,
       activityLog,
       collaborators,
+      lastSaved,
+      isSaving,
       isStepValid,
       getStepCompletion,
       updateData,
@@ -1815,6 +1784,8 @@ export const HospitalOnboardingProvider: React.FC<
       currentStep,
       activityLog,
       collaborators,
+      lastSaved,
+      isSaving,
       isStepValid,
       getStepCompletion,
       updateData,

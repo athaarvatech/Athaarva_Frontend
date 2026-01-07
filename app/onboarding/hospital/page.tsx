@@ -59,8 +59,9 @@ import LocationsContactsStep from "./steps/LocationsContactsStep";
 import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
 import BillingFinancialStep from "./steps/BillingFinancialStep";
 import ClinicalConfigStep from "./steps/ClinicalConfigStep";
-import AdminControlStep from "./steps/AdminControlStep";
+import LicensingCertificationStep from "./steps/LicensingCertificationStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
+import { ActivityLog } from "./widgets/ActivityLog";
 
 // Import widgets
 import { ActivityLog } from "./widgets/ActivityLog";
@@ -81,14 +82,31 @@ interface StepConfig {
 // Help text for each step
 const STEP_HELP_TEXT: Record<number, string> = {
   0: "Select a template that best represents your hospital's brand and services. This will be the foundation of your digital presence.",
-  1: "Provide your hospital's legal information including registration numbers, GST, PAN, and official documents. This ensures compliance and authenticity.",
+  1: "Provide your hospital's legal information including registration numbers and official documents. This ensures compliance and authenticity.",
   2: "Add your hospital's physical locations, contact details, and emergency numbers. This helps patients reach you easily.",
-  3: "Set up medical departments, specialties, and cost centers. Define how your hospital is organized operationally.",
+  3: "Set up medical departments and specialties. Define how your hospital is organized operationally.",
   4: "Configure billing settings, payment methods, bank details, and invoice preferences for smooth financial operations.",
-  5: "Set up clinical parameters like consultation duration and prescription formats for quality care.",
-  6: "Create your administrator account, generate secure credentials, and choose a unique subdomain for your hospital's web presence.",
+  5: "Set up clinical parameters like prescription formats for quality care.",
+  6: "Upload your hospital's licenses and certifications to build trust. These will be displayed prominently on your website.",
   7: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
 };
+
+// Helper function to format time ago
+function formatTimeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 10) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
 const STEP_CONFIGS: StepConfig[] = [
   {
@@ -120,7 +138,7 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 3,
-    title: "Departments & Cost Centers",
+    title: "Departments",
     description: "Clinical departments, specializations, accounting",
     icon: Users,
     component: DepartmentsStaffStep,
@@ -147,12 +165,12 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 6,
-    title: "Admin Control & Domain",
-    description: "Admin credentials, domain selection",
+    title: "Licensing & Certification",
+    description: "Upload licenses, certifications, accreditations",
     icon: Shield,
-    component: AdminControlStep,
-    category: "Setup",
-    estimatedMinutes: 5,
+    component: LicensingCertificationStep,
+    category: "Operations",
+    estimatedMinutes: 8,
   },
   {
     id: 7,
@@ -177,41 +195,39 @@ interface TokenValidationResponse {
 function HospitalOnboardingWrapper() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  
+  // 🔥 INSTANT DEVELOPMENT BYPASS - Set initial state based on environment
+  const initialState = process.env.NODE_ENV === "development" ? {
+    loading: false,
+    valid: true,
+    data: {
+      valid: true,
+      invitation_id: "dev-bypass-invitation",
+      email: "dev@hospital.com",
+      hospital_name: "Development Hospital",
+      message: "Development mode - Token validation bypassed",
+    } as TokenValidationResponse
+  } : {
+    loading: true,
+    valid: false,
+  };
+  
   const [validationState, setValidationState] = useState<{
     loading: boolean;
     valid: boolean;
     data?: TokenValidationResponse;
     error?: string;
-  }>({
-    loading: true,
-    valid: false,
-  });
-
-  const token = searchParams.get("token");
+  }>(initialState);
 
   useEffect(() => {
+    // Skip validation entirely in development
+    if (process.env.NODE_ENV === "development") {
+      console.log("🚀 Development mode: Validation bypassed");
+      return;
+    }
+    
     const validateToken = async () => {
-      // 🔥 DEVELOPMENT BYPASS: Skip token validation in development mode
-      const isDevelopment =
-        process.env.NODE_ENV === "development" ||
-        window.location.hostname === "localhost";
-
-      if (isDevelopment && !token) {
-        console.log("🚀 Development mode: Token validation bypassed");
-        setValidationState({
-          loading: false,
-          valid: true,
-          data: {
-            valid: true,
-            invitation_id: "dev-bypass-invitation",
-            email: "dev@hospital.com",
-            hospital_name: "Development Hospital",
-            message: "Development mode - Token validation bypassed",
-          },
-        });
-        return;
-      }
-
       // Production token validation
       if (!token) {
         setValidationState({
@@ -261,6 +277,16 @@ function HospitalOnboardingWrapper() {
 
     validateToken();
   }, [token]);
+
+  // In development, just render the content directly
+  if (process.env.NODE_ENV === "development") {
+    return (
+      <HospitalOnboardingContent
+        token={token}
+        validationData={validationState.data}
+      />
+    );
+  }
 
   if (validationState.loading) {
     return (
@@ -325,8 +351,11 @@ function HospitalOnboardingContent({
     currentStep,
     setCurrentStep,
     isStepValid,
+    getStepCompletion,
     activityLog,
     buildSubmissionPayload,
+    lastSaved,
+    isSaving,
   } = useHospitalOnboarding();
 
   const [showActivityLog, setShowActivityLog] = useState(false);
@@ -378,8 +407,8 @@ function HospitalOnboardingContent({
     //   // Don't proceed if validation fails
     //   return;
     // }
-
-    if (currentStep === 6) {
+    
+    if (currentStep === 7) {
       handleSubmit();
     } else {
       setCurrentStep(currentStep + 1);
@@ -489,8 +518,81 @@ function HospitalOnboardingContent({
     router.push("/");
   };
 
-  const progressPercentage = (currentStep / (STEP_CONFIGS.length - 1)) * 100;
-  const completedSteps = currentStep;
+  // Calculate actual progress based on field completion across all steps
+  const calculateRealProgress = (): number => {
+    let filledFields = 0;
+    let totalFields = 0;
+
+    // Step 0: Template (1 field)
+    totalFields += 1;
+    if (data.template.selected_template) filledFields += 1;
+
+    // Step 1: Organization Profile (7 key fields)
+    totalFields += 7;
+    const org = data.organizationProfile;
+    if (org.legal_name) filledFields += 1;
+    if (org.registration_number) filledFields += 1;
+    if (org.clinical_establishment_number) filledFields += 1;
+    if (org.established_date) filledFields += 1;
+    if (org.bed_count_licensed > 0) filledFields += 1;
+    if (org.timezone) filledFields += 1;
+    if (org.locale) filledFields += 1;
+
+    // Step 2: Locations (count per location, minimum 1 location with 5 fields)
+    if (data.locations.length > 0) {
+      const loc = data.locations[0];
+      totalFields += 5;
+      if (loc.name) filledFields += 1;
+      if (loc.address_line_1) filledFields += 1;
+      if (loc.city) filledFields += 1;
+      if (loc.state) filledFields += 1;
+      if (loc.pincode) filledFields += 1;
+    } else {
+      totalFields += 5; // Need at least 1 location
+    }
+
+    // Step 3: Departments (at least 1 department with 2 fields)
+    if (data.departments.length > 0) {
+      const dept = data.departments[0];
+      totalFields += 2;
+      if (dept.name) filledFields += 1;
+      if (dept.code) filledFields += 1;
+    } else {
+      totalFields += 2;
+    }
+
+    // Step 4: Billing (4 fields)
+    totalFields += 4;
+    const billing = data.billing;
+    if (billing.bank_details.bank_name) filledFields += 1;
+    if (billing.bank_details.account_number) filledFields += 1;
+    if (billing.bank_details.ifsc_code) filledFields += 1;
+    if (billing.bank_details.beneficiary_name) filledFields += 1;
+
+    // Step 5: Clinical (1 field)
+    totalFields += 1;
+    if (data.clinical.prescription_config.default_prescription_language) filledFields += 1;
+
+    // Step 6: Licensing (at least 1 license with 2 fields)
+    if (data.licenses && data.licenses.length > 0) {
+      const license = data.licenses[0];
+      totalFields += 2;
+      if (license.name) filledFields += 1;
+      if (license.certificate_file) filledFields += 1;
+    } else {
+      totalFields += 2;
+    }
+
+    // Step 7: Review acknowledgements (2 fields)
+    totalFields += 2;
+    if (data.review.acknowledgements.terms) filledFields += 1;
+    if (data.review.acknowledgements.privacy) filledFields += 1;
+
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+  };
+
+  const progressPercentage = calculateRealProgress();
+  const completedSteps = Object.values(getStepCompletion()).filter(Boolean).length;
   const totalMinutes = STEP_CONFIGS.reduce(
     (sum, step) => sum + step.estimatedMinutes,
     0
@@ -530,13 +632,21 @@ function HospitalOnboardingContent({
 
             <div className="flex items-center space-x-4">
               {/* Autosave Indicator */}
-              {data.metadata.last_saved_at && (
-                <div className="hidden sm:flex items-center text-xs text-gray-500">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Saved{" "}
-                  {new Date(data.metadata.last_saved_at).toLocaleTimeString()}
-                </div>
-              )}
+              <div className="hidden sm:flex items-center text-xs">
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin text-healthcare-primary" />
+                    <span className="text-healthcare-primary font-medium">Saving...</span>
+                  </>
+                ) : lastSaved ? (
+                  <>
+                    <CheckCircle className="w-3 h-3 mr-1 text-emerald-500" />
+                    <span className="text-gray-500">
+                      Saved {formatTimeAgo(lastSaved)}
+                    </span>
+                  </>
+                ) : null}
+              </div>
 
               {/* Progress Indicator */}
               <div className="text-right">
@@ -574,9 +684,10 @@ function HospitalOnboardingContent({
                 <div className="flex-1 overflow-y-auto">
                   <div className="p-4 space-y-1">
                     {STEP_CONFIGS.map((step) => {
-                      const isCompleted = currentStep > step.id;
+                      const stepCompletion = getStepCompletion();
+                      const isCompleted = stepCompletion[step.id] === true;
                       const isCurrent = currentStep === step.id;
-                      const isClickable = isCompleted || isCurrent;
+                      const isClickable = step.id <= currentStep || isCompleted;
 
                       return (
                         <button
@@ -805,7 +916,7 @@ function HospitalOnboardingContent({
                             Submitting...
                           </span>
                         </>
-                      ) : currentStep === 6 ? (
+                      ) : currentStep === 7 ? (
                         <>
                           <span className="hidden sm:inline">Submit</span>
                           <CheckCircle className="w-4 h-4" />

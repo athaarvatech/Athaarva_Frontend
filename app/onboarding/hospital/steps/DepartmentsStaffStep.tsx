@@ -259,11 +259,10 @@ export default function DepartmentsStaffStep() {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            Departments & Cost Centers
+            Departments
           </h2>
           <p className="text-gray-600">
-            Configure clinical departments, specializations, and financial cost
-            centers
+            Configure clinical departments and specializations
           </p>
         </div>
       </motion.div>
@@ -299,9 +298,6 @@ export default function DepartmentsStaffStep() {
             <p className="text-sm text-blue-800">
               Define your hospital departments for OPD/IPD scheduling and
               revenue tracking.
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Link each department to a cost center for financial reporting.
             </p>
           </div>
         </div>
@@ -442,30 +438,6 @@ export default function DepartmentsStaffStep() {
                               </Select>
                             </div>
 
-                            {/* Cost Center Code */}
-                            <div className="space-y-2">
-                              <Label>Cost Center Code</Label>
-                              <Select
-                                value={dept.cost_center_code}
-                                onValueChange={(value) =>
-                                  updateDepartment(dept.id, {
-                                    cost_center_code: value,
-                                  })
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select cost center" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {costCenters.map((cc: CostCenterData) => (
-                                    <SelectItem key={cc.id} value={cc.code}>
-                                      {cc.code} - {cc.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-
                             {/* HOD Designation */}
                             <div className="space-y-2">
                               <Label>HOD Designation</Label>
@@ -596,250 +568,7 @@ export default function DepartmentsStaffStep() {
         )}
       </motion.div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          SECTION 2: Cost Centers
-      ═══════════════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        variants={itemVariants}
-        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-teal-600" />
-            <h3 className="text-lg font-semibold text-gray-900">
-              Cost Centers
-            </h3>
-          </div>
-          <Button
-            onClick={addCostCenter}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Cost Center
-          </Button>
-        </div>
 
-        <div className="mb-4 flex items-start gap-2 rounded-lg bg-amber-50 p-4">
-          <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-          <div>
-            <p className="text-sm text-amber-800">
-              Cost centers help track revenue and expenses by department or
-              function.
-            </p>
-            <p className="text-xs text-amber-600 mt-1">
-              Link cost centers to departments for financial reporting.
-            </p>
-          </div>
-        </div>
-
-        {costCenters.length === 0 ? (
-          <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-            <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600">
-              No cost centers configured yet.
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Add cost centers for financial tracking and reporting.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {costCenters.map((cc: CostCenterData, index: number) => {
-              const isExpanded = expandedCostCenters.has(cc.id);
-
-              return (
-                <div
-                  key={cc.id}
-                  className="rounded-lg border border-gray-200 bg-gray-50"
-                >
-                  {/* Cost Center Header */}
-                  <div
-                    className="flex items-center justify-between p-4 cursor-pointer"
-                    onClick={() => toggleCostCenterExpansion(cc.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        {isExpanded ? (
-                          <ChevronDown className="h-5 w-5" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5" />
-                        )}
-                      </button>
-                      <DollarSign className="h-5 w-5 text-teal-500" />
-                      <div>
-                        <span className="font-medium text-gray-700">
-                          {cc.name || `Cost Center ${index + 1}`}
-                        </span>
-                        {cc.code && (
-                          <span className="ml-2 text-xs text-gray-500">
-                            ({cc.code})
-                          </span>
-                        )}
-                        <div className="mt-1">
-                          <Badge
-                            variant="outline"
-                            className="text-xs capitalize"
-                          >
-                            {cc.type}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeCostCenter(cc.id);
-                      }}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Cost Center Details */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-gray-200 p-4">
-                          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            {/* Cost Center Code */}
-                            <div className="space-y-2">
-                              <Label>Cost Center Code *</Label>
-                              <Input
-                                value={cc.code}
-                                onChange={(e) =>
-                                  updateCostCenter(cc.id, {
-                                    code: e.target.value.toUpperCase(),
-                                  })
-                                }
-                                placeholder="e.g., CC001"
-                                maxLength={10}
-                              />
-                            </div>
-
-                            {/* Cost Center Name */}
-                            <div className="space-y-2">
-                              <Label>Cost Center Name *</Label>
-                              <Input
-                                value={cc.name}
-                                onChange={(e) =>
-                                  updateCostCenter(cc.id, {
-                                    name: e.target.value,
-                                  })
-                                }
-                                placeholder="e.g., Medical Services"
-                              />
-                            </div>
-
-                            {/* Type */}
-                            <div className="space-y-2">
-                              <Label>Type</Label>
-                              <Select
-                                value={cc.type}
-                                onValueChange={(
-                                  value: "revenue" | "cost" | "overhead"
-                                ) => updateCostCenter(cc.id, { type: value })}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {COST_CENTER_TYPES.map((t) => (
-                                    <SelectItem key={t.value} value={t.value}>
-                                      {t.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            {/* GL Account Prefix */}
-                            <div className="space-y-2">
-                              <Label>GL Account Prefix</Label>
-                              <Input
-                                value={cc.gl_account_prefix}
-                                onChange={(e) =>
-                                  updateCostCenter(cc.id, {
-                                    gl_account_prefix: e.target.value,
-                                  })
-                                }
-                                placeholder="e.g., 4100"
-                              />
-                              <p className="text-xs text-gray-500">
-                                General ledger account prefix for accounting
-                                integration
-                              </p>
-                            </div>
-
-                            {/* Budget Allocation */}
-                            <div className="space-y-2">
-                              <Label>Budget Allocation (₹)</Label>
-                              <Input
-                                type="number"
-                                min={0}
-                                value={cc.budget_allocation || ""}
-                                onChange={(e) =>
-                                  updateCostCenter(cc.id, {
-                                    budget_allocation: e.target.value
-                                      ? parseFloat(e.target.value)
-                                      : undefined,
-                                  })
-                                }
-                                placeholder="Optional annual budget"
-                              />
-                            </div>
-
-                            {/* Parent Cost Center */}
-                            <div className="space-y-2">
-                              <Label>Parent Cost Center</Label>
-                              <Select
-                                value={cc.parent_center_code || ""}
-                                onValueChange={(value) =>
-                                  updateCostCenter(cc.id, {
-                                    parent_center_code: value || undefined,
-                                  })
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="None (Top Level)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="">
-                                    None (Top Level)
-                                  </SelectItem>
-                                  {costCenters
-                                    .filter(
-                                      (c: CostCenterData) =>
-                                        c.id !== cc.id && c.code
-                                    )
-                                    .map((c: CostCenterData) => (
-                                      <SelectItem key={c.id} value={c.code}>
-                                        {c.code} - {c.name}
-                                      </SelectItem>
-                                    ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
     </motion.div>
   );
 }

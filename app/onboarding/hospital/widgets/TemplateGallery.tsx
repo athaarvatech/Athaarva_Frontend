@@ -26,9 +26,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type {
-  TemplateData,
-  CustomizedTemplateData,
+import {
+  useHospitalOnboarding,
+  type TemplateData,
+  type CustomizedTemplateData,
 } from "@/contexts/HospitalOnboardingContextV2";
 import {
   TEMPLATE_BLUEPRINTS,
@@ -613,6 +614,7 @@ function TemplatePreviewModal({
   onSelect,
   isSelected,
 }: TemplatePreviewModalProps) {
+  const { data } = useHospitalOnboarding();
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
     "desktop"
   );
@@ -653,6 +655,16 @@ function TemplatePreviewModal({
       window.removeEventListener("tour-demo-action", handleTourAction);
     };
   }, []);
+  // Get licenses from context and convert to template format
+  const contextLicenses = useMemo(() => {
+    return (data.licenses || []).map((license) => ({
+      id: license.id,
+      name: license.name,
+      certificateUrl: license.certificate_file instanceof File 
+        ? URL.createObjectURL(license.certificate_file) 
+        : license.certificate_file || "",
+    }));
+  }, [data.licenses]);
 
   // Keyboard handler for ESC key to exit fullscreen
   useEffect(() => {
@@ -681,13 +693,20 @@ function TemplatePreviewModal({
   );
   const [editedBlueprint, setEditedBlueprint] =
     useState<TemplateBlueprint | null>(
-      originalBlueprint ? { ...originalBlueprint } : null
+      originalBlueprint ? { ...originalBlueprint, licenses: contextLicenses } : null
     );
+
+  // Update licenses when context changes
+  useEffect(() => {
+    if (editedBlueprint) {
+      setEditedBlueprint(prev => prev ? { ...prev, licenses: contextLicenses } : null);
+    }
+  }, [contextLicenses]);
 
   // Reset handler
   const handleReset = () => {
     if (originalBlueprint) {
-      setEditedBlueprint({ ...originalBlueprint });
+      setEditedBlueprint({ ...originalBlueprint, licenses: contextLicenses });
     }
   };
 
@@ -739,6 +758,7 @@ function TemplatePreviewModal({
             },
             quickLinks: editedBlueprint.footer.quickLinks || [],
           },
+          licenses: editedBlueprint.licenses || [],
         }
       : undefined;
 

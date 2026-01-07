@@ -15,18 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
-import {
-  Building2,
-  UserPlus,
-  Mail,
-  Phone,
-  Calendar,
-  MapPin,
-  Lock,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { Building2, UserPlus, Mail, Phone, MapPin, CreditCard } from "lucide-react";
 
 function PatientSignUpContent() {
   const router = useRouter();
@@ -35,16 +24,14 @@ function PatientSignUpContent() {
 
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     phone: "",
-    password: "",
-    confirmPassword: "",
-    dateOfBirth: "",
     address: "",
+    aadharCard: "",
+    email: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,18 +43,38 @@ function PatientSignUpContent() {
     setError("");
   };
 
+  const handleSendOtp = async () => {
+    if (!formData.phone || formData.phone.length < 10) {
+      setError("Please enter a valid phone number");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // TODO: Replace with actual API call to send OTP
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setOtpSent(true);
+      setError("");
+    } catch (err) {
+      setError("Failed to send OTP. Please try again.");
+      console.error("OTP error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+    if (!formData.name || !formData.phone || !formData.address) {
+      setError("Please fill in all required fields");
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long");
+    if (!otpSent || !otp) {
+      setError("Please verify your phone number with OTP");
       return;
     }
 
@@ -78,15 +85,15 @@ function PatientSignUpContent() {
       // const response = await fetch("/api/auth/patient/signup", {
       //   method: "POST",
       //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ ...formData, hospitalSlug }),
+      //   body: JSON.stringify({ ...formData, otp, hospitalSlug }),
       // });
 
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Simulate successful signup
-      console.log("Patient signup:", { ...formData, hospitalSlug });
-
+      console.log("Patient signup:", { ...formData, otp, hospitalSlug });
+      
       // Redirect to patient dashboard
       router.push(`/patient/dashboard?hospital=${hospitalSlug}`);
     } catch (err) {
@@ -160,7 +167,7 @@ function PatientSignUpContent() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-muted-foreground">
-                Or sign up with email
+                Or sign up with phone
               </span>
             </div>
           </div>
@@ -182,60 +189,56 @@ function PatientSignUpContent() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="pl-10 h-11"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
-                <div className="relative">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number *</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
                   <Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || otpSent}
                     className="pl-10 h-11"
+                    maxLength={15}
                   />
                 </div>
+                <Button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isLoading || otpSent || !formData.phone}
+                  className="h-11"
+                  variant={otpSent ? "outline" : "default"}
+                >
+                  {otpSent ? "OTP Sent ✓" : "Send OTP"}
+                </Button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+            {otpSent && (
+              <div className="space-y-2">
+                <Label htmlFor="otp">Enter OTP *</Label>
                 <Input
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11"
+                  className="h-11"
+                  maxLength={6}
                 />
+                <p className="text-xs text-gray-500">
+                  OTP sent to {formData.phone}
+                </p>
               </div>
-            </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="address">Address *</Label>
@@ -255,70 +258,48 @@ function PatientSignUpContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="pl-10 pr-10 h-11"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="aadharCard">Aadhar Card (Optional)</Label>
+              <div className="relative">
+                <CreditCard className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="aadharCard"
+                  name="aadharCard"
+                  type="text"
+                  placeholder="1234 5678 9012"
+                  value={formData.aadharCard}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="pl-10 h-11"
+                  maxLength={12}
+                />
               </div>
+              <p className="text-xs text-gray-500">
+                12-digit Aadhar number for identity verification
+              </p>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="pl-10 pr-10 h-11"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email (Optional)</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="pl-10 h-11"
+                />
               </div>
             </div>
 
             <Button
               type="submit"
               className="w-full h-12 text-base font-medium bg-teal-600 hover:bg-teal-700"
-              disabled={isLoading}
+              disabled={isLoading || !otpSent}
             >
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
