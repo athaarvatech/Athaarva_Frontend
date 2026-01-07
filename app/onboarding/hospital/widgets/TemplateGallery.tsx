@@ -41,6 +41,7 @@ import {
   AhtarvaMedicalCenterTemplate,
   AhtarvaHealthcareTemplate,
 } from "./templates";
+import { TemplateGuidedTour } from "./TemplateTour";
 
 // Re-export for convenience
 export type { CustomizedTemplateData } from "@/contexts/HospitalOnboardingContextV2";
@@ -131,9 +132,19 @@ export function TemplateGallery({
   const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
     null
   );
+  const [showTour, setShowTour] = useState(true);
 
   return (
     <div className={cn("space-y-6", className)}>
+      {/* Guided Tour */}
+      {showTour && (
+        <TemplateGuidedTour
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+          autoStart={true}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -282,6 +293,7 @@ function TemplateCard({
           : "border-gray-200 hover:border-healthcare-primary/50 hover:shadow-md"
       )}
       onClick={onSelect}
+      data-tour="template-card"
     >
       {/* Thumbnail - Mini Preview */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -312,6 +324,7 @@ function TemplateCard({
               e.stopPropagation();
               onPreview();
             }}
+            data-tour="preview-button"
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview
@@ -721,6 +734,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="color-picker"
                     >
                       <Palette className="w-4 h-4" />
                       <span className="hidden sm:inline">Colors</span>
@@ -864,6 +878,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="font-picker"
                     >
                       <Type className="w-4 h-4" />
                       <span className="hidden sm:inline">Fonts</span>
@@ -999,6 +1014,7 @@ function TemplatePreviewModal({
               size="sm"
               onClick={() => setIsFullScreen(true)}
               className="text-gray-600 hover:text-healthcare-primary hover:border-healthcare-primary"
+              data-tour="fullscreen-button"
             >
               <Maximize2 className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Full Screen</span>
@@ -1013,6 +1029,7 @@ function TemplatePreviewModal({
                 isEditMode &&
                   "bg-healthcare-primary hover:bg-healthcare-primary/90"
               )}
+              data-tour="edit-toggle"
             >
               {isEditMode ? (
                 <>
@@ -1314,6 +1331,7 @@ function TemplatePreviewModal({
               onClick={handleSelect}
               className="bg-healthcare-primary hover:bg-healthcare-primary/90"
               size="lg"
+              data-tour="select-button"
             >
               {isSelected ? (
                 <>

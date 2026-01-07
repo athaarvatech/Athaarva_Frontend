@@ -302,6 +302,14 @@ export function AhtarvaProfessionalTemplate({
         }
       />
 
+      {/* Blog/Social Media Section */}
+      <ProfessionalBlog
+        blueprint={blueprint}
+        colors={colors}
+        isEditMode={isEditMode}
+        onUpdate={(blogPosts) => updateBlueprint("blogPosts", blogPosts)}
+      />
+
       {/* Appointment Section */}
       <ProfessionalAppointment
         blueprint={blueprint}
@@ -2186,6 +2194,479 @@ function ProfessionalTestimonials({
               </div>
             )
           )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// BLOG/SOCIAL MEDIA SECTION
+// ============================================================================
+
+interface ProfessionalBlogProps {
+  blueprint: TemplateBlueprint;
+  colors: ColorScheme;
+  isEditMode: boolean;
+  onUpdate: (blogPosts: TemplateBlueprint["blogPosts"]) => void;
+}
+
+function ProfessionalBlog({
+  blueprint,
+  colors,
+  isEditMode,
+  onUpdate,
+}: ProfessionalBlogProps) {
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState<{
+    [key: string]: number;
+  }>({});
+
+  const blogPosts = blueprint.blogPosts || [
+    {
+      id: "blog-1",
+      title: "The Future of Personalized Medicine",
+      excerpt:
+        "Discover how genetic testing and AI are revolutionizing treatment plans for individual patients.",
+      date: "2024-01-15",
+      author: "Dr. Sarah Johnson",
+      category: "Medical Innovation",
+      images: [],
+      featured: true,
+    },
+    {
+      id: "blog-2",
+      title: "Healthy Heart Tips for 2024",
+      excerpt:
+        "Expert cardiologists share essential lifestyle changes for better cardiovascular health.",
+      date: "2024-01-10",
+      author: "Dr. Michael Chen",
+      category: "Heart Health",
+      images: [],
+      featured: false,
+    },
+    {
+      id: "blog-3",
+      title: "Understanding Mental Wellness",
+      excerpt:
+        "Breaking the stigma around mental health and exploring modern therapeutic approaches.",
+      date: "2024-01-05",
+      author: "Dr. Emily Parker",
+      category: "Mental Health",
+      images: [],
+      featured: false,
+    },
+  ];
+
+  const handleImageUpload = (
+    postId: string,
+    imageIndex: number,
+    file: File
+  ) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const updated = blogPosts.map((post) => {
+        if (post.id === postId) {
+          const newImages = [...(post.images || [])];
+          newImages[imageIndex] = {
+            file: file,
+            previewUrl: reader.result as string,
+          };
+          return { ...post, images: newImages };
+        }
+        return post;
+      });
+      onUpdate(updated);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addNewImageSlot = (postId: string) => {
+    const updated = blogPosts.map((post) => {
+      if (post.id === postId) {
+        const newImages = [
+          ...(post.images || []),
+          { file: null, previewUrl: "" },
+        ];
+        return { ...post, images: newImages };
+      }
+      return post;
+    });
+    onUpdate(updated);
+  };
+
+  const removeImage = (postId: string, imageIndex: number) => {
+    const updated = blogPosts.map((post) => {
+      if (post.id === postId) {
+        const newImages = (post.images || []).filter(
+          (_, i) => i !== imageIndex
+        );
+        return { ...post, images: newImages };
+      }
+      return post;
+    });
+    onUpdate(updated);
+  };
+
+  const nextImage = (postId: string, totalImages: number) => {
+    setCurrentCarouselIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) + 1) % totalImages,
+    }));
+  };
+
+  const prevImage = (postId: string, totalImages: number) => {
+    setCurrentCarouselIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) - 1 + totalImages) % totalImages,
+    }));
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return (
+    <section className="py-20" style={{ backgroundColor: colors.lightBg }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <span
+            className="inline-block font-semibold px-4 py-2 rounded-full text-sm mb-4"
+            style={{
+              backgroundColor: `${colors.primary}1a`,
+              color: colors.primary,
+            }}
+          >
+            Blog & Updates
+          </span>
+          <h2
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4"
+            style={{ color: colors.textPrimary }}
+          >
+            Latest Health{" "}
+            <span style={{ color: colors.primary }}>Insights</span>
+          </h2>
+          <p
+            className="text-lg max-w-2xl mx-auto"
+            style={{ color: colors.textSecondary }}
+          >
+            Stay informed with our latest medical news, health tips, and expert
+            advice from our specialists.
+          </p>
+        </div>
+
+        {/* Blog Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogPosts.map((post, postIndex) => {
+            const currentImageIndex = currentCarouselIndex[post.id] || 0;
+            const validImages = (post.images || []).filter(
+              (img) => img.previewUrl
+            );
+
+            return (
+              <article
+                key={post.id}
+                className="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
+                style={{ backgroundColor: colors.accent }}
+              >
+                {/* Image Carousel Section */}
+                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                  {validImages.length > 0 ? (
+                    <>
+                      {/* Current Image */}
+                      <img
+                        src={
+                          validImages[currentImageIndex % validImages.length]
+                            ?.previewUrl
+                        }
+                        alt={`${post.title} - Image ${currentImageIndex + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+
+                      {/* Carousel Controls - Show if multiple images */}
+                      {validImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={() =>
+                              prevImage(post.id, validImages.length)
+                            }
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-md transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <ChevronLeft className="w-5 h-5 text-gray-700" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              nextImage(post.id, validImages.length)
+                            }
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-md transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <ChevronRight className="w-5 h-5 text-gray-700" />
+                          </button>
+
+                          {/* Dots Indicator */}
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {validImages.map((_, imgIndex) => (
+                              <button
+                                key={imgIndex}
+                                onClick={() =>
+                                  setCurrentCarouselIndex((prev) => ({
+                                    ...prev,
+                                    [post.id]: imgIndex,
+                                  }))
+                                }
+                                className={cn(
+                                  "w-2 h-2 rounded-full transition-all",
+                                  imgIndex ===
+                                    currentImageIndex % validImages.length
+                                    ? "bg-white w-4"
+                                    : "bg-white/50 hover:bg-white/70"
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    /* Placeholder when no images */
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                      <div className="text-center">
+                        <div
+                          className="w-16 h-16 mx-auto mb-2 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: `${colors.primary}20` }}
+                        >
+                          <Instagram
+                            className="w-8 h-8"
+                            style={{ color: colors.primary }}
+                          />
+                        </div>
+                        {isEditMode && (
+                          <span
+                            className="text-sm"
+                            style={{ color: colors.textSecondary }}
+                          >
+                            Add images below
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Featured Badge */}
+                  {post.featured && (
+                    <div
+                      className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      Featured
+                    </div>
+                  )}
+
+                  {/* Category Badge */}
+                  <div
+                    className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.9)",
+                      color: colors.textPrimary,
+                    }}
+                  >
+                    <EditableText
+                      value={post.category}
+                      onChange={(category) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, category };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Category"
+                      editIndicator="none"
+                    />
+                  </div>
+                </div>
+
+                {/* Edit Mode: Image Upload Controls */}
+                {isEditMode && (
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <span
+                        className="text-xs font-medium"
+                        style={{ color: colors.textSecondary }}
+                      >
+                        Images ({(post.images || []).length}/5):
+                      </span>
+
+                      {/* Existing Image Thumbnails */}
+                      {(post.images || []).map((img, imgIndex) => (
+                        <div key={imgIndex} className="relative group/img">
+                          {img.previewUrl ? (
+                            <div className="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200">
+                              <img
+                                src={img.previewUrl}
+                                alt={`Thumbnail ${imgIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                onClick={() => removeImage(post.id, imgIndex)}
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="w-10 h-10 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleImageUpload(post.id, imgIndex, file);
+                                  }
+                                }}
+                              />
+                              <span className="text-gray-400 text-lg">+</span>
+                            </label>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Add New Image Button */}
+                      {(post.images || []).length < 5 && (
+                        <button
+                          onClick={() => addNewImageSlot(post.id)}
+                          className="w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors"
+                          style={{
+                            borderColor: colors.primary,
+                            color: colors.primary,
+                          }}
+                        >
+                          <span className="text-lg">+</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="p-5">
+                  {/* Date & Author */}
+                  <div
+                    className="flex items-center gap-3 text-sm mb-3"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    <span>{formatDate(post.date)}</span>
+                    <span>•</span>
+                    <EditableText
+                      value={post.author}
+                      onChange={(author) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, author };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Author name"
+                      editIndicator="none"
+                    />
+                  </div>
+
+                  {/* Title */}
+                  <h3
+                    className="text-lg font-bold mb-2 line-clamp-2 group-hover:underline"
+                    style={{ color: colors.textPrimary }}
+                  >
+                    <EditableText
+                      value={post.title}
+                      onChange={(title) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, title };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Post title"
+                      editIndicator="icon"
+                    />
+                  </h3>
+
+                  {/* Excerpt */}
+                  <p
+                    className="text-sm line-clamp-3 mb-4"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    <EditableText
+                      value={post.excerpt}
+                      onChange={(excerpt) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, excerpt };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Brief description..."
+                      editIndicator="none"
+                    />
+                  </p>
+
+                  {/* Read More Link */}
+                  <div
+                    className="flex items-center gap-2 text-sm font-semibold cursor-pointer group/link"
+                    style={{ color: colors.primary }}
+                  >
+                    Read More
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* Add New Post Button (Edit Mode) */}
+        {isEditMode && blogPosts.length < 6 && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => {
+                const newPost = {
+                  id: `blog-${Date.now()}`,
+                  title: "New Blog Post",
+                  excerpt: "Add a brief description for your blog post here...",
+                  date: new Date().toISOString().split("T")[0],
+                  author: "Author Name",
+                  category: "Health",
+                  images: [],
+                  featured: false,
+                };
+                onUpdate([...blogPosts, newPost]);
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-lg"
+              style={{
+                backgroundColor: `${colors.primary}10`,
+                color: colors.primary,
+                border: `2px dashed ${colors.primary}`,
+              }}
+            >
+              <span className="text-xl">+</span>
+              Add Blog Post
+            </button>
+          </div>
+        )}
+
+        {/* View All Link */}
+        <div className="mt-12 text-center">
+          <button
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5"
+            style={{ backgroundColor: colors.primary }}
+          >
+            View All Articles
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </section>
