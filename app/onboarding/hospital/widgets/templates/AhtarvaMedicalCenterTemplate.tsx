@@ -28,6 +28,9 @@ import {
   Baby,
   Sparkles,
   Send,
+  Award,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 
 // ============================================================================
@@ -482,6 +485,7 @@ function NavbarSection({
   setMobileMenuOpen,
 }: NavbarSectionProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [licenseDropdownOpen, setLicenseDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -490,6 +494,8 @@ function NavbarSection({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const licenses = blueprint.licenses || [];
 
   return (
     <nav
@@ -530,6 +536,47 @@ function NavbarSection({
                 {link.name}
               </a>
             ))}
+            
+            {/* License Dropdown - beside Contact */}
+            {licenses.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setLicenseDropdownOpen(!licenseDropdownOpen)}
+                  onBlur={() => setTimeout(() => setLicenseDropdownOpen(false), 150)}
+                  className={`flex items-center gap-1 text-sm font-medium transition-colors duration-300 hover:opacity-70 ${
+                    scrolled ? "text-slate-700" : "text-white/90"
+                  }`}
+                >
+                  <Award size={16} />
+                  License
+                  <ChevronDown size={14} className={`transition-transform ${licenseDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+                
+                {licenseDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                    {licenses.map((license, idx) => (
+                      <a
+                        key={license.id || idx}
+                        href={license.certificate_file instanceof File 
+                          ? URL.createObjectURL(license.certificate_file) 
+                          : typeof license.certificate_file === 'string' 
+                            ? license.certificate_file 
+                            : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <FileText size={18} className="text-teal-600" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{license.name}</p>
+                          <p className="text-xs text-slate-500">View Certificate</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* CTA Button */}
@@ -572,6 +619,33 @@ function NavbarSection({
                 {link.name}
               </a>
             ))}
+            
+            {/* Mobile License Links */}
+            {licenses.length > 0 && (
+              <div className="border-t border-slate-100 pt-4 mt-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Award size={14} /> Licenses & Certifications
+                </p>
+                {licenses.map((license, idx) => (
+                  <a
+                    key={license.id || idx}
+                    href={license.certificate_file instanceof File 
+                      ? URL.createObjectURL(license.certificate_file) 
+                      : typeof license.certificate_file === 'string' 
+                        ? license.certificate_file 
+                        : '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-slate-600 py-2 hover:text-teal-600"
+                  >
+                    <FileText size={16} />
+                    <span className="text-sm">{license.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+            
             <a
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}

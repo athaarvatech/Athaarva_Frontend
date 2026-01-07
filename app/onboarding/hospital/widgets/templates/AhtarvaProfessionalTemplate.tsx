@@ -39,6 +39,9 @@ import {
   ArrowLeft,
   ChevronLeft,
   Quote,
+  Award,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 
 // ============================================================================
@@ -330,6 +333,7 @@ function ProfessionalHeader({
   onImageUpdate,
 }: ProfessionalHeaderProps) {
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [licenseDropdownOpen, setLicenseDropdownOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -346,6 +350,8 @@ function ProfessionalHeader({
     { label: "Doctors", href: "#doctors" },
     { label: "Contact", href: "#contact" },
   ];
+
+  const licenses = blueprint.licenses || [];
 
   return (
     <header
@@ -397,6 +403,48 @@ function ProfessionalHeader({
                 />
               </button>
             ))}
+            
+            {/* License Dropdown - beside Contact */}
+            {licenses.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setLicenseDropdownOpen(!licenseDropdownOpen)}
+                  onBlur={() => setTimeout(() => setLicenseDropdownOpen(false), 150)}
+                  className="flex items-center gap-1 font-medium transition-colors"
+                  style={{ color: colors.textSecondary }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = colors.primary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = colors.textSecondary)}
+                >
+                  <Award className="w-4 h-4" />
+                  License
+                  <ChevronDown className={`w-3 h-3 transition-transform ${licenseDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+                
+                {licenseDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                    {licenses.map((license, idx) => (
+                      <a
+                        key={license.id || idx}
+                        href={license.certificate_file instanceof File 
+                          ? URL.createObjectURL(license.certificate_file) 
+                          : typeof license.certificate_file === 'string' 
+                            ? license.certificate_file 
+                            : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <FileText className="w-4 h-4" style={{ color: colors.primary }} />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{license.name}</p>
+                          <p className="text-xs text-slate-500">View Certificate</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
 
           {/* CTA Buttons */}
@@ -482,6 +530,33 @@ function ProfessionalHeader({
                   {link.label}
                 </button>
               ))}
+              
+              {/* Mobile License Links */}
+              {licenses.length > 0 && (
+                <div className="border-t mt-2 pt-3" style={{ borderColor: colors.accent }}>
+                  <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-4 flex items-center gap-2" style={{ color: colors.textSecondary }}>
+                    <Award className="w-3 h-3" /> Licenses
+                  </p>
+                  {licenses.map((license, idx) => (
+                    <a
+                      key={license.id || idx}
+                      href={license.certificate_file instanceof File 
+                        ? URL.createObjectURL(license.certificate_file) 
+                        : typeof license.certificate_file === 'string' 
+                          ? license.certificate_file 
+                          : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 py-2 px-4 transition-colors"
+                      style={{ color: colors.textSecondary }}
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm">{license.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
             </nav>
           </div>
         )}

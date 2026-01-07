@@ -654,6 +654,14 @@ export interface HospitalOnboardingData {
     alerts_config: ClinicalAlertsConfiguration;
   };
 
+  // Step 7.5: Licensing & Certification (NEW) - Simplified
+  licenses: Array<{
+    id: string;
+    name: string;
+    certificate_file?: File | string;
+    certificate_file_name?: string;
+  }>;
+
   // Step 8: Pharmacy & Inventory Configuration (NEW)
   pharmacy: {
     license: PharmacyLicense;
@@ -986,6 +994,9 @@ const initialData: HospitalOnboardingData = {
     },
   },
 
+  // Step 7.5: Licensing & Certification (NEW)
+  licenses: [],
+
   // Step 8: Pharmacy & Inventory (NEW)
   pharmacy: {
     license: {
@@ -1125,7 +1136,7 @@ const initialData: HospitalOnboardingData = {
   },
 };
 
-const TOTAL_STEPS = 7; // 0-6 (simplified onboarding)
+const TOTAL_STEPS = 8; // 0-7 (added licensing step)
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -1309,7 +1320,14 @@ export const HospitalOnboardingProvider: React.FC<
             clinical.prescription_config.default_prescription_language
           );
 
-        case 6: // Review & Submission - basic acknowledgements
+        case 6: // Licensing & Certification - at least one license with name and PDF
+          return (
+            data.licenses &&
+            data.licenses.length > 0 &&
+            data.licenses.some((license) => license.name && license.certificate_file)
+          );
+
+        case 7: // Review & Submission - basic acknowledgements
           const review = data.review;
           return !!(
             review.acknowledgements.terms &&

@@ -61,6 +61,7 @@ import LocationsContactsStep from "./steps/LocationsContactsStep";
 import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
 import BillingFinancialStep from "./steps/BillingFinancialStep";
 import ClinicalConfigStep from "./steps/ClinicalConfigStep";
+import LicensingCertificationStep from "./steps/LicensingCertificationStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 import { ActivityLog } from "./widgets/ActivityLog";
 
@@ -80,12 +81,13 @@ interface StepConfig {
 // Help text for each step
 const STEP_HELP_TEXT: Record<number, string> = {
   0: "Select a template that best represents your hospital's brand and services. This will be the foundation of your digital presence.",
-  1: "Provide your hospital's legal information including registration numbers, GST, PAN, and official documents. This ensures compliance and authenticity.",
+  1: "Provide your hospital's legal information including registration numbers and official documents. This ensures compliance and authenticity.",
   2: "Add your hospital's physical locations, contact details, and emergency numbers. This helps patients reach you easily.",
   3: "Set up medical departments and specialties. Define how your hospital is organized operationally.",
   4: "Configure billing settings, payment methods, bank details, and invoice preferences for smooth financial operations.",
-  5: "Set up clinical parameters like consultation duration and prescription formats for quality care.",
-  6: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
+  5: "Set up clinical parameters like prescription formats for quality care.",
+  6: "Upload your hospital's licenses and certifications to build trust. These will be displayed prominently on your website.",
+  7: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
 };
 
 // Helper function to format time ago
@@ -162,6 +164,15 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 6,
+    title: "Licensing & Certification",
+    description: "Upload licenses, certifications, accreditations",
+    icon: Shield,
+    component: LicensingCertificationStep,
+    category: "Operations",
+    estimatedMinutes: 8,
+  },
+  {
+    id: 7,
     title: "Review & Submission",
     description: "Final review, acknowledgements, publish",
     icon: ListChecks,
@@ -396,7 +407,7 @@ function HospitalOnboardingContent({
     //   return;
     // }
     
-    if (currentStep === 6) {
+    if (currentStep === 7) {
       handleSubmit();
     } else {
       setCurrentStep(currentStep + 1);
@@ -559,7 +570,17 @@ function HospitalOnboardingContent({
     totalFields += 1;
     if (data.clinical.prescription_config.default_prescription_language) filledFields += 1;
 
-    // Step 6: Review acknowledgements (2 fields)
+    // Step 6: Licensing (at least 1 license with 2 fields)
+    if (data.licenses && data.licenses.length > 0) {
+      const license = data.licenses[0];
+      totalFields += 2;
+      if (license.name) filledFields += 1;
+      if (license.certificate_file) filledFields += 1;
+    } else {
+      totalFields += 2;
+    }
+
+    // Step 7: Review acknowledgements (2 fields)
     totalFields += 2;
     if (data.review.acknowledgements.terms) filledFields += 1;
     if (data.review.acknowledgements.privacy) filledFields += 1;
@@ -888,7 +909,7 @@ function HospitalOnboardingContent({
                             Submitting...
                           </span>
                         </>
-                      ) : currentStep === 6 ? (
+                      ) : currentStep === 7 ? (
                         <>
                           <span className="hidden sm:inline">Submit</span>
                           <CheckCircle className="w-4 h-4" />
