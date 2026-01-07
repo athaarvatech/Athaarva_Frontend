@@ -134,6 +134,65 @@ export function TemplateGallery({
   );
   const [showTour, setShowTour] = useState(true);
 
+  const handleRestartTour = () => {
+    localStorage.removeItem("template-tour-completed");
+    sessionStorage.removeItem("template-tour-skipped");
+    setShowTour(false);
+    setTimeout(() => setShowTour(true), 100);
+  };
+
+  // Demo actions for the guided tour to control UI
+  const tourDemoActions = {
+    openPreview: (templateId: string) => {
+      const template = templates.find((t: TemplateData) => t.id === templateId);
+      if (template) {
+        setPreviewTemplate(template);
+      }
+    },
+    toggleEditMode: (enabled: boolean) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "toggleEditMode", value: enabled },
+        })
+      );
+    },
+    openColorPicker: () => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "openColorPicker" },
+        })
+      );
+    },
+    changeColor: (colorIndex: number) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "changeColor", value: colorIndex },
+        })
+      );
+    },
+    openFontPicker: () => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "openFontPicker" },
+        })
+      );
+    },
+    changeFont: (fontIndex: number) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "changeFont", value: fontIndex },
+        })
+      );
+    },
+    toggleFullscreen: (enabled: boolean) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "toggleFullscreen", value: enabled },
+        })
+      );
+    },
+  };
+
   return (
     <div className={cn("space-y-6", className)}>
       {/* Guided Tour */}
@@ -142,6 +201,8 @@ export function TemplateGallery({
           onComplete={() => setShowTour(false)}
           onSkip={() => setShowTour(false)}
           autoStart={true}
+          enableAutoPlay={true}
+          demoActions={tourDemoActions}
         />
       )}
 
@@ -155,12 +216,23 @@ export function TemplateGallery({
             Select a design that best represents your hospital&apos;s identity
           </p>
         </div>
-        <Badge
-          variant="secondary"
-          className="bg-healthcare-primary/10 text-healthcare-primary"
-        >
-          {templates.length} Templates
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRestartTour}
+            className="text-teal-600 border-teal-200 hover:bg-teal-50"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Show Tour
+          </Button>
+          <Badge
+            variant="secondary"
+            className="bg-healthcare-primary/10 text-healthcare-primary"
+          >
+            {templates.length} Templates
+          </Badge>
+        </div>
       </div>
 
       {/* Gallery Grid */}
@@ -545,9 +617,42 @@ function TemplatePreviewModal({
     "desktop"
   );
   const [isEditMode, setIsEditMode] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Listen for tour demo actions
+  useEffect(() => {
+    const handleTourAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { action, value } = customEvent.detail;
+
+      switch (action) {
+        case "toggleEditMode":
+          setIsEditMode(value);
+          break;
+        case "openColorPicker":
+          setShowThemePanel(true);
+          break;
+        case "changeColor":
+          // Will be handled by ThemeCustomizer
+          break;
+        case "openFontPicker":
+          setShowThemePanel(true);
+          break;
+        case "changeFont":
+          // Will be handled by ThemeCustomizer
+          break;
+        case "toggleFullscreen":
+          setIsFullScreen(value);
+          break;
+      }
+    };
+
+    window.addEventListener("tour-demo-action", handleTourAction);
+    return () => {
+      window.removeEventListener("tour-demo-action", handleTourAction);
+    };
+  }, []);
 
   // Keyboard handler for ESC key to exit fullscreen
   useEffect(() => {
