@@ -7,6 +7,14 @@ export interface UploadedImageData {
   originalUrl?: string;
 }
 
+// License data type for certificates
+export interface LicenseData {
+  id: string;
+  name: string;
+  certificate_file?: File | string;
+  certificate_file_name?: string;
+}
+
 export type TemplateBlueprint = {
   id: TemplateData["id"];
   // Branding images
@@ -17,6 +25,8 @@ export type TemplateBlueprint = {
     doctorAvatars?: UploadedImageData[];
     facilityImages?: UploadedImageData[];
   };
+  // Licenses & Certifications for navbar dropdown
+  licenses?: LicenseData[];
   hero: {
     eyebrow: string;
     title: string;
