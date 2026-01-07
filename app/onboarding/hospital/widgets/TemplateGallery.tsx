@@ -42,6 +42,7 @@ import {
   AhtarvaMedicalCenterTemplate,
   AhtarvaHealthcareTemplate,
 } from "./templates";
+import { TemplateGuidedTour } from "./TemplateTour";
 
 // Re-export for convenience
 export type { CustomizedTemplateData } from "@/contexts/HospitalOnboardingContextV2";
@@ -132,9 +133,19 @@ export function TemplateGallery({
   const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
     null
   );
+  const [showTour, setShowTour] = useState(true);
 
   return (
     <div className={cn("space-y-6", className)}>
+      {/* Guided Tour */}
+      {showTour && (
+        <TemplateGuidedTour
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+          autoStart={true}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -283,6 +294,7 @@ function TemplateCard({
           : "border-gray-200 hover:border-healthcare-primary/50 hover:shadow-md"
       )}
       onClick={onSelect}
+      data-tour="template-card"
     >
       {/* Thumbnail - Mini Preview */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -313,6 +325,7 @@ function TemplateCard({
               e.stopPropagation();
               onPreview();
             }}
+            data-tour="preview-button"
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview
@@ -534,6 +547,7 @@ function TemplatePreviewModal({
     "desktop"
   );
   const [isEditMode, setIsEditMode] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -694,11 +708,7 @@ function TemplatePreviewModal({
           <div className="flex items-center gap-2">
             {/* View Dropdown */}
             <div className="relative group">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" className="gap-2">
                 {device === "desktop" && <Monitor className="w-4 h-4" />}
                 {device === "tablet" && <Tablet className="w-4 h-4" />}
                 {device === "mobile" && <Smartphone className="w-4 h-4" />}
@@ -707,18 +717,24 @@ function TemplatePreviewModal({
                 </span>
                 <ChevronRight className="w-3 h-3 rotate-90" />
               </Button>
-              
+
               {/* Dropdown Menu */}
               <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 {(["desktop", "tablet", "mobile"] as const).map((d) => {
-                  const Icon = d === "desktop" ? Monitor : d === "tablet" ? Tablet : Smartphone;
+                  const Icon =
+                    d === "desktop"
+                      ? Monitor
+                      : d === "tablet"
+                      ? Tablet
+                      : Smartphone;
                   return (
                     <button
                       key={d}
                       onClick={() => setDevice(d)}
                       className={cn(
                         "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors",
-                        device === d && "bg-healthcare-primary/5 text-healthcare-primary font-medium"
+                        device === d &&
+                          "bg-healthcare-primary/5 text-healthcare-primary font-medium"
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -739,6 +755,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="color-picker"
                     >
                       <Palette className="w-4 h-4" />
                       <span className="hidden sm:inline">Colors</span>
@@ -752,10 +769,10 @@ function TemplatePreviewModal({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (editedBlueprint && initialTemplate) {
+                            if (editedBlueprint && originalBlueprint) {
                               setEditedBlueprint({
                                 ...editedBlueprint,
-                                palette: initialTemplate.palette,
+                                palette: originalBlueprint.palette,
                               });
                             }
                           }}
@@ -765,17 +782,62 @@ function TemplatePreviewModal({
                           Reset
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-500">Choose a color scheme for your template</p>
+                      <p className="text-xs text-gray-500">
+                        Choose a color scheme for your template
+                      </p>
                       <div className="grid gap-2">
                         {[
-                          { name: "Healthcare Teal", accent: "#0E9F9F", accentMuted: "#ccfbf1", background: "#f0fdfa", gradient: "linear-gradient(135deg, #0E9F9F, #2563EB)" },
-                          { name: "Medical Blue", accent: "#2563EB", accentMuted: "#dbeafe", background: "#eff6ff", gradient: "linear-gradient(135deg, #2563EB, #3B82F6)" },
-                          { name: "Wellness Green", accent: "#059669", accentMuted: "#d1fae5", background: "#ecfdf5", gradient: "linear-gradient(135deg, #059669, #10B981)" },
-                          { name: "Caring Purple", accent: "#7C3AED", accentMuted: "#ede9fe", background: "#f5f3ff", gradient: "linear-gradient(135deg, #7C3AED, #8B5CF6)" },
-                          { name: "Warm Coral", accent: "#F97316", accentMuted: "#ffedd5", background: "#fff7ed", gradient: "linear-gradient(135deg, #F97316, #FB923C)" },
-                          { name: "Trust Navy", accent: "#1E3A8A", accentMuted: "#dbeafe", background: "#eff6ff", gradient: "linear-gradient(135deg, #1E3A8A, #3B82F6)" },
+                          {
+                            name: "Healthcare Teal",
+                            accent: "#0E9F9F",
+                            accentMuted: "#ccfbf1",
+                            background: "#f0fdfa",
+                            gradient:
+                              "linear-gradient(135deg, #0E9F9F, #2563EB)",
+                          },
+                          {
+                            name: "Medical Blue",
+                            accent: "#2563EB",
+                            accentMuted: "#dbeafe",
+                            background: "#eff6ff",
+                            gradient:
+                              "linear-gradient(135deg, #2563EB, #3B82F6)",
+                          },
+                          {
+                            name: "Wellness Green",
+                            accent: "#059669",
+                            accentMuted: "#d1fae5",
+                            background: "#ecfdf5",
+                            gradient:
+                              "linear-gradient(135deg, #059669, #10B981)",
+                          },
+                          {
+                            name: "Caring Purple",
+                            accent: "#7C3AED",
+                            accentMuted: "#ede9fe",
+                            background: "#f5f3ff",
+                            gradient:
+                              "linear-gradient(135deg, #7C3AED, #8B5CF6)",
+                          },
+                          {
+                            name: "Warm Coral",
+                            accent: "#F97316",
+                            accentMuted: "#ffedd5",
+                            background: "#fff7ed",
+                            gradient:
+                              "linear-gradient(135deg, #F97316, #FB923C)",
+                          },
+                          {
+                            name: "Trust Navy",
+                            accent: "#1E3A8A",
+                            accentMuted: "#dbeafe",
+                            background: "#eff6ff",
+                            gradient:
+                              "linear-gradient(135deg, #1E3A8A, #3B82F6)",
+                          },
                         ].map((scheme) => {
-                          const isActive = editedBlueprint?.palette?.accent === scheme.accent;
+                          const isActive =
+                            editedBlueprint?.palette?.accent === scheme.accent;
                           return (
                             <button
                               key={scheme.name}
@@ -795,7 +857,9 @@ function TemplatePreviewModal({
                               }}
                               className={cn(
                                 "w-full flex items-center gap-3 p-2.5 rounded-lg border-2 transition-all hover:border-gray-300",
-                                isActive ? "border-healthcare-primary bg-healthcare-primary/5" : "border-gray-200"
+                                isActive
+                                  ? "border-healthcare-primary bg-healthcare-primary/5"
+                                  : "border-gray-200"
                               )}
                             >
                               <div className="flex gap-1">
@@ -805,15 +869,21 @@ function TemplatePreviewModal({
                                 />
                                 <div
                                   className="w-6 h-6 rounded shadow-sm"
-                                  style={{ backgroundColor: scheme.accentMuted }}
+                                  style={{
+                                    backgroundColor: scheme.accentMuted,
+                                  }}
                                 />
                                 <div
                                   className="w-6 h-6 rounded shadow-sm"
                                   style={{ background: scheme.gradient }}
                                 />
                               </div>
-                              <span className="text-sm font-medium flex-1 text-left">{scheme.name}</span>
-                              {isActive && <Check className="w-4 h-4 text-healthcare-primary" />}
+                              <span className="text-sm font-medium flex-1 text-left">
+                                {scheme.name}
+                              </span>
+                              {isActive && (
+                                <Check className="w-4 h-4 text-healthcare-primary" />
+                              )}
                             </button>
                           );
                         })}
@@ -829,6 +899,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="font-picker"
                     >
                       <Type className="w-4 h-4" />
                       <span className="hidden sm:inline">Fonts</span>
@@ -842,10 +913,10 @@ function TemplatePreviewModal({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (editedBlueprint && initialTemplate) {
+                            if (editedBlueprint && originalBlueprint) {
                               setEditedBlueprint({
                                 ...editedBlueprint,
-                                typography: initialTemplate.typography,
+                                typography: originalBlueprint.typography,
                               });
                             }
                           }}
@@ -855,17 +926,51 @@ function TemplatePreviewModal({
                           Reset
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-500">Choose a font combination for your template</p>
+                      <p className="text-xs text-gray-500">
+                        Choose a font combination for your template
+                      </p>
                       <div className="grid gap-2">
                         {[
-                          { name: "Modern Sans", heading: '"Inter", system-ui, sans-serif', body: '"Inter", system-ui, sans-serif', preview: "Inter" },
-                          { name: "Classic Serif", heading: '"Playfair Display", Georgia, serif', body: '"Source Sans Pro", system-ui, sans-serif', preview: "Playfair" },
-                          { name: "Tech Forward", heading: '"Sora", "Inter", sans-serif', body: '"Inter", system-ui, sans-serif', preview: "Sora" },
-                          { name: "Friendly Rounded", heading: '"Nunito", "Poppins", sans-serif', body: '"Open Sans", system-ui, sans-serif', preview: "Nunito" },
-                          { name: "Professional", heading: '"Montserrat", "Roboto", sans-serif', body: '"Roboto", system-ui, sans-serif', preview: "Montserrat" },
-                          { name: "Elegant", heading: '"Cormorant Garamond", Georgia, serif', body: '"Lato", system-ui, sans-serif', preview: "Cormorant" },
+                          {
+                            name: "Modern Sans",
+                            heading: '"Inter", system-ui, sans-serif',
+                            body: '"Inter", system-ui, sans-serif',
+                            preview: "Inter",
+                          },
+                          {
+                            name: "Classic Serif",
+                            heading: '"Playfair Display", Georgia, serif',
+                            body: '"Source Sans Pro", system-ui, sans-serif',
+                            preview: "Playfair",
+                          },
+                          {
+                            name: "Tech Forward",
+                            heading: '"Sora", "Inter", sans-serif',
+                            body: '"Inter", system-ui, sans-serif',
+                            preview: "Sora",
+                          },
+                          {
+                            name: "Friendly Rounded",
+                            heading: '"Nunito", "Poppins", sans-serif',
+                            body: '"Open Sans", system-ui, sans-serif',
+                            preview: "Nunito",
+                          },
+                          {
+                            name: "Professional",
+                            heading: '"Montserrat", "Roboto", sans-serif',
+                            body: '"Roboto", system-ui, sans-serif',
+                            preview: "Montserrat",
+                          },
+                          {
+                            name: "Elegant",
+                            heading: '"Cormorant Garamond", Georgia, serif',
+                            body: '"Lato", system-ui, sans-serif',
+                            preview: "Cormorant",
+                          },
                         ].map((font) => {
-                          const isActive = editedBlueprint?.typography?.heading === font.heading;
+                          const isActive =
+                            editedBlueprint?.typography?.heading ===
+                            font.heading;
                           return (
                             <button
                               key={font.name}
@@ -882,20 +987,28 @@ function TemplatePreviewModal({
                               }}
                               className={cn(
                                 "w-full flex items-center gap-3 p-2.5 rounded-lg border-2 transition-all hover:border-gray-300",
-                                isActive ? "border-healthcare-primary bg-healthcare-primary/5" : "border-gray-200"
+                                isActive
+                                  ? "border-healthcare-primary bg-healthcare-primary/5"
+                                  : "border-gray-200"
                               )}
                             >
-                              <div 
+                              <div
                                 className="text-xl font-bold text-gray-700 w-16"
                                 style={{ fontFamily: font.heading }}
                               >
                                 Aa
                               </div>
                               <div className="flex-1 text-left">
-                                <span className="text-sm font-medium block">{font.name}</span>
-                                <span className="text-xs text-gray-500">{font.preview}</span>
+                                <span className="text-sm font-medium block">
+                                  {font.name}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {font.preview}
+                                </span>
                               </div>
-                              {isActive && <Check className="w-4 h-4 text-healthcare-primary" />}
+                              {isActive && (
+                                <Check className="w-4 h-4 text-healthcare-primary" />
+                              )}
                             </button>
                           );
                         })}
@@ -922,6 +1035,7 @@ function TemplatePreviewModal({
               size="sm"
               onClick={() => setIsFullScreen(true)}
               className="text-gray-600 hover:text-healthcare-primary hover:border-healthcare-primary"
+              data-tour="fullscreen-button"
             >
               <Maximize2 className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Full Screen</span>
@@ -936,6 +1050,7 @@ function TemplatePreviewModal({
                 isEditMode &&
                   "bg-healthcare-primary hover:bg-healthcare-primary/90"
               )}
+              data-tour="edit-toggle"
             >
               {isEditMode ? (
                 <>
@@ -989,13 +1104,17 @@ function TemplatePreviewModal({
                 {template.name}
               </span>
               <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">
-                {device === "desktop" ? "Desktop" : device === "tablet" ? "Tablet (768px)" : "Mobile (375px)"}
+                {device === "desktop"
+                  ? "Desktop"
+                  : device === "tablet"
+                  ? "Tablet (768px)"
+                  : "Mobile (375px)"}
               </span>
             </motion.div>
 
             {/* Full Screen Template Content */}
             <div className="w-full h-full overflow-y-auto bg-gray-100 flex justify-center py-4">
-              <div 
+              <div
                 className={cn(
                   "bg-white min-h-screen transition-all duration-300",
                   device === "desktop" && "w-full shadow-none",
@@ -1087,13 +1206,21 @@ function TemplatePreviewModal({
             {/* Device Label */}
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                {device === "desktop" ? "Desktop Preview" : device === "tablet" ? "iPad Preview" : "iPhone Preview"}
+                {device === "desktop"
+                  ? "Desktop Preview"
+                  : device === "tablet"
+                  ? "iPad Preview"
+                  : "iPhone Preview"}
               </span>
               <span className="text-xs text-slate-400">
-                {device === "desktop" ? "1200px" : device === "tablet" ? "768px" : "375px"}
+                {device === "desktop"
+                  ? "1200px"
+                  : device === "tablet"
+                  ? "768px"
+                  : "375px"}
               </span>
             </div>
-            
+
             {/* Device Frame Container */}
             <div
               className={cn(
@@ -1103,7 +1230,12 @@ function TemplatePreviewModal({
                 device === "mobile" && "bg-slate-800 p-3 pt-10 rounded-[3rem]"
               )}
               style={{
-                width: device === "desktop" ? "100%" : device === "tablet" ? "440px" : "240px",
+                width:
+                  device === "desktop"
+                    ? "100%"
+                    : device === "tablet"
+                    ? "440px"
+                    : "240px",
                 maxWidth: device === "desktop" ? "1200px" : "100%",
               }}
             >
@@ -1114,12 +1246,12 @@ function TemplatePreviewModal({
               {device === "tablet" && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-600 rounded-full z-10" />
               )}
-              
+
               {/* Home Indicator for mobile */}
               {device === "mobile" && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-600 rounded-full z-10" />
               )}
-              
+
               {/* Screen Container */}
               <div
                 className={cn(
@@ -1129,7 +1261,12 @@ function TemplatePreviewModal({
                   device === "mobile" && "rounded-[2rem]"
                 )}
                 style={{
-                  height: device === "desktop" ? "600px" : device === "tablet" ? "580px" : "480px",
+                  height:
+                    device === "desktop"
+                      ? "600px"
+                      : device === "tablet"
+                      ? "580px"
+                      : "480px",
                   overflow: "hidden",
                 }}
               >
@@ -1137,60 +1274,62 @@ function TemplatePreviewModal({
                 <div
                   style={{
                     width: "1200px",
-                    height: device === "desktop" 
-                      ? "600px" 
-                      : device === "tablet" 
-                        ? `${580 / 0.36}px` 
+                    height:
+                      device === "desktop"
+                        ? "600px"
+                        : device === "tablet"
+                        ? `${580 / 0.36}px`
                         : `${480 / 0.195}px`,
-                    transform: device === "desktop" 
-                      ? "scale(1)" 
-                      : device === "tablet" 
-                        ? "scale(0.36)" 
+                    transform:
+                      device === "desktop"
+                        ? "scale(1)"
+                        : device === "tablet"
+                        ? "scale(0.36)"
                         : "scale(0.195)",
                     transformOrigin: "top left",
                     overflow: "auto",
                   }}
                 >
                   {editedBlueprint ? (
-                // Render custom templates based on template ID
-                template.id === "ahtarva-professional" ? (
-                  <AhtarvaProfessionalTemplate
-                    blueprint={editedBlueprint}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                    device={device}
-                  />
-                ) : template.id === "ahtarva-medical-center" ? (
-                  <AhtarvaMedicalCenterTemplate
-                    blueprint={editedBlueprint}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                    device={device}
-                  />
-                ) : template.id === "ahtarva-healthcare" ? (
-                  <AhtarvaHealthcareTemplate
-                    blueprint={editedBlueprint}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                    device={device}
-                  />
-                ) : (
-                  // Fallback to generic renderer
-                  <EditableTemplatePreviewRenderer
-                    blueprint={editedBlueprint}
-                    device={device}
-                    onBlueprintChange={setEditedBlueprint}
-                    isEditMode={isEditMode}
-                  />
-                )
-              ) : (
-                <div className="flex h-full items-center justify-center text-gray-400 min-h-[400px]">
-                  <div className="text-center">
-                    <Sparkles className="w-16 h-16 mx-auto mb-4" />
-                    <p className="text-sm">Preview not available</p>
-                  </div>
-                </div>
-              )}
+                    // Render custom templates based on template ID
+                    template.id === "ahtarva-professional" ? (
+                      <AhtarvaProfessionalTemplate
+                        blueprint={editedBlueprint}
+                        onBlueprintChange={setEditedBlueprint}
+                        isEditMode={isEditMode}
+                        device={device}
+                      />
+                    ) : template.id === "ahtarva-medical-center" ? (
+                      <AhtarvaMedicalCenterTemplate
+                        blueprint={editedBlueprint}
+                        onBlueprintChange={setEditedBlueprint}
+                        isEditMode={isEditMode}
+                        device={device}
+                      />
+                    ) : template.id === "ahtarva-healthcare" ? (
+                      <AhtarvaHealthcareTemplate
+                        blueprint={editedBlueprint}
+                        onBlueprintChange={setEditedBlueprint}
+                        isEditMode={isEditMode}
+                        device={device}
+                      />
+                    ) : (
+                      // Fallback to generic renderer
+                      <EditableTemplatePreviewRenderer
+                        blueprint={editedBlueprint}
+                        device={device}
+                        onBlueprintChange={setEditedBlueprint}
+                        isEditMode={isEditMode}
+                      />
+                    )
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-gray-400 min-h-[400px]">
+                      <div className="text-center">
+                        <Sparkles className="w-16 h-16 mx-auto mb-4" />
+                        <p className="text-sm">Preview not available</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1213,6 +1352,7 @@ function TemplatePreviewModal({
               onClick={handleSelect}
               className="bg-healthcare-primary hover:bg-healthcare-primary/90"
               size="lg"
+              data-tour="select-button"
             >
               {isSelected ? (
                 <>

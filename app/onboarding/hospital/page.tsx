@@ -35,18 +35,16 @@ import {
   X,
   Loader2,
   Clock,
-  FileText,
   ChevronRight,
   AlertCircle,
   Sparkles,
   ListChecks,
-  Palette,
   Globe,
   DollarSign,
   Users,
   Settings,
-  Shield,
   Info,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -63,6 +61,9 @@ import BillingFinancialStep from "./steps/BillingFinancialStep";
 import ClinicalConfigStep from "./steps/ClinicalConfigStep";
 import LicensingCertificationStep from "./steps/LicensingCertificationStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
+import { ActivityLog } from "./widgets/ActivityLog";
+
+// Import widgets
 import { ActivityLog } from "./widgets/ActivityLog";
 
 // Import the real API client
@@ -349,7 +350,6 @@ function HospitalOnboardingContent({
     data,
     currentStep,
     setCurrentStep,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isStepValid,
     getStepCompletion,
     activityLog,
@@ -371,13 +371,14 @@ function HospitalOnboardingContent({
   useEffect(() => {
     if (validationData && !invitationPrefilled.current && token) {
       // Update invitation section with validated data
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // Note: _invitationData is prepared but actual update depends on context API
       const _invitationData = {
         token,
         email: validationData.email || "",
         expires_at: validationData.expires_at || "",
         hospital_name_preview: validationData.hospital_name || "",
       };
+      void _invitationData; // Acknowledge intentionally unused
 
       // Use the context's updateData method
       // The actual implementation depends on HospitalOnboardingContextV2
@@ -487,7 +488,9 @@ function HospitalOnboardingContent({
 
       // Show success message and redirect to staff signin page
       // Admin will receive credentials via email
-      router.push(`/auth/staff/signin?hospital=${hospitalSubdomain}&onboarding=complete`);
+      router.push(
+        `/auth/staff/signin?hospital=${hospitalSubdomain}&onboarding=complete`
+      );
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
       setSubmitError(
@@ -837,8 +840,12 @@ function HospitalOnboardingContent({
                       </PopoverTrigger>
                       <PopoverContent side="left" className="w-80">
                         <div className="space-y-2">
-                          <h4 className="font-semibold text-sm text-healthcare-primary">About This Step</h4>
-                          <p className="text-sm text-gray-600 leading-relaxed">{STEP_HELP_TEXT[currentStep]}</p>
+                          <h4 className="font-semibold text-sm text-healthcare-primary">
+                            About This Step
+                          </h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {STEP_HELP_TEXT[currentStep]}
+                          </p>
                         </div>
                       </PopoverContent>
                     </Popover>
@@ -927,7 +934,9 @@ function HospitalOnboardingContent({
                   {false && !isStepValid(currentStep) && (
                     <div className="mt-3 text-sm text-amber-600 flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>Please complete all required fields to continue</span>
+                      <span>
+                        Please complete all required fields to continue
+                      </span>
                     </div>
                   )}
 

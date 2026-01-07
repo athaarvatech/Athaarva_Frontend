@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +30,6 @@ import {
 import {
   Brain,
   Activity,
-  Zap,
   Clock,
   DollarSign,
   BarChart3,
@@ -113,6 +118,7 @@ export default function AITelemetryPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
   const formatNumber = (num: number) => {
@@ -149,7 +155,9 @@ export default function AITelemetryPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">AI Telemetry</h1>
-            <p className="text-gray-500">Monitor AI usage, performance, and costs</p>
+            <p className="text-gray-500">
+              Monitor AI usage, performance, and costs
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -194,7 +202,9 @@ export default function AITelemetryPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Total Tokens</p>
-                <p className="text-3xl font-bold">{formatNumber(totalTokens)}</p>
+                <p className="text-3xl font-bold">
+                  {formatNumber(totalTokens)}
+                </p>
               </div>
               <div className="p-3 bg-purple-100 rounded-full">
                 <Layers className="h-6 w-6 text-purple-600" />
@@ -298,7 +308,9 @@ export default function AITelemetryPage() {
                     }
                   )}
                   {Object.keys(stats?.requests_by_model || {}).length === 0 && (
-                    <p className="text-gray-500 text-center py-4">No data available</p>
+                    <p className="text-gray-500 text-center py-4">
+                      No data available
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -314,9 +326,10 @@ export default function AITelemetryPage() {
                 <div className="space-y-4">
                   {Object.entries(stats?.tokens_by_model || {}).map(
                     ([model, tokens]) => {
-                      const percent = totalTokens > 0
-                        ? Math.round((tokens / totalTokens) * 100)
-                        : 0;
+                      const percent =
+                        totalTokens > 0
+                          ? Math.round((tokens / totalTokens) * 100)
+                          : 0;
                       return (
                         <div key={model} className="space-y-1">
                           <div className="flex justify-between text-sm">
@@ -331,7 +344,9 @@ export default function AITelemetryPage() {
                     }
                   )}
                   {Object.keys(stats?.tokens_by_model || {}).length === 0 && (
-                    <p className="text-gray-500 text-center py-4">No data available</p>
+                    <p className="text-gray-500 text-center py-4">
+                      No data available
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -352,11 +367,14 @@ export default function AITelemetryPage() {
                         key={tenant}
                         className="p-4 border rounded-lg text-center"
                       >
-                        <p className="text-2xl font-bold">{formatNumber(count)}</p>
+                        <p className="text-2xl font-bold">
+                          {formatNumber(count)}
+                        </p>
                         <p className="text-sm text-gray-500">{tenant}</p>
                       </div>
                     ))}
-                  {Object.keys(stats?.requests_by_tenant || {}).length === 0 && (
+                  {Object.keys(stats?.requests_by_tenant || {}).length ===
+                    0 && (
                     <p className="col-span-full text-gray-500 text-center py-4">
                       No tenant data available
                     </p>
@@ -373,7 +391,9 @@ export default function AITelemetryPage() {
               <Card key={model.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{model.model_name}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {model.model_name}
+                    </CardTitle>
                     <Badge variant={model.is_active ? "default" : "secondary"}>
                       {model.is_active ? "Active" : "Disabled"}
                     </Badge>
@@ -382,7 +402,9 @@ export default function AITelemetryPage() {
                     <Badge className={getProviderColor(model.provider)}>
                       {model.provider}
                     </Badge>
-                    <span className="ml-2 text-gray-500">v{model.model_version}</span>
+                    <span className="ml-2 text-gray-500">
+                      v{model.model_version}
+                    </span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -405,7 +427,11 @@ export default function AITelemetryPage() {
                       <p className="text-sm text-gray-500 mb-2">Capabilities</p>
                       <div className="flex flex-wrap gap-1">
                         {model.capabilities.slice(0, 5).map((cap) => (
-                          <Badge key={cap} variant="outline" className="text-xs">
+                          <Badge
+                            key={cap}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             {cap}
                           </Badge>
                         ))}
@@ -502,7 +528,10 @@ export default function AITelemetryPage() {
                   ))}
                   {usageEvents.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-gray-500 py-8"
+                      >
                         No usage events recorded
                       </TableCell>
                     </TableRow>

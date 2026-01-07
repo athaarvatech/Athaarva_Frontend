@@ -17,12 +17,7 @@ import {
   Clock,
   Activity,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -74,14 +69,18 @@ interface AuditLogStats {
 
 // API helpers
 const getAuthHeaders = () => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("super_admin_token") : null;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("super_admin_token")
+      : null;
   return {
     "Content-Type": "application/json",
     Authorization: token ? `Bearer ${token}` : "",
   };
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2/super-admin";
 
 async function fetchAuditLogs(params: {
   action?: string;
@@ -100,13 +99,14 @@ async function fetchAuditLogs(params: {
   if (params.resource) searchParams.append("resource", params.resource);
   if (params.tenant_id) searchParams.append("tenant_id", params.tenant_id);
   if (params.user_id) searchParams.append("user_id", params.user_id);
-  if (params.success !== undefined) searchParams.append("success", String(params.success));
+  if (params.success !== undefined)
+    searchParams.append("success", String(params.success));
   if (params.search) searchParams.append("search", params.search);
   if (params.start_date) searchParams.append("start_date", params.start_date);
   if (params.end_date) searchParams.append("end_date", params.end_date);
   if (params.limit) searchParams.append("limit", String(params.limit));
   if (params.offset) searchParams.append("offset", String(params.offset));
-  
+
   const response = await fetch(`${BASE_URL}/audit-logs?${searchParams}`, {
     headers: getAuthHeaders(),
   });
@@ -175,6 +175,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, actionFilter, successFilter]);
 
   // Handle search
@@ -208,7 +209,7 @@ export default function AuditLogsPage() {
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (minutes < 1) return "just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
@@ -254,7 +255,9 @@ export default function AuditLogsPage() {
           disabled={loading}
           className="border-white/20"
         >
-          <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+          <RefreshCw
+            className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+          />
           Refresh
         </Button>
       </div>
@@ -282,7 +285,9 @@ export default function AuditLogsPage() {
           <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-4">
               <p className="text-sm text-white/60">Total Logs (7d)</p>
-              <p className="text-2xl font-bold">{stats.total_logs.toLocaleString()}</p>
+              <p className="text-2xl font-bold">
+                {stats.total_logs.toLocaleString()}
+              </p>
             </CardContent>
           </Card>
           <Card className="bg-emerald-500/10 border-emerald-500/20">
@@ -342,7 +347,13 @@ export default function AuditLogsPage() {
                 className="pl-9 bg-white/5 border-white/10"
               />
             </div>
-            <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(1); }}>
+            <Select
+              value={actionFilter}
+              onValueChange={(v) => {
+                setActionFilter(v);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="w-[140px] bg-white/5 border-white/10">
                 <SelectValue placeholder="Action" />
               </SelectTrigger>
@@ -355,7 +366,13 @@ export default function AuditLogsPage() {
                 <SelectItem value="view">View</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={successFilter} onValueChange={(v) => { setSuccessFilter(v); setPage(1); }}>
+            <Select
+              value={successFilter}
+              onValueChange={(v) => {
+                setSuccessFilter(v);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="w-[130px] bg-white/5 border-white/10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -365,7 +382,10 @@ export default function AuditLogsPage() {
                 <SelectItem value="false">Errors</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={handleSearch}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               <Filter className="h-4 w-4 mr-2" />
               Apply
             </Button>
@@ -390,7 +410,9 @@ export default function AuditLogsPage() {
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-white/30 mx-auto mb-4" />
               <p className="text-white/60">No audit logs found</p>
-              <p className="text-white/40 text-sm mt-1">Try adjusting your filters</p>
+              <p className="text-white/40 text-sm mt-1">
+                Try adjusting your filters
+              </p>
             </div>
           ) : (
             <ScrollArea className="h-[600px]">
@@ -427,17 +449,26 @@ export default function AuditLogsPage() {
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="h-3.5 w-3.5 text-white/40" />
-                            <span className="text-white/80">{formatRelativeTime(log.created_at)}</span>
+                            <span className="text-white/80">
+                              {formatRelativeTime(log.created_at)}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={cn("capitalize", getActionColor(log.action))}>
+                          <Badge
+                            className={cn(
+                              "capitalize",
+                              getActionColor(log.action)
+                            )}
+                          >
                             {log.action}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <span className="font-mono text-sm">{log.resource}</span>
+                            <span className="font-mono text-sm">
+                              {log.resource}
+                            </span>
                             {log.resource_id && (
                               <span className="text-xs text-white/40 ml-2">
                                 #{log.resource_id.substring(0, 8)}
@@ -449,7 +480,9 @@ export default function AuditLogsPage() {
                           {log.user_email ? (
                             <div className="flex items-center gap-2">
                               <User className="h-3.5 w-3.5 text-white/40" />
-                              <span className="text-sm truncate max-w-[150px]">{log.user_email}</span>
+                              <span className="text-sm truncate max-w-[150px]">
+                                {log.user_email}
+                              </span>
                             </div>
                           ) : (
                             <span className="text-white/40">System</span>
@@ -485,32 +518,50 @@ export default function AuditLogsPage() {
                             <div className="grid grid-cols-2 gap-6 px-8">
                               <div className="space-y-3">
                                 <div>
-                                  <p className="text-xs text-white/50 mb-1">Timestamp</p>
-                                  <p className="text-sm font-mono">{formatDate(log.created_at)}</p>
+                                  <p className="text-xs text-white/50 mb-1">
+                                    Timestamp
+                                  </p>
+                                  <p className="text-sm font-mono">
+                                    {formatDate(log.created_at)}
+                                  </p>
                                 </div>
                                 {log.ip_address && (
                                   <div>
-                                    <p className="text-xs text-white/50 mb-1">IP Address</p>
-                                    <p className="text-sm font-mono">{log.ip_address}</p>
+                                    <p className="text-xs text-white/50 mb-1">
+                                      IP Address
+                                    </p>
+                                    <p className="text-sm font-mono">
+                                      {log.ip_address}
+                                    </p>
                                   </div>
                                 )}
                                 {log.user_agent && (
                                   <div>
-                                    <p className="text-xs text-white/50 mb-1">User Agent</p>
-                                    <p className="text-sm text-white/70 truncate max-w-[300px]">{log.user_agent}</p>
+                                    <p className="text-xs text-white/50 mb-1">
+                                      User Agent
+                                    </p>
+                                    <p className="text-sm text-white/70 truncate max-w-[300px]">
+                                      {log.user_agent}
+                                    </p>
                                   </div>
                                 )}
                                 {log.error_message && (
                                   <div>
-                                    <p className="text-xs text-red-400 mb-1">Error</p>
-                                    <p className="text-sm text-red-300">{log.error_message}</p>
+                                    <p className="text-xs text-red-400 mb-1">
+                                      Error
+                                    </p>
+                                    <p className="text-sm text-red-300">
+                                      {log.error_message}
+                                    </p>
                                   </div>
                                 )}
                               </div>
                               <div className="space-y-3">
                                 {Object.keys(log.old_values).length > 0 && (
                                   <div>
-                                    <p className="text-xs text-white/50 mb-1">Old Values</p>
+                                    <p className="text-xs text-white/50 mb-1">
+                                      Old Values
+                                    </p>
                                     <pre className="text-xs bg-white/5 p-2 rounded overflow-auto max-h-[100px]">
                                       {JSON.stringify(log.old_values, null, 2)}
                                     </pre>
@@ -518,7 +569,9 @@ export default function AuditLogsPage() {
                                 )}
                                 {Object.keys(log.new_values).length > 0 && (
                                   <div>
-                                    <p className="text-xs text-white/50 mb-1">New Values</p>
+                                    <p className="text-xs text-white/50 mb-1">
+                                      New Values
+                                    </p>
                                     <pre className="text-xs bg-white/5 p-2 rounded overflow-auto max-h-[100px]">
                                       {JSON.stringify(log.new_values, null, 2)}
                                     </pre>

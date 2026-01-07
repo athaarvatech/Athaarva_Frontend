@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -30,11 +35,9 @@ import {
 import {
   Share2,
   Plus,
-  Send,
   Clock,
   CheckCircle,
   Edit,
-  Trash2,
   Twitter,
   Facebook,
   Linkedin,
@@ -73,13 +76,19 @@ const PLATFORMS = [
   { id: "twitter", name: "Twitter/X", icon: Twitter, color: "text-black" },
   { id: "facebook", name: "Facebook", icon: Facebook, color: "text-blue-600" },
   { id: "linkedin", name: "LinkedIn", icon: Linkedin, color: "text-blue-700" },
-  { id: "instagram", name: "Instagram", icon: Instagram, color: "text-pink-600" },
+  {
+    id: "instagram",
+    name: "Instagram",
+    icon: Instagram,
+    color: "text-pink-600",
+  },
 ];
 
 export default function SocialMediaPage() {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -151,13 +160,18 @@ export default function SocialMediaPage() {
 
       if (res.ok) {
         setShowCreateDialog(false);
-        setNewPost({ platforms: [], content: "", media_urls: "", schedule_at: "" });
+        setNewPost({
+          platforms: [],
+          content: "",
+          media_urls: "",
+          schedule_at: "",
+        });
         fetchData();
       } else {
         const err = await res.json();
         setError(err.detail || "Failed to create post");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setCreating(false);
@@ -202,7 +216,9 @@ export default function SocialMediaPage() {
             <Share2 className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Social Media Hub</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Social Media Hub
+            </h1>
             <p className="text-gray-500">Multi-platform social publishing</p>
           </div>
         </div>
@@ -292,7 +308,10 @@ export default function SocialMediaPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={createPost} disabled={creating}>
@@ -465,7 +484,10 @@ export default function SocialMediaPage() {
                   ))}
                   {posts.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-gray-500 py-8">
+                      <TableCell
+                        colSpan={6}
+                        className="text-center text-gray-500 py-8"
+                      >
                         No posts yet. Create your first post!
                       </TableCell>
                     </TableRow>
@@ -479,9 +501,7 @@ export default function SocialMediaPage() {
         <TabsContent value="accounts" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {PLATFORMS.map((platform) => {
-              const account = accounts.find(
-                (a) => a.platform === platform.id
-              );
+              const account = accounts.find((a) => a.platform === platform.id);
               const Icon = platform.icon;
 
               return (
@@ -504,7 +524,9 @@ export default function SocialMediaPage() {
                         </div>
                       </div>
                       <Badge
-                        variant={account?.is_connected ? "default" : "secondary"}
+                        variant={
+                          account?.is_connected ? "default" : "secondary"
+                        }
                       >
                         {account?.is_connected ? "Connected" : "Not Connected"}
                       </Badge>
@@ -518,12 +540,18 @@ export default function SocialMediaPage() {
                             {account.last_sync_at && (
                               <p>
                                 Last sync:{" "}
-                                {new Date(account.last_sync_at).toLocaleString()}
+                                {new Date(
+                                  account.last_sync_at
+                                ).toLocaleString()}
                               </p>
                             )}
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="flex-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                            >
                               <RefreshCw className="h-4 w-4 mr-2" />
                               Sync
                             </Button>
@@ -551,9 +579,9 @@ export default function SocialMediaPage() {
 
           <Alert>
             <AlertDescription>
-              <strong>Note:</strong> Social media account connections require OAuth
-              setup. Configure API keys in Platform Settings to enable account
-              connections.
+              <strong>Note:</strong> Social media account connections require
+              OAuth setup. Configure API keys in Platform Settings to enable
+              account connections.
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -580,7 +608,9 @@ export default function SocialMediaPage() {
                     <div className="flex gap-1">
                       {post.platforms.map((p) => {
                         const Icon = getPlatformIcon(p);
-                        return <Icon key={p} className="h-4 w-4 text-gray-600" />;
+                        return (
+                          <Icon key={p} className="h-4 w-4 text-gray-600" />
+                        );
                       })}
                     </div>
                     <p className="text-sm truncate max-w-md">{post.content}</p>

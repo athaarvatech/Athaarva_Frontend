@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,8 +29,6 @@ import {
 } from "@/components/ui/select";
 import {
   ListTodo,
-  Play,
-  Pause,
   RotateCcw,
   Clock,
   CheckCircle,
@@ -159,16 +163,20 @@ export default function BackgroundJobsPage() {
   };
 
   const filteredTasks = tasks.filter((task) => {
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
-    const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
-    const matchesQueue = selectedQueue === "all" || task.queue_id === selectedQueue;
+    const matchesStatus =
+      statusFilter === "all" || task.status === statusFilter;
+    const matchesPriority =
+      priorityFilter === "all" || task.priority === priorityFilter;
+    const matchesQueue =
+      selectedQueue === "all" || task.queue_id === selectedQueue;
     return matchesStatus && matchesPriority && matchesQueue;
   });
 
   const totalPending = stats ? stats.queued + stats.in_progress : 0;
-  const completionRate = stats && stats.total_tasks > 0
-    ? Math.round((stats.completed / stats.total_tasks) * 100)
-    : 0;
+  const completionRate =
+    stats && stats.total_tasks > 0
+      ? Math.round((stats.completed / stats.total_tasks) * 100)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -179,8 +187,12 @@ export default function BackgroundJobsPage() {
             <ListTodo className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Background Jobs</h1>
-            <p className="text-gray-500">Monitor task queues and background processes</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Background Jobs
+            </h1>
+            <p className="text-gray-500">
+              Monitor task queues and background processes
+            </p>
           </div>
         </div>
         <Button onClick={fetchData} variant="outline">
@@ -210,7 +222,9 @@ export default function BackgroundJobsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Pending</p>
-                <p className="text-3xl font-bold text-yellow-600">{totalPending}</p>
+                <p className="text-3xl font-bold text-yellow-600">
+                  {totalPending}
+                </p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-full">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -224,7 +238,9 @@ export default function BackgroundJobsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Completed</p>
-                <p className="text-3xl font-bold text-green-600">{stats?.completed || 0}</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {stats?.completed || 0}
+                </p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <CheckCircle className="h-6 w-6 text-green-600" />
@@ -238,7 +254,9 @@ export default function BackgroundJobsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Completion Rate</p>
-                <p className="text-3xl font-bold text-blue-600">{completionRate}%</p>
+                <p className="text-3xl font-bold text-blue-600">
+                  {completionRate}%
+                </p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
                 <TrendingUp className="h-6 w-6 text-blue-600" />
@@ -264,26 +282,33 @@ export default function BackgroundJobsPage() {
         <TabsContent value="queues" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {queues.map((queue) => {
-              const progressPercent = queue.task_count > 0
-                ? Math.round((queue.completed_count / queue.task_count) * 100)
-                : 0;
+              const progressPercent =
+                queue.task_count > 0
+                  ? Math.round((queue.completed_count / queue.task_count) * 100)
+                  : 0;
 
               return (
                 <Card key={queue.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{queue.name}</CardTitle>
-                      <Badge variant={queue.is_active ? "default" : "secondary"}>
+                      <Badge
+                        variant={queue.is_active ? "default" : "secondary"}
+                      >
                         {queue.is_active ? "Active" : "Paused"}
                       </Badge>
                     </div>
-                    <CardDescription>{queue.description || queue.code}</CardDescription>
+                    <CardDescription>
+                      {queue.description || queue.code}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <p className="text-2xl font-bold">{queue.task_count}</p>
+                          <p className="text-2xl font-bold">
+                            {queue.task_count}
+                          </p>
                           <p className="text-xs text-gray-500">Total</p>
                         </div>
                         <div>
@@ -302,13 +327,17 @@ export default function BackgroundJobsPage() {
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Progress</span>
-                          <span className="font-medium">{progressPercent}%</span>
+                          <span className="font-medium">
+                            {progressPercent}%
+                          </span>
                         </div>
                         <Progress value={progressPercent} />
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-500">Priority</span>
-                        <Badge className={getPriorityBadge(queue.default_priority)}>
+                        <Badge
+                          className={getPriorityBadge(queue.default_priority)}
+                        >
                           {queue.default_priority}
                         </Badge>
                       </div>
@@ -346,7 +375,10 @@ export default function BackgroundJobsPage() {
                   </SelectContent>
                 </Select>
 
-                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <Select
+                  value={priorityFilter}
+                  onValueChange={setPriorityFilter}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Priority" />
                   </SelectTrigger>
@@ -446,7 +478,10 @@ export default function BackgroundJobsPage() {
                   ))}
                   {filteredTasks.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-gray-500 py-8"
+                      >
                         No tasks found
                       </TableCell>
                     </TableRow>
