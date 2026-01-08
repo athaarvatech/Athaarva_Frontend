@@ -303,12 +303,12 @@ function TemplateCard({
           </div>
         )}
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+        {/* Overlay on hover - Very subtle */}
+        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors flex items-center justify-center">
           <Button
             variant="secondary"
             size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            className="opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
             onClick={(e) => {
               e.stopPropagation();
               onPreview();

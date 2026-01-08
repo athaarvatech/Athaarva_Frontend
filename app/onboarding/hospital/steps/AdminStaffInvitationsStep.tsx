@@ -353,14 +353,14 @@ function TeamMemberCard({
         <div className="space-y-2">
           <Label>Phone</Label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              type="tel"
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+            <IMaskInput
+              mask="+91 00000 00000"
               value={member.phone}
-              onChange={(e) => onUpdate({ phone: e.target.value })}
+              onAccept={(value: string) => onUpdate({ phone: value })}
               placeholder="+91 XXXXX XXXXX"
               className={cn(
-                "pl-10",
+                "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-10 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                 member.phone && !phoneValid && "border-red-500"
               )}
             />

@@ -10,6 +10,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
+import { toast } from "@/lib/toast";
 
 // ============================================================================
 // TYPE DEFINITIONS - Operational Hospital Configuration
@@ -1435,7 +1436,10 @@ export const HospitalOnboardingProvider: React.FC<
       );
       
       setLastSaved(new Date());
-      setTimeout(() => setIsSaving(false), 300);
+      setTimeout(() => {
+        setIsSaving(false);
+        // Removed toast - using top banner in page.tsx instead
+      }, 300);
     } catch (error) {
       console.error("Failed to save onboarding data:", error);
       setIsSaving(false);

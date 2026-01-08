@@ -55,6 +55,15 @@ module.exports = {
 		animation: {
 		  'pulse-gentle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 		},
+		ringColor: {
+		  DEFAULT: '#14b8a6',
+		},
+		ringOffsetWidth: {
+		  DEFAULT: '2px',
+		},
+		ringWidth: {
+		  DEFAULT: '2px',
+		},
 		zIndex: {
 		  'dropdown': '50',
 		  'modal': '100',

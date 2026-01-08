@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { formatFileSize, validateFile } from "@/lib/onboarding-utils";
+import { formatFileSize, validateFile, validateImageDimensions } from "@/lib/onboarding-utils";
 
 interface FileUploadZoneProps {
   onFileSelect: (file: File) => void;
@@ -59,10 +59,10 @@ export function FileUploadZone({
   }, []);
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       setError(null);
 
-      // Validate file
+      // Validate file size and type
       const validation = validateFile(file, {
         maxSizeMB,
         allowedTypes:
@@ -74,6 +74,36 @@ export function FileUploadZone({
       if (!validation.valid) {
         setError(validation.error || "Invalid file");
         return;
+      }
+
+      // Validate image dimensions for logos (200x200 to 2000x2000)
+      if (file.type.startsWith("image/") && label?.toLowerCase().includes("logo")) {
+        const dimensionCheck = await validateImageDimensions(file, {
+          minWidth: 200,
+          minHeight: 200,
+          maxWidth: 2000,
+          maxHeight: 2000,
+        });
+
+        if (!dimensionCheck.valid) {
+          setError(dimensionCheck.error || "Invalid image dimensions");
+          return;
+        }
+      }
+
+      // Validate favicon dimensions (16x16 to 512x512)
+      if (file.type.startsWith("image/") && label?.toLowerCase().includes("favicon")) {
+        const dimensionCheck = await validateImageDimensions(file, {
+          minWidth: 16,
+          minHeight: 16,
+          maxWidth: 512,
+          maxHeight: 512,
+        });
+
+        if (!dimensionCheck.valid) {
+          setError(dimensionCheck.error || "Invalid image dimensions");
+          return;
+        }
       }
 
       // Create preview for images
@@ -108,7 +138,7 @@ export function FileUploadZone({
         }, 200);
       }
     },
-    [accept, maxSizeMB, preview, onFileSelect, onUploadComplete]
+    [accept, maxSizeMB, preview, label, onFileSelect, onUploadComplete]
   );
 
   const handleDrop = useCallback(
