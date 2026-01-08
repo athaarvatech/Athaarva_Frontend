@@ -60,6 +60,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   if (pathname?.startsWith("/super-admin")) {
     return <>{children}</>;
   }
+  if (pathname?.startsWith("/pharmacy")) {
+    return <>{children}</>;
+  }
 
   // All Patient routes - no auth guard, accessible to all with sidebar
   if (pathname?.startsWith("/patient")) {
