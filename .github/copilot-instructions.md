@@ -3,11 +3,13 @@
 ## Architecture Overview
 
 **Athaarva** is a multi-tenant healthcare SaaS platform with:
+
 - **Frontend**: Next.js 15 (App Router) + TypeScript + Tailwind CSS
 - **Backend**: FastAPI + PostgreSQL with direct SQL queries (no ORM)
 - **Multi-tenancy**: Subdomain-based routing (`hospital.athaarva.com` → `/app/hospital/[subdomain]/`)
 
 ### Key Directories
+
 ```
 Athaarva_Frontend/
 ├── app/                    # Next.js App Router pages
@@ -25,20 +27,23 @@ Athaarva_Frontend/
 ## Code Conventions
 
 ### Component Patterns
+
 - **"use client"** directive required for interactive components
 - Use **Framer Motion** for animations (`motion.div`, `AnimatePresence`)
 - Icons: **Lucide React** (`import { Icon } from "lucide-react"`)
 - Toast notifications: **Sonner** (`import { toast } from "sonner"`)
 
 ### Styling
+
 ```tsx
 // Use healthcare color palette from tailwind.config.ts
-className="bg-healthcare-primary"     // #007C7C (teal)
-className="text-healthcare-secondary" // #20B2AA
-className="bg-healthcare-cool-white"  // #FAFAFA
+className = "bg-healthcare-primary"; // #007C7C (teal)
+className = "text-healthcare-secondary"; // #20B2AA
+className = "bg-healthcare-cool-white"; // #FAFAFA
 ```
 
 ### shadcn/ui Components
+
 ```tsx
 // Import from @/components/ui/
 import { Button } from "@/components/ui/button";
@@ -47,6 +52,7 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 ```
 
 ### API Integration
+
 ```tsx
 // Use lib/api-config.ts for endpoints
 import { API_CONFIG } from "@/lib/api-config";
@@ -56,6 +62,7 @@ import apiService from "@/lib/api-service";
 ```
 
 ### Type Definitions
+
 - Feature-specific types go in `types.ts` within the feature folder (e.g., `/app/pharmacy/types.ts`)
 - Shared types go in `/types/` directory
 - Use UUIDs for all IDs (not numeric)
@@ -63,6 +70,7 @@ import apiService from "@/lib/api-service";
 ## Multi-Tenant Patterns
 
 ### Subdomain Routing
+
 ```tsx
 // In /app/hospital/[subdomain]/ pages:
 const params = useParams();
@@ -73,18 +81,24 @@ const subdomain = params.subdomain as string;
 ```
 
 ### Authentication Contexts
+
 - `AuthContext` - Patient/Doctor auth
-- `HospitalAdminAuthContext` - Hospital staff auth  
+- `HospitalAdminAuthContext` - Hospital staff auth
 - `SuperAdminAuthContext` - Platform admin auth
 
 ### Route Guards
+
 ```tsx
-import { ProtectedRouteGuard, RoleBasedRouteGuard } from "@/components/guards/RouteGuards";
+import {
+  ProtectedRouteGuard,
+  RoleBasedRouteGuard,
+} from "@/components/guards/RouteGuards";
 ```
 
 ## Feature Module Pattern (e.g., Pharmacy)
 
 Self-contained modules in `/app/<module>/`:
+
 ```
 app/pharmacy/
 ├── types.ts              # All TypeScript types + mock data
@@ -106,7 +120,7 @@ npm run dev              # Start dev server (localhost:3000)
 npm run build            # Production build
 npm run lint             # ESLint check
 
-# Backend  
+# Backend
 cd Athaarva_Backend
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
