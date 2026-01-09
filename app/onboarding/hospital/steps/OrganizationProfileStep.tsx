@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Building2, FileText, Globe } from "lucide-react";
+import { Building2, FileText, Globe, CheckCircle } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SmartInput } from "@/components/ui/smart-input";
 import {
   Select,
   SelectContent,
@@ -50,6 +51,11 @@ export default function OrganizationProfileStep() {
     updateData("organizationProfile", { [field]: value });
   };
 
+  // Validation helpers
+  const isLegalNameValid = profile.legal_name && profile.legal_name.length >= 3;
+  const isRegistrationValid = profile.registration_number && profile.registration_number.length >= 5;
+  const isEstablishedDateValid = profile.established_date && profile.established_date.length > 0;
+
   return (
     <div className="space-y-6">
       {/* Section: Legal Information */}
@@ -86,10 +92,13 @@ export default function OrganizationProfileStep() {
               ],
             }}
           >
-            <Input
+            <SmartInput
               value={profile.legal_name}
               onChange={(e) => handleChange("legal_name", e.target.value)}
               placeholder="e.g., City Care Hospital Pvt. Ltd."
+              isValid={isLegalNameValid}
+              showValidation={true}
+              errorMessage="Legal name must be at least 3 characters"
             />
           </FormField>
 
@@ -118,21 +127,27 @@ export default function OrganizationProfileStep() {
                 "Company registration or incorporation number issued by the registrar",
             }}
           >
-            <Input
+            <SmartInput
               value={profile.registration_number}
               onChange={(e) =>
                 handleChange("registration_number", e.target.value)
               }
               placeholder="e.g., U85110DL2010PTC123456"
+              isValid={isRegistrationValid}
+              showValidation={true}
+              errorMessage="Registration number must be at least 5 characters"
             />
           </FormField>
 
           <FormField label="Established Date" required>
-            <Input
+            <SmartInput
               type="date"
               value={profile.established_date}
               onChange={(e) => handleChange("established_date", e.target.value)}
               max={new Date().toISOString().split("T")[0]}
+              isValid={isEstablishedDateValid}
+              showValidation={true}
+              errorMessage="Please select an established date"
             />
           </FormField>
         </div>

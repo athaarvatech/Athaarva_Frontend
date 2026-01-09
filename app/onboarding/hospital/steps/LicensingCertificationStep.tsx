@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Upload, X, FileText, Award, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { Upload, X, FileText, Award, AlertCircle, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "@/lib/toast";
 
 interface License {
   id: string;
@@ -77,14 +78,47 @@ export default function LicensingCertificationStep() {
     updateData("licenses", updated);
   };
 
-  const handleFileUpload = (id: string, file: File) => {
-    const updated = licenses.map((l) =>
-      l.id === id
-        ? { ...l, certificate_file: file, certificate_file_name: file.name }
-        : l
-    );
-    setLicenses(updated);
-    updateData("licenses", updated);
+  const handleFileUpload = async (id: string, file: File) => {
+    if (!file) {
+      toast.error({ title: "No file selected", description: "Please select a file to upload" });
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error({ 
+        title: "File too large", 
+        description: "Maximum file size is 10MB. Please compress or select a smaller file." 
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error({ 
+        title: "Invalid file type", 
+        description: "Please upload a PDF, JPEG, or PNG file" 
+      });
+      return;
+    }
+
+    try {
+      const updated = licenses.map((l) =>
+        l.id === id
+          ? { ...l, certificate_file: file, certificate_file_name: file.name }
+          : l
+      );
+      setLicenses(updated);
+      updateData("licenses", updated);
+      toast.uploaded(file.name);
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast.error({ 
+        title: "Upload failed", 
+        description: "Failed to upload file. Please try again." 
+      });
+    }
   };
 
   return (
@@ -160,44 +194,78 @@ export default function LicensingCertificationStep() {
                   </Select>
                 </div>
 
-                {/* Certificate Upload */}
+                {/* Certificate Upload with Enhanced Preview */}
                 <div>
                   <Label>Upload PDF <span className="text-red-500">*</span></Label>
-                  <div className="mt-1.5 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-teal-400 transition-colors">
-                    {license.certificate_file ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <FileText className="w-5 h-5 text-teal-600" />
-                        <span className="text-sm text-slate-600 truncate max-w-[150px]">
-                          {license.certificate_file_name || "Certificate uploaded"}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            updateLicense(license.id, "certificate_file", undefined);
-                            updateLicense(license.id, "certificate_file_name", undefined);
-                          }}
-                          className="ml-1 h-6 w-6 p-0"
+                  <div className="mt-1.5">
+                    <AnimatePresence mode="wait">
+                      {license.certificate_file ? (
+                        <motion.div
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.95, opacity: 0 }}
+                          className="border-2 border-emerald-300 bg-emerald-50/50 rounded-lg p-4"
                         >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer block">
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(license.id, file);
-                          }}
-                        />
-                        <Upload className="w-6 h-6 text-slate-400 mx-auto mb-1" />
-                        <p className="text-sm text-slate-600">Click to upload</p>
-                        <p className="text-xs text-slate-400">PDF only</p>
-                      </label>
-                    )}
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+                              <FileText className="w-6 h-6 text-emerald-600" />
+                              <motion.div
+                                className="absolute inset-0 bg-emerald-200/50"
+                                animate={{ y: ['100%', '-100%'] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                                <p className="text-sm font-medium text-slate-700 truncate">
+                                  {license.certificate_file_name || "Certificate uploaded"}
+                                </p>
+                              </div>
+                              <p className="text-xs text-slate-500">PDF document ready</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                updateLicense(license.id, "certificate_file", undefined);
+                                updateLicense(license.id, "certificate_file_name", undefined);
+                              }}
+                              className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.95, opacity: 0 }}
+                          className="border-2 border-dashed border-slate-300 rounded-lg hover:border-teal-400 transition-colors"
+                        >
+                          <label className="cursor-pointer block p-6 text-center">
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(license.id, file);
+                              }}
+                            />
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                              <p className="text-sm font-medium text-slate-700">Click to upload</p>
+                              <p className="text-xs text-slate-400 mt-1">PDF only, max 10MB</p>
+                            </motion.div>
+                          </label>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
