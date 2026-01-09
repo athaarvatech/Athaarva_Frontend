@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
@@ -33,13 +32,12 @@ import {
   InventoryTable,
   FloatingTotalCard,
 } from "../components";
+import { InventoryIntelligence } from "../components/InventoryIntelligence";
+import { usePharmacyStats } from "@/hooks/usePharmacyStats";
 
 import type { Vendor, StockEntryItem } from "../types";
 
 export default function StockEntryPage() {
-  const params = useParams();
-  const subdomain = params.subdomain as string;
-
   // Invoice header state
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -53,6 +51,9 @@ export default function StockEntryPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Calculate pharmacy stats from items
+  const stats = usePharmacyStats(items);
 
   // Add item handler
   const handleAddItem = useCallback((item: StockEntryItem) => {
@@ -210,7 +211,7 @@ export default function StockEntryPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href={`/hospital/${subdomain}/admin/pharmacy`}>
+          <Link href="/pharmacy">
             <Button variant="ghost" size="icon" className="h-10 w-10">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -321,6 +322,17 @@ export default function StockEntryPage() {
           onCancelEdit={handleCancelEdit}
         />
       </motion.div>
+
+      {/* Inventory Intelligence */}
+      {items.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <InventoryIntelligence stats={stats} />
+        </motion.div>
+      )}
 
       {/* Inventory Table */}
       <motion.div
