@@ -61,7 +61,6 @@ import BillingFinancialStep from "./steps/BillingFinancialStep";
 import ClinicalConfigStep from "./steps/ClinicalConfigStep";
 import LicensingCertificationStep from "./steps/LicensingCertificationStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
-import { ActivityLog } from "./widgets/ActivityLog";
 
 // Import widgets
 import { ActivityLog } from "./widgets/ActivityLog";
