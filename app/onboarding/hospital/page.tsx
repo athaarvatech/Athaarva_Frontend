@@ -45,6 +45,7 @@ import {
   Settings,
   Info,
   Shield,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
