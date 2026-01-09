@@ -1,16 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
 import { Building2, UserPlus, Mail, Phone, MapPin, CreditCard } from "lucide-react";
 
-export default function PatientSignUpPage() {
+function PatientSignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hospitalSlug = searchParams.get("hospital") || "";
@@ -80,10 +87,10 @@ export default function PatientSignUpPage() {
       //   headers: { "Content-Type": "application/json" },
       //   body: JSON.stringify({ ...formData, otp, hospitalSlug }),
       // });
-      
+
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       // Simulate successful signup
       console.log("Patient signup:", { ...formData, otp, hospitalSlug });
       
@@ -303,7 +310,9 @@ export default function PatientSignUpPage() {
           <div className="text-sm text-center text-muted-foreground">
             Already have an account?{" "}
             <Link
-              href={`/auth/patient/signin${hospitalSlug ? `?hospital=${hospitalSlug}` : ""}`}
+              href={`/auth/patient/signin${
+                hospitalSlug ? `?hospital=${hospitalSlug}` : ""
+              }`}
               className="text-teal-600 hover:text-teal-700 font-medium underline-offset-4 hover:underline"
             >
               Sign in
@@ -321,5 +330,19 @@ export default function PatientSignUpPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function PatientSignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-cyan-50">
+          <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+        </div>
+      }
+    >
+      <PatientSignUpContent />
+    </Suspense>
   );
 }

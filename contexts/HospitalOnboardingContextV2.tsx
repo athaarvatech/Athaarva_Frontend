@@ -563,6 +563,28 @@ export interface CollaboratorData {
   status: "pending" | "active";
 }
 
+// ============================================================================
+// ADMIN CONTROL & DOMAIN TYPES (NEW)
+// ============================================================================
+
+export interface AdminControlData {
+  admin: {
+    full_name: string;
+    email: string;
+    phone: string;
+    age: string;
+  };
+  credentials: {
+    username: string;
+    password: string;
+    generated: boolean;
+  };
+  domain: {
+    subdomain: string;
+    verified: boolean;
+  };
+}
+
 export interface HospitalOnboardingData {
   // Step 0: Template Selection & Invitation Recap (UNCHANGED)
   invitation: {
@@ -705,6 +727,9 @@ export interface HospitalOnboardingData {
 
   // Step 11: Admin & Staff Invitations (ENHANCED)
   adminTeam: TeamMemberData[];
+
+  // Admin Control & Domain Configuration (NEW)
+  adminControl: AdminControlData;
 
   // Step 12: Review & Submission (ENHANCED with Operational Readiness)
   review: {
@@ -1064,6 +1089,25 @@ const initialData: HospitalOnboardingData = {
 
   // Step 11: Admin Team
   adminTeam: [],
+
+  // Admin Control & Domain Configuration
+  adminControl: {
+    admin: {
+      full_name: "",
+      email: "",
+      phone: "",
+      age: "",
+    },
+    credentials: {
+      username: "",
+      password: "",
+      generated: false,
+    },
+    domain: {
+      subdomain: "",
+      verified: false,
+    },
+  },
 
   // Step 12: Review & Submission (Enhanced)
   review: {

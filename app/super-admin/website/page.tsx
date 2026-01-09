@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +30,6 @@ import {
   Edit,
   Save,
   Eye,
-  Plus,
-  Image as ImageIcon,
-  Type,
-  Link2,
   CheckCircle,
   AlertCircle,
   Layout,
@@ -42,6 +44,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 interface CMSSection {
   id: string;
   section_key: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: Record<string, any>;
   version: number;
   is_published: boolean;
@@ -80,7 +83,11 @@ const SECTION_TEMPLATES = [
     fields: [
       { name: "title", type: "text", label: "Section Title" },
       { name: "subtitle", type: "text", label: "Subtitle" },
-      { name: "services_json", type: "textarea", label: "Services (JSON array)" },
+      {
+        name: "services_json",
+        type: "textarea",
+        label: "Services (JSON array)",
+      },
     ],
   },
   {
@@ -108,12 +115,14 @@ const SECTION_TEMPLATES = [
 
 export default function WebsiteCMSPage() {
   const [sections, setSections] = useState<CMSSection[]>([]);
-  const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  
+
   // Editor state
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editContent, setEditContent] = useState<Record<string, any>>({});
   const [showEditor, setShowEditor] = useState(false);
   const [publishOnSave, setPublishOnSave] = useState(false);
@@ -182,7 +191,7 @@ export default function WebsiteCMSPage() {
         const err = await res.json();
         setError(err.detail || "Failed to save section");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setSaving(false);
@@ -211,7 +220,11 @@ export default function WebsiteCMSPage() {
           </div>
         </div>
         <Button variant="outline" asChild>
-          <a href="https://athaarva.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://athaarva.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Eye className="h-4 w-4 mr-2" />
             View Website
           </a>
@@ -299,7 +312,9 @@ export default function WebsiteCMSPage() {
             <Card
               key={template.key}
               className={`hover:shadow-lg transition-shadow cursor-pointer ${
-                data ? "border-l-4 border-l-green-500" : "border-l-4 border-l-gray-200"
+                data
+                  ? "border-l-4 border-l-green-500"
+                  : "border-l-4 border-l-gray-200"
               }`}
               onClick={() => openEditor(template.key)}
             >
@@ -315,7 +330,9 @@ export default function WebsiteCMSPage() {
                     </div>
                   </div>
                   {data && (
-                    <Badge variant={data.is_published ? "default" : "secondary"}>
+                    <Badge
+                      variant={data.is_published ? "default" : "secondary"}
+                    >
                       {data.is_published ? "Published" : "Draft"}
                     </Badge>
                   )}
@@ -337,8 +354,7 @@ export default function WebsiteCMSPage() {
 
                   {data && (
                     <p className="text-xs text-gray-500">
-                      Last updated:{" "}
-                      {new Date(data.updated_at).toLocaleString()}
+                      Last updated: {new Date(data.updated_at).toLocaleString()}
                       {data.updated_by && ` by ${data.updated_by}`}
                     </p>
                   )}
@@ -474,7 +490,9 @@ export default function WebsiteCMSPage() {
                         {data ? (
                           <>
                             <Badge
-                              variant={data.is_published ? "default" : "secondary"}
+                              variant={
+                                data.is_published ? "default" : "secondary"
+                              }
                             >
                               {data.is_published ? "Published" : "Draft"}
                             </Badge>

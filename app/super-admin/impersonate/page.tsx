@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +41,6 @@ import {
 import {
   UserCog,
   Play,
-  Square,
   History,
   AlertTriangle,
   Search,
@@ -88,16 +93,16 @@ interface ImpersonationSession {
 export default function ImpersonatePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [logs, setLogs] = useState<ImpersonationLog[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
-  
+
   // Impersonation dialog state
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [reason, setReason] = useState("");
   const [impersonating, setImpersonating] = useState(false);
-  const [activeSession, setActiveSession] = useState<ImpersonationSession | null>(null);
+  const [activeSession, setActiveSession] =
+    useState<ImpersonationSession | null>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
 
   const fetchUsers = async () => {
@@ -105,9 +110,12 @@ export default function ImpersonatePage() {
     if (!token) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/v2/super-admin/users?limit=100`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v2/super-admin/users?limit=100`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setUsers(data.filter((u: User) => u.user_type !== "super_admin"));
@@ -122,9 +130,12 @@ export default function ImpersonatePage() {
     if (!token) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/v2/super-admin/impersonate/logs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v2/super-admin/impersonate/logs`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -149,17 +160,20 @@ export default function ImpersonatePage() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/v2/super-admin/impersonate/start`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          target_user_id: selectedUser.id,
-          reason: reason.trim(),
-        }),
-      });
+      const res = await fetch(
+        `${API_BASE}/api/v2/super-admin/impersonate/start`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            target_user_id: selectedUser.id,
+            reason: reason.trim(),
+          }),
+        }
+      );
 
       if (res.ok) {
         const session = await res.json();
@@ -172,7 +186,7 @@ export default function ImpersonatePage() {
         const err = await res.json();
         setError(err.detail || "Failed to start impersonation");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setImpersonating(false);
@@ -189,7 +203,8 @@ export default function ImpersonatePage() {
     const matchesSearch =
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.tenant_code?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = userTypeFilter === "all" || user.user_type === userTypeFilter;
+    const matchesType =
+      userTypeFilter === "all" || user.user_type === userTypeFilter;
     return matchesSearch && matchesType;
   });
 
@@ -211,8 +226,12 @@ export default function ImpersonatePage() {
           <UserCog className="h-6 w-6 text-yellow-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Impersonation</h1>
-          <p className="text-gray-500">Login as any user for debugging and support</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            User Impersonation
+          </h1>
+          <p className="text-gray-500">
+            Login as any user for debugging and support
+          </p>
         </div>
       </div>
 
@@ -220,8 +239,9 @@ export default function ImpersonatePage() {
       <Alert className="border-yellow-200 bg-yellow-50">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-800">
-          <strong>Security Notice:</strong> All impersonation sessions are logged for audit purposes.
-          Only use this feature for legitimate support and debugging purposes.
+          <strong>Security Notice:</strong> All impersonation sessions are
+          logged for audit purposes. Only use this feature for legitimate
+          support and debugging purposes.
         </AlertDescription>
       </Alert>
 
@@ -257,7 +277,10 @@ export default function ImpersonatePage() {
                     className="pl-10"
                   />
                 </div>
-                <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+                <Select
+                  value={userTypeFilter}
+                  onValueChange={setUserTypeFilter}
+                >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
@@ -265,7 +288,9 @@ export default function ImpersonatePage() {
                     <SelectItem value="all">All User Types</SelectItem>
                     <SelectItem value="patient">Patients</SelectItem>
                     <SelectItem value="doctor">Doctors</SelectItem>
-                    <SelectItem value="hospital_admin">Hospital Admins</SelectItem>
+                    <SelectItem value="hospital_admin">
+                      Hospital Admins
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -292,7 +317,9 @@ export default function ImpersonatePage() {
                 <TableBody>
                   {filteredUsers.slice(0, 50).map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
+                      <TableCell className="font-medium">
+                        {user.email}
+                      </TableCell>
                       <TableCell>
                         <Badge className={getUserTypeBadge(user.user_type)}>
                           {user.user_type.replace("_", " ")}
@@ -306,7 +333,9 @@ export default function ImpersonatePage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.is_active ? "default" : "secondary"}>
+                        <Badge
+                          variant={user.is_active ? "default" : "secondary"}
+                        >
                           {user.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
@@ -332,7 +361,9 @@ export default function ImpersonatePage() {
           <Card>
             <CardHeader>
               <CardTitle>Impersonation History</CardTitle>
-              <CardDescription>Audit log of all impersonation sessions</CardDescription>
+              <CardDescription>
+                Audit log of all impersonation sessions
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -352,7 +383,9 @@ export default function ImpersonatePage() {
                     const started = new Date(log.started_at);
                     const ended = log.ended_at ? new Date(log.ended_at) : null;
                     const duration = ended
-                      ? Math.round((ended.getTime() - started.getTime()) / 1000 / 60)
+                      ? Math.round(
+                          (ended.getTime() - started.getTime()) / 1000 / 60
+                        )
                       : null;
 
                     return (
@@ -374,7 +407,9 @@ export default function ImpersonatePage() {
                         <TableCell>{started.toLocaleString()}</TableCell>
                         <TableCell>
                           {duration !== null ? (
-                            <span className="text-green-600">{duration} min</span>
+                            <span className="text-green-600">
+                              {duration} min
+                            </span>
                           ) : (
                             <Badge variant="secondary">
                               <Clock className="h-3 w-3 mr-1" />
@@ -390,7 +425,10 @@ export default function ImpersonatePage() {
                   })}
                   {logs.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-gray-500 py-8"
+                      >
                         No impersonation history found
                       </TableCell>
                     </TableRow>
@@ -408,8 +446,9 @@ export default function ImpersonatePage() {
           <DialogHeader>
             <DialogTitle>Impersonate User</DialogTitle>
             <DialogDescription>
-              You are about to impersonate <strong>{selectedUser?.email}</strong>.
-              Please provide a reason for this action.
+              You are about to impersonate{" "}
+              <strong>{selectedUser?.email}</strong>. Please provide a reason
+              for this action.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -457,8 +496,8 @@ export default function ImpersonatePage() {
           <div className="space-y-4 py-4">
             <Alert className="border-green-200 bg-green-50">
               <AlertDescription className="text-green-800">
-                Use the token below to access the application as this user.
-                The session will be logged for audit purposes.
+                Use the token below to access the application as this user. The
+                session will be logged for audit purposes.
               </AlertDescription>
             </Alert>
             <div className="space-y-2">
@@ -487,7 +526,9 @@ export default function ImpersonatePage() {
               </div>
               <div>
                 <Label className="text-gray-500">Tenant</Label>
-                <p className="font-medium">{activeSession?.tenant_code || "Platform"}</p>
+                <p className="font-medium">
+                  {activeSession?.tenant_code || "Platform"}
+                </p>
               </div>
             </div>
           </div>
@@ -495,11 +536,12 @@ export default function ImpersonatePage() {
             <Button
               variant="outline"
               onClick={() => {
-                const url = activeSession?.target_user_type === "patient"
-                  ? "/patient/dashboard"
-                  : activeSession?.target_user_type === "doctor"
-                  ? "/doctor/dashboard"
-                  : "/hospital/dashboard";
+                const url =
+                  activeSession?.target_user_type === "patient"
+                    ? "/patient/dashboard"
+                    : activeSession?.target_user_type === "doctor"
+                    ? "/doctor/dashboard"
+                    : "/hospital/dashboard";
                 window.open(url, "_blank");
               }}
             >

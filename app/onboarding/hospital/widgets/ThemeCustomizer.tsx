@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Palette,
@@ -189,6 +189,32 @@ export function ThemeCustomizer({
     },
     [onTypographyChange]
   );
+
+  // Listen for tour demo actions
+  useEffect(() => {
+    const handleTourAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { action, value } = customEvent.detail;
+
+      switch (action) {
+        case "changeColor":
+          if (value !== undefined && COLOR_PRESETS[value]) {
+            applyColorPreset(COLOR_PRESETS[value]);
+          }
+          break;
+        case "changeFont":
+          if (value !== undefined && FONT_PRESETS[value]) {
+            applyFontPreset(FONT_PRESETS[value]);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("tour-demo-action", handleTourAction);
+    return () => {
+      window.removeEventListener("tour-demo-action", handleTourAction);
+    };
+  }, [applyColorPreset, applyFontPreset]);
 
   const handleReset = useCallback(() => {
     if (originalPalette) onPaletteChange(originalPalette);

@@ -1,14 +1,20 @@
 "use client";
 
 // New modern landing page design with animations
-import LandingPageV2 from "@/modules/landing-page-v2/LandingPageV2";
+import LandingPageV3 from "@/modules/landing-page-v3/LandingPageV3";
 
 export default function LandingPage() {
-  return <LandingPageV2 />;
+  return <LandingPageV3 />;
 }
 
 // Keep the old landing page code commented for reference
 /*
+import LandingPageV2 from "@/modules/landing-page-v2/LandingPageV2";
+
+function OldLandingPage() {
+  return <LandingPageV2 />;
+}
+
 import React, { useState } from "react";
 import HeroSection from "@/modules/landing-page/HeroSection";
 import SocialProofSection from "@/modules/landing-page/SocialProofSection";
@@ -18,7 +24,7 @@ import PricingSection from "@/modules/landing-page/PricingSection";
 import FAQSection from "@/modules/landing-page/FAQSection";
 import Footer from "@/modules/landing-page/Footer";
 
-function OldLandingPage() {
+function OlderLandingPage() {
   const [showDemoForm, setShowDemoForm] = useState(false);
 
   return (
