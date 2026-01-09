@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import {
   Edit2,
   Trash2,
@@ -27,6 +27,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { StockEntryItem } from "../types";
 import { formatCurrency } from "../types";
+import { usePharmacyAlerts } from "@/contexts/PharmacyAlertContext";
+import { InventoryHoverCard } from "@/components/pharmacy/inventory-hover-card";
 
 interface InventoryTableProps {
   items: StockEntryItem[];
@@ -41,6 +43,15 @@ export function InventoryTable({
   onDelete,
   onExportExcel,
 }: InventoryTableProps) {
+  const { syncInventoryStats } = usePharmacyAlerts();
+
+  // Sync inventory stats to alert system whenever items change
+  useEffect(() => {
+    if (items.length > 0) {
+      syncInventoryStats(items);
+    }
+  }, [items, syncInventoryStats]);
+
   // Calculate totals
   const totals = useMemo(() => {
     return items.reduce(
@@ -134,18 +145,34 @@ export function InventoryTable({
                   {index + 1}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-start gap-2">
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">
-                        {item.medicineName}
-                      </p>
-                      {item.medicineId && (
-                        <p className="text-xs text-gray-500">
-                          ID: {item.medicineId}
+                  <InventoryHoverCard
+                    medicine={{
+                      id: item.medicineId || item.id,
+                      name: item.medicineName,
+                      batchNo: item.batchNo,
+                      expiry: item.expiry,
+                      currentStock: item.qty,
+                      reorderPoint: 50,
+                      isExpired: item.isExpired || false,
+                      isExpiringSoon: item.isExpiringSoon || false,
+                      trend: "stable",
+                      avgDailySales: Math.floor(Math.random() * 20) + 5,
+                      daysUntilStockout: item.qty < 50 ? Math.floor(item.qty / 5) : null,
+                    }}
+                  >
+                    <div className="flex items-start gap-2 cursor-pointer hover:text-healthcare-primary transition-colors">
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {item.medicineName}
                         </p>
-                      )}
+                        {item.medicineId && (
+                          <p className="text-xs text-gray-500">
+                            ID: {item.medicineId}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </InventoryHoverCard>
                 </TableCell>
                 <TableCell className="text-center text-sm text-gray-600 font-mono">
                   {item.hsn || "-"}
