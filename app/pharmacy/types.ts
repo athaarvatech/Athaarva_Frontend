@@ -97,9 +97,6 @@ export interface StockEntryItem {
   freeQty: number;
   rate: number; // Purchase price per unit
   amount: number; // Auto-calculated: qty * rate
-  discountPercent: number;
-  gstPercent: GSTRate;
-  netRate: number; // Auto-calculated: rate after discount and tax
   mrp: number;
   isExpiringSoon?: boolean; // If expiry < 6 months
   isExpired?: boolean;
@@ -141,8 +138,6 @@ export interface StockEntryFormState {
   qty: number;
   freeQty: number;
   rate: number;
-  discountPercent: number;
-  gstPercent: GSTRate;
   mrp: number;
 }
 
@@ -158,8 +153,6 @@ export const DEFAULT_FORM_STATE: StockEntryFormState = {
   qty: 0,
   freeQty: 0,
   rate: 0,
-  discountPercent: 0,
-  gstPercent: 12,
   mrp: 0,
 };
 

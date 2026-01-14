@@ -35,6 +35,9 @@ interface InventoryTableProps {
   onEdit: (item: StockEntryItem) => void;
   onDelete: (id: string) => void;
   onExportExcel: () => void;
+  onSaveInvoice?: () => void;
+  onPrintInvoice?: () => void;
+  isSubmitting?: boolean;
 }
 
 export function InventoryTable({
@@ -42,6 +45,9 @@ export function InventoryTable({
   onEdit,
   onDelete,
   onExportExcel,
+  onSaveInvoice,
+  onPrintInvoice,
+  isSubmitting = false,
 }: InventoryTableProps) {
   const { syncInventoryStats } = usePharmacyAlerts();
 
@@ -112,18 +118,15 @@ export function InventoryTable({
           <TableHeader>
             <TableRow className="bg-gray-50/50">
               <TableHead className="w-10 text-center">#</TableHead>
-              <TableHead className="min-w-[200px]">Particulars</TableHead>
+              <TableHead className="min-w-[200px]">Medicine Name</TableHead>
               <TableHead className="text-center">HSN</TableHead>
               <TableHead className="text-center">Batch</TableHead>
               <TableHead className="text-center">Expiry</TableHead>
               <TableHead className="text-center">Pack</TableHead>
               <TableHead className="text-center">Qty</TableHead>
               <TableHead className="text-center">Free</TableHead>
-              <TableHead className="text-right">Rate</TableHead>
+              <TableHead className="text-right">Purchase Rate</TableHead>
               <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="text-center">Disc%</TableHead>
-              <TableHead className="text-center">GST%</TableHead>
-              <TableHead className="text-right">N.Rate</TableHead>
               <TableHead className="text-right">MRP</TableHead>
               <TableHead className="text-center w-20">Actions</TableHead>
             </TableRow>
@@ -150,29 +153,32 @@ export function InventoryTable({
                       id: item.medicineId || item.id,
                       name: item.medicineName,
                       batchNo: item.batchNo,
-                      expiry: item.expiry,
                       currentStock: item.qty,
-                      reorderPoint: 50,
-                      isExpired: item.isExpired || false,
-                      isExpiringSoon: item.isExpiringSoon || false,
+                      minStock: 20,
+                      maxStock: 500,
                       trend: "stable",
+                      trendPercent: 0,
                       avgDailySales: Math.floor(Math.random() * 20) + 5,
+                      daysUntilExpiry: Math.floor((item.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
                       daysUntilStockout: item.qty < 50 ? Math.floor(item.qty / 5) : null,
+                      lastRestocked: new Date().toISOString(),
+                      pricePerUnit: item.rate,
                     }}
-                  >
-                    <div className="flex items-start gap-2 cursor-pointer hover:text-healthcare-primary transition-colors">
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">
-                          {item.medicineName}
-                        </p>
-                        {item.medicineId && (
-                          <p className="text-xs text-gray-500">
-                            ID: {item.medicineId}
+                    trigger={
+                      <div className="flex items-start gap-2 cursor-pointer hover:text-healthcare-primary transition-colors">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {item.medicineName}
                           </p>
-                        )}
+                          {item.medicineId && (
+                            <p className="text-xs text-gray-500">
+                              ID: {item.medicineId}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </InventoryHoverCard>
+                    }
+                  />
                 </TableCell>
                 <TableCell className="text-center text-sm text-gray-600 font-mono">
                   {item.hsn || "-"}
@@ -230,15 +236,6 @@ export function InventoryTable({
                 <TableCell className="text-right font-semibold text-healthcare-primary font-mono">
                   {formatCurrency(item.amount)}
                 </TableCell>
-                <TableCell className="text-center text-sm text-gray-600">
-                  {item.discountPercent > 0 ? `${item.discountPercent}%` : "-"}
-                </TableCell>
-                <TableCell className="text-center text-sm text-gray-600">
-                  {item.gstPercent}%
-                </TableCell>
-                <TableCell className="text-right text-sm font-mono text-gray-700">
-                  {formatCurrency(item.netRate)}
-                </TableCell>
                 <TableCell className="text-right font-semibold text-gray-900 font-mono">
                   {formatCurrency(item.mrp)}
                 </TableCell>
@@ -283,25 +280,107 @@ export function InventoryTable({
       </div>
 
       {/* Table Footer with Totals */}
-      <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
-            Total Items: <span className="font-semibold">{items.length}</span>
-          </p>
-          <div className="flex items-center gap-6">
-            <p className="text-sm text-gray-600">
-              Total Qty: <span className="font-semibold">{totals.totalQty}</span>
-              {totals.totalFreeQty > 0 && (
-                <span className="text-green-600"> (+{totals.totalFreeQty} free)</span>
-              )}
-            </p>
-            <p className="text-sm text-gray-600">
-              Total Amount:{" "}
-              <span className="font-bold text-healthcare-primary">
+      <div className="border-t border-gray-200">
+        {/* Summary Row */}
+        <div className="px-4 py-3 bg-gray-50 flex items-center justify-between text-sm text-gray-600">
+          <span>
+            <strong className="text-gray-700">{items.length}</strong> items
+          </span>
+          <span>•</span>
+          <span>
+            <strong className="text-gray-700">{totals.totalQty}</strong> total qty
+            {totals.totalFreeQty > 0 && (
+              <span className="text-green-600 ml-1">(+{totals.totalFreeQty} free)</span>
+            )}
+          </span>
+        </div>
+
+        {/* Invoice Total Bar - Similar to your image */}
+        <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4">
+          <div className="flex items-center justify-between text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <Package className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm opacity-90">Invoice Total</p>
+                <p className="text-3xl font-bold">{formatCurrency(totals.totalAmount)}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 bg-white/20 rounded-full text-sm font-medium">
+                {items.length} {items.length === 1 ? "item" : "items"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Subtotal Breakdown */}
+        <div className="px-6 py-4 bg-white space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Package className="h-4 w-4" />
+              <span>Subtotal (Purchase Amount)</span>
+            </div>
+            <span className="font-semibold text-gray-900">
+              {formatCurrency(totals.totalAmount)}
+            </span>
+          </div>
+
+          <div className="bg-teal-50 rounded-lg p-4 mt-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-teal-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">₹</span>
+                </div>
+                <span className="font-semibold text-gray-900 text-lg">Total Amount</span>
+              </div>
+              <span className="text-2xl font-bold text-teal-600">
                 {formatCurrency(totals.totalAmount)}
               </span>
-            </p>
+            </div>
           </div>
+
+          {/* Quantity Summary */}
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
+            <span>
+              <strong className="text-gray-700">{items.length}</strong> items
+            </span>
+            <span>•</span>
+            <span>
+              <strong className="text-gray-700">{totals.totalQty}</strong> total qty
+            </span>
+          </div>
+
+          {/* Action Buttons */}
+          {(onSaveInvoice || onPrintInvoice) && (
+            <div className="flex gap-3 pt-4">
+              {onPrintInvoice && (
+                <Button
+                  variant="outline"
+                  onClick={onPrintInvoice}
+                  className="flex-1 h-12 gap-2 text-base"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print
+                </Button>
+              )}
+              {onSaveInvoice && (
+                <Button
+                  onClick={onSaveInvoice}
+                  disabled={isSubmitting}
+                  className="flex-1 h-12 gap-2 text-base bg-teal-600 hover:bg-teal-700 text-white"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  {isSubmitting ? "Saving..." : "Save Invoice"}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

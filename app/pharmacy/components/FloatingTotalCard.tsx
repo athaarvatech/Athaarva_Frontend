@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Receipt,
   IndianRupee,
-  Percent,
   Calculator,
   ChevronUp,
   ChevronDown,
@@ -14,9 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import type { StockEntryItem, InvoiceTotals } from "../types";
-import { formatCurrency, calculateLineTotal } from "../types";
+import { formatCurrency } from "../types";
 
 interface FloatingTotalCardProps {
   items: StockEntryItem[];
@@ -37,34 +35,22 @@ export function FloatingTotalCard({
   const totals: InvoiceTotals = useMemo(() => {
     let subtotal = 0;
     let totalQty = 0;
-    let totalDiscount = 0;
-    let totalGst = 0;
 
     items.forEach((item) => {
-      const lineCalc = calculateLineTotal(
-        item.qty,
-        item.rate,
-        item.discountPercent,
-        item.gstPercent
-      );
-      subtotal += lineCalc.amount;
+      subtotal += item.amount;
       totalQty += item.qty + item.freeQty;
-      totalDiscount += lineCalc.discount;
-      totalGst += lineCalc.gst;
     });
 
-    const sgst = totalGst / 2;
-    const cgst = totalGst / 2;
-    const grandTotal = subtotal - totalDiscount + totalGst;
+    const grandTotal = subtotal;
 
     return {
       subtotal: parseFloat(subtotal.toFixed(2)),
       totalItems: items.length,
       totalQty,
-      totalDiscount: parseFloat(totalDiscount.toFixed(2)),
-      sgst: parseFloat(sgst.toFixed(2)),
-      cgst: parseFloat(cgst.toFixed(2)),
-      totalGst: parseFloat(totalGst.toFixed(2)),
+      totalDiscount: 0,
+      sgst: 0,
+      cgst: 0,
+      totalGst: 0,
       grandTotal: parseFloat(grandTotal.toFixed(2)),
     };
   }, [items]);
@@ -127,43 +113,11 @@ export function FloatingTotalCard({
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calculator className="h-4 w-4" />
-                    <span>Subtotal</span>
+                    <span>Subtotal (Purchase Amount)</span>
                   </div>
                   <span className="font-medium text-gray-900">
                     {formatCurrency(totals.subtotal)}
                   </span>
-                </div>
-
-                {/* Discount */}
-                {totals.totalDiscount > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Percent className="h-4 w-4" />
-                      <span>Discount</span>
-                    </div>
-                    <span className="font-medium text-green-600">
-                      - {formatCurrency(totals.totalDiscount)}
-                    </span>
-                  </div>
-                )}
-
-                {/* Tax Breakdown */}
-                <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>SGST</span>
-                    <span>{formatCurrency(totals.sgst)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>CGST</span>
-                    <span>{formatCurrency(totals.cgst)}</span>
-                  </div>
-                  <Separator className="my-1" />
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-gray-700">Total GST</span>
-                    <span className="font-medium text-gray-900">
-                      {formatCurrency(totals.totalGst)}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Grand Total */}
@@ -172,7 +126,7 @@ export function FloatingTotalCard({
                     <div className="flex items-center gap-2">
                       <IndianRupee className="h-5 w-5 text-healthcare-primary" />
                       <span className="font-semibold text-gray-900">
-                        Grand Total
+                        Total Amount
                       </span>
                     </div>
                     <span className="text-xl font-bold text-healthcare-primary">

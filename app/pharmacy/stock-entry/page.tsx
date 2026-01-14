@@ -30,10 +30,7 @@ import {
   VendorCombobox,
   StockEntryFormStrip,
   InventoryTable,
-  FloatingTotalCard,
 } from "../components";
-import { InventoryIntelligence } from "../components/InventoryIntelligence";
-import { usePharmacyStats } from "@/hooks/usePharmacyStats";
 
 import type { Vendor, StockEntryItem } from "../types";
 
@@ -51,9 +48,6 @@ export default function StockEntryPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // Calculate pharmacy stats from items
-  const stats = usePharmacyStats(items);
 
   // Add item handler
   const handleAddItem = useCallback((item: StockEntryItem) => {
@@ -113,11 +107,8 @@ export default function StockEntryPage() {
         "Pack": item.pack,
         "Qty": item.qty,
         "Free": item.freeQty,
-        "Rate": item.rate,
+        "Purchase Rate": item.rate,
         "Amount": item.amount,
-        "Disc %": item.discountPercent,
-        "GST %": item.gstPercent,
-        "Net Rate": item.netRate,
         "MRP": item.mrp,
       }));
 
@@ -135,11 +126,8 @@ export default function StockEntryPage() {
         { wch: 8 },  // Pack
         { wch: 6 },  // Qty
         { wch: 6 },  // Free
-        { wch: 10 }, // Rate
+        { wch: 12 }, // Purchase Rate
         { wch: 12 }, // Amount
-        { wch: 8 },  // Disc %
-        { wch: 8 },  // GST %
-        { wch: 10 }, // Net Rate
         { wch: 10 }, // MRP
       ];
 
@@ -207,7 +195,7 @@ export default function StockEntryPage() {
   }, []);
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-6 pb-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -323,17 +311,6 @@ export default function StockEntryPage() {
         />
       </motion.div>
 
-      {/* Inventory Intelligence */}
-      {items.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-        >
-          <InventoryIntelligence stats={stats} />
-        </motion.div>
-      )}
-
       {/* Inventory Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -345,16 +322,11 @@ export default function StockEntryPage() {
           onEdit={handleEditItem}
           onDelete={handleDeleteItem}
           onExportExcel={handleExportExcel}
+          onSaveInvoice={handleSaveInvoice}
+          onPrintInvoice={handlePrintInvoice}
+          isSubmitting={isSaving}
         />
       </motion.div>
-
-      {/* Floating Total Card */}
-      <FloatingTotalCard
-        items={items}
-        onSaveInvoice={handleSaveInvoice}
-        onPrintInvoice={handlePrintInvoice}
-        isSubmitting={isSaving}
-      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>

@@ -18,13 +18,10 @@ import {
   type StockEntryFormState,
   type StockEntryItem,
   type PackType,
-  type GSTRate,
   type Medicine,
   PACK_OPTIONS,
-  GST_OPTIONS,
   DEFAULT_FORM_STATE,
   calculateAmount,
-  calculateNetRate,
   formatExpiry,
   getExpiryDate,
   isExpiringSoon,
@@ -48,11 +45,6 @@ export function StockEntryFormStrip({
 
   // Computed values
   const amount = calculateAmount(formState.qty, formState.rate);
-  const netRate = calculateNetRate(
-    formState.rate,
-    formState.discountPercent,
-    formState.gstPercent
-  );
 
   // Load editing item into form
   useEffect(() => {
@@ -69,8 +61,6 @@ export function StockEntryFormStrip({
         qty: editingItem.qty,
         freeQty: editingItem.freeQty,
         rate: editingItem.rate,
-        discountPercent: editingItem.discountPercent,
-        gstPercent: editingItem.gstPercent,
         mrp: editingItem.mrp,
       });
     }
@@ -95,7 +85,6 @@ export function StockEntryFormStrip({
       medicineId: medicine?.id,
       hsn: medicine?.hsn || prev.hsn,
       pack: medicine?.defaultPack || prev.pack,
-      gstPercent: medicine?.defaultGst || prev.gstPercent,
     }));
     if (errors.medicineName) {
       setErrors((prev) => ({ ...prev, medicineName: undefined }));
@@ -189,9 +178,6 @@ export function StockEntryFormStrip({
       freeQty: formState.freeQty,
       rate: formState.rate,
       amount,
-      discountPercent: formState.discountPercent,
-      gstPercent: formState.gstPercent,
-      netRate,
       mrp: formState.mrp,
       isExpiringSoon: isExpiringSoon(expiryDate),
       isExpired: isExpired(expiryDate),
@@ -297,10 +283,10 @@ export function StockEntryFormStrip({
             </div>
           </div>
 
-          {/* Row 2: Pack, Qty, Free, Rate, Amount, Disc%, GST%, Net Rate, MRP */}
+          {/* Row 2: Pack, Qty, Free, Purchase Rate, Amount, MRP */}
           <div className="grid grid-cols-12 gap-3">
-            {/* Pack - 1.5 cols */}
-            <div className="col-span-4 md:col-span-1">
+            {/* Pack - 2 cols */}
+            <div className="col-span-4 md:col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Pack
               </label>
@@ -321,10 +307,10 @@ export function StockEntryFormStrip({
               </Select>
             </div>
 
-            {/* Qty - 1 col */}
-            <div className="col-span-4 md:col-span-1">
+            {/* Qty - 2 cols */}
+            <div className="col-span-4 md:col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                QTY <span className="text-red-500">*</span>
+                Quantity <span className="text-red-500">*</span>
               </label>
               <Input
                 type="number"
@@ -339,25 +325,13 @@ export function StockEntryFormStrip({
               />
             </div>
 
-            {/* Free - 1 col */}
-            <div className="col-span-4 md:col-span-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                FREE
-              </label>
-              <Input
-                type="number"
-                min="0"
-                value={formState.freeQty || ""}
-                onChange={(e) => handleNumberChange("freeQty", e)}
-                placeholder="0"
-                className="h-10 text-sm text-center"
-              />
-            </div>
+            {/* Free - 2 cols */}
+            
 
-            {/* Rate - 1.5 cols */}
-            <div className="col-span-4 md:col-span-1">
+            {/* Purchase Rate - 2 cols */}
+            <div className="col-span-6 md:col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Rate <span className="text-red-500">*</span>
+                Purchase Rate <span className="text-red-500">*</span>
               </label>
               <Input
                 type="number"
@@ -373,8 +347,8 @@ export function StockEntryFormStrip({
               />
             </div>
 
-            {/* Amount (Read-only) - 1.5 cols */}
-            <div className="col-span-4 md:col-span-1">
+            {/* Amount (Read-only) - 2 cols */}
+            <div className="col-span-6 md:col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Amount
               </label>
@@ -386,62 +360,8 @@ export function StockEntryFormStrip({
               />
             </div>
 
-            {/* Discount % - 1 col */}
-            <div className="col-span-4 md:col-span-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Disc %
-              </label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={formState.discountPercent || ""}
-                onChange={(e) => handleNumberChange("discountPercent", e)}
-                placeholder="0"
-                className="h-10 text-sm text-center"
-              />
-            </div>
-
-            {/* GST % - 1.5 cols */}
+            {/* MRP - 2 cols */}
             <div className="col-span-6 md:col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                GST %
-              </label>
-              <Select
-                value={formState.gstPercent.toString()}
-                onValueChange={(value) =>
-                  handleChange("gstPercent", parseInt(value) as GSTRate)
-                }
-              >
-                <SelectTrigger className="h-10 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {GST_OPTIONS.map((gst) => (
-                    <SelectItem key={gst.value} value={gst.value.toString()}>
-                      {gst.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Net Rate (Read-only) - 1.5 cols */}
-            <div className="col-span-6 md:col-span-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                N. Rate
-              </label>
-              <Input
-                type="text"
-                value={netRate.toFixed(2)}
-                readOnly
-                className="h-10 text-sm text-right bg-gray-50 font-semibold text-gray-700"
-              />
-            </div>
-
-            {/* MRP - 1.5 cols */}
-            <div className="col-span-6 md:col-span-1">
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 MRP <span className="text-red-500">*</span>
               </label>
@@ -460,7 +380,7 @@ export function StockEntryFormStrip({
             </div>
 
             {/* Action Buttons - 2 cols */}
-            <div className="col-span-6 md:col-span-2 flex items-end gap-2">
+            <div className="col-span-12 md:col-span-12 flex items-end gap-2">
               <Button
                 type="submit"
                 className="flex-1 h-10 bg-healthcare-primary hover:bg-healthcare-secondary text-white font-medium"
