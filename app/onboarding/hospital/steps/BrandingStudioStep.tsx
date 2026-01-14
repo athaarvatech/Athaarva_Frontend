@@ -2,11 +2,12 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Palette, FileText, Image as ImageIcon } from "lucide-react";
+import { Palette, FileText, Image as ImageIcon, RotateCcw } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { FileUploadZone } from "../widgets/FileUploadZone";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -37,6 +38,8 @@ const COLOR_PRESETS = [
   { name: "Premium Purple", primary: "#7C3AED", secondary: "#8B5CF6" },
 ];
 
+const DEFAULT_COLORS = { primary: "#007C7C", secondary: "#20B2AA" };
+
 export default function BrandingStudioStep() {
   const { data, updateData } = useHospitalOnboarding();
   const branding = data.branding;
@@ -47,6 +50,12 @@ export default function BrandingStudioStep() {
         primary: preset.primary,
         secondary: preset.secondary,
       },
+    });
+  };
+
+  const resetColors = () => {
+    updateData("branding", {
+      colors: DEFAULT_COLORS,
     });
   };
 
@@ -173,9 +182,50 @@ export default function BrandingStudioStep() {
 
         {/* Color Selection */}
         <div className="mt-6 border-t border-gray-200 pt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">
-            Brand Colors
-          </h4>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-semibold text-gray-700">
+              Brand Colors
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetColors}
+              className="text-xs"
+            >
+              <RotateCcw className="w-3 h-3 mr-1" />
+              Reset
+            </Button>
+          </div>
+
+          {/* Color Preview Card */}
+          <div className="mb-6 rounded-lg border-2 border-gray-200 p-4 bg-gradient-to-r from-gray-50 to-white">
+            <p className="text-xs font-medium text-gray-600 mb-3">Color Preview</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 space-y-2">
+                <div
+                  className="h-16 rounded-lg shadow-sm transition-colors duration-200"
+                  style={{ backgroundColor: branding?.colors?.primary || DEFAULT_COLORS.primary }}
+                />
+                <p className="text-xs text-center font-medium text-gray-700">Primary</p>
+              </div>
+              <div className="flex-1 space-y-2">
+                <div
+                  className="h-16 rounded-lg shadow-sm transition-colors duration-200"
+                  style={{ backgroundColor: branding?.colors?.secondary || DEFAULT_COLORS.secondary }}
+                />
+                <p className="text-xs text-center font-medium text-gray-700">Secondary</p>
+              </div>
+              <div className="flex-1 space-y-2">
+                <div
+                  className="h-16 rounded-lg shadow-sm flex items-center justify-center text-white font-semibold transition-colors duration-200"
+                  style={{ backgroundColor: branding?.colors?.primary || DEFAULT_COLORS.primary }}
+                >
+                  Button
+                </div>
+                <p className="text-xs text-center font-medium text-gray-700">On Primary</p>
+              </div>
+            </div>
+          </div>
 
           {/* Presets */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -209,7 +259,7 @@ export default function BrandingStudioStep() {
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={branding?.colors?.primary || "#007C7C"}
+                  value={branding?.colors?.primary || DEFAULT_COLORS.primary}
                   onChange={(e) =>
                     updateData("branding", {
                       colors: { ...(branding?.colors || {}), primary: e.target.value },
@@ -218,7 +268,7 @@ export default function BrandingStudioStep() {
                   className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
                 />
                 <Input
-                  value={branding?.colors?.primary || "#007C7C"}
+                  value={branding?.colors?.primary || DEFAULT_COLORS.primary}
                   onChange={(e) =>
                     updateData("branding", {
                       colors: { ...(branding?.colors || {}), primary: e.target.value },
@@ -235,7 +285,7 @@ export default function BrandingStudioStep() {
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={branding?.colors?.secondary || "#20B2AA"}
+                  value={branding?.colors?.secondary || DEFAULT_COLORS.secondary}
                   onChange={(e) =>
                     updateData("branding", {
                       colors: { ...(branding?.colors || {}), secondary: e.target.value },
@@ -244,7 +294,7 @@ export default function BrandingStudioStep() {
                   className="w-12 h-12 rounded border border-gray-300 cursor-pointer"
                 />
                 <Input
-                  value={branding?.colors?.secondary || "#20B2AA"}
+                  value={branding?.colors?.secondary || DEFAULT_COLORS.secondary}
                   onChange={(e) =>
                     updateData("branding", {
                       colors: { ...(branding?.colors || {}), secondary: e.target.value },
