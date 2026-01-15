@@ -20,17 +20,15 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const STEP_NAMES = [
-  "Template Selection",
+  "Website Template",
+  "Login Page",
   "Organization Profile",
   "Locations & Contacts",
-  "Branding Studio",
-  "Site Content",
-  "Services & Pricing",
-  "Leadership & Team",
-  "Operational Policies",
-  "Compliance & Documentation",
-  "Integrations",
-  "Admin Invitations",
+  "Departments",
+  "Billing & Financial",
+  "Document Templates",
+  "Licensing & Certification",
+  "Admin Setup & Domain",
   "Review & Submission",
 ];
 
@@ -107,28 +105,28 @@ export default function ReviewSubmissionStep() {
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-xs text-blue-600 font-medium mb-1">Organization</p>
             <p className="text-sm font-semibold text-gray-900">
-              {data.organizationProfile?.organization_name || "Not provided"}
+              {data.organizationProfile?.legal_name || "Not provided"}
             </p>
             <p className="text-xs text-gray-600 mt-1">
-              {data.organizationProfile?.organization_type || "Type not set"}
+              {data.organizationProfile?.trade_name || "Trade name not set"}
             </p>
           </div>
           <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
             <p className="text-xs text-emerald-600 font-medium mb-1">Template</p>
             <p className="text-sm font-semibold text-gray-900">
-              {data.template?.template_name || "Not selected"}
+              {data.template?.selected_template?.name || "Not selected"}
             </p>
             <p className="text-xs text-gray-600 mt-1">
-              {data.template?.category || "No category"}
+              {data.template?.selected_template?.description || "No description"}
             </p>
           </div>
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
             <p className="text-xs text-purple-600 font-medium mb-1">Subdomain</p>
             <p className="text-sm font-semibold text-gray-900 font-mono">
-              {data.organizationProfile?.subdomain || "Not configured"}
+              {data.adminControl?.domain?.subdomain || "Not configured"}
             </p>
             <p className="text-xs text-gray-600 mt-1">
-              .athaarva.health
+              .athaarva.com
             </p>
           </div>
         </div>

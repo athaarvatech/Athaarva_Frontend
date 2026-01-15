@@ -530,7 +530,7 @@ export default function AdminControlStep() {
                 />
               </div>
               <span className="text-gray-500 text-sm font-medium">
-                .athaarva.health
+                .athaarva.com
               </span>
               <Button
                 onClick={handleCheckDomain}
@@ -568,7 +568,7 @@ export default function AdminControlStep() {
                   <>
                     <Check className="w-4 h-4 text-green-600" />
                     <span className="text-sm font-medium text-green-800">
-                      {adminControl.domain.subdomain}.athaarva.health is
+                      {adminControl.domain.subdomain}.athaarva.com is
                       available!
                     </span>
                   </>
@@ -597,7 +597,7 @@ export default function AdminControlStep() {
                           onClick={() => handleSelectSuggestion(suggestion)}
                           className="px-3 py-1 text-xs bg-white border border-gray-300 rounded-full hover:border-indigo-500 hover:text-indigo-600 transition-colors"
                         >
-                          {suggestion}.athaarva.health
+                          {suggestion}.athaarva.com
                         </button>
                       ))}
                     </div>
@@ -614,7 +614,7 @@ export default function AdminControlStep() {
               </p>
               <p className="text-lg font-medium text-indigo-600">
                 https://{adminControl.domain.subdomain || "your-hospital"}
-                .athaarva.health
+                .athaarva.com
               </p>
             </div>
           )}

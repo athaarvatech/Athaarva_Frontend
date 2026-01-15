@@ -46,6 +46,10 @@ import {
   Info,
   Shield,
   Menu,
+  RefreshCw,
+  Palette,
+  UserCog,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -55,17 +59,20 @@ import {
 
 // Import step components
 import InvitationTemplateStep from "./steps/InvitationTemplateStep";
+import LoginPageCustomizationStep from "./steps/LoginPageCustomizationStep";
 import OrganizationProfileStep from "./steps/OrganizationProfileStep";
 import LocationsContactsStep from "./steps/LocationsContactsStep";
 import DepartmentsStaffStep from "./steps/DepartmentsStaffStep";
 import BillingFinancialStep from "./steps/BillingFinancialStep";
-import ClinicalConfigStep from "./steps/ClinicalConfigStep";
+import DocumentTemplatesStep from "./steps/DocumentTemplatesStep";
 import LicensingCertificationStep from "./steps/LicensingCertificationStep";
+import AdminControlStep from "./steps/AdminControlStep";
 import ReviewSubmissionStep from "./steps/ReviewSubmissionStep";
 
 // Import widgets
 import { ActivityLog } from "./widgets/ActivityLog";
 import { OnboardingSkeleton } from "@/components/loading/OnboardingSkeleton";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { toast } from "@/lib/toast";
 import { OfflineIndicator } from "@/components/ui/offline-indicator";
 import { CommandMenu } from "@/components/ui/command-menu";
@@ -103,13 +110,15 @@ interface StepConfig {
 // Help text for each step
 const STEP_HELP_TEXT: Record<number, string> = {
   0: "Select a template that best represents your hospital's brand and services. This will be the foundation of your digital presence.",
-  1: "Provide your hospital's legal information including registration numbers and official documents. This ensures compliance and authenticity.",
-  2: "Add your hospital's physical locations, contact details, and emergency numbers. This helps patients reach you easily.",
-  3: "Set up medical departments and specialties. Define how your hospital is organized operationally.",
-  4: "Configure billing settings, payment methods, bank details, and invoice preferences for smooth financial operations.",
-  5: "Set up clinical parameters like prescription formats for quality care.",
-  6: "Upload your hospital's licenses and certifications to build trust. These will be displayed prominently on your website.",
-  7: "Review all the information you've entered and submit your application to go live on the Athaarva platform.",
+  1: "Choose a visual login page style for your hospital. No form fields—just pick the design that matches your brand.",
+  2: "Provide your hospital's legal information including registration numbers and official documents.",
+  3: "Add your hospital's physical locations, contact details, and emergency numbers.",
+  4: "Set up medical departments and specialties. Define how your hospital is organized operationally.",
+  5: "Configure billing settings, payment methods, bank details, and invoice preferences.",
+  6: "Pick a visual document style for prescriptions, invoices, and certificates. No form inputs required.",
+  7: "Upload your hospital's licenses and certifications to build trust.",
+  8: "Configure admin credentials and your hospital's subdomain for access.",
+  9: "Review all the information you've entered and submit your application.",
 };
 
 // Helper function to format time ago
@@ -132,8 +141,8 @@ function formatTimeAgo(date: Date): string {
 const STEP_CONFIGS: StepConfig[] = [
   {
     id: 0,
-    title: "Invitation & Template",
-    description: "Verify invitation and select hospital template",
+    title: "Website Template",
+    description: "Select and customize your hospital website template",
     icon: Sparkles,
     component: InvitationTemplateStep,
     category: "Setup",
@@ -141,6 +150,15 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 1,
+    title: "Login Page",
+    description: "Design your hospital's custom login experience",
+    icon: Palette,
+    component: LoginPageCustomizationStep,
+    category: "Setup",
+    estimatedMinutes: 5,
+  },
+  {
+    id: 2,
     title: "Organization Profile",
     description: "Legal info, GST/PAN, timezone, registrations",
     icon: Building2,
@@ -149,7 +167,7 @@ const STEP_CONFIGS: StepConfig[] = [
     estimatedMinutes: 8,
   },
   {
-    id: 2,
+    id: 3,
     title: "Locations & Contacts",
     description: "Hospital addresses, contacts, geocoding",
     icon: Globe,
@@ -158,7 +176,7 @@ const STEP_CONFIGS: StepConfig[] = [
     estimatedMinutes: 10,
   },
   {
-    id: 3,
+    id: 4,
     title: "Departments",
     description: "Clinical departments, specializations, accounting",
     icon: Users,
@@ -167,7 +185,7 @@ const STEP_CONFIGS: StepConfig[] = [
     estimatedMinutes: 12,
   },
   {
-    id: 4,
+    id: 5,
     title: "Billing & Financial",
     description: "Tax config, payments, TPA panels, banking",
     icon: DollarSign,
@@ -176,16 +194,16 @@ const STEP_CONFIGS: StepConfig[] = [
     estimatedMinutes: 15,
   },
   {
-    id: 5,
-    title: "Clinical Configuration",
-    description: "Prescription settings, consultation parameters",
-    icon: Settings,
-    component: ClinicalConfigStep,
+    id: 6,
+    title: "Document Templates",
+    description: "Design prescriptions, invoices, certificates",
+    icon: FileText,
+    component: DocumentTemplatesStep,
     category: "Operations",
-    estimatedMinutes: 10,
+    estimatedMinutes: 8,
   },
   {
-    id: 6,
+    id: 7,
     title: "Licensing & Certification",
     description: "Upload licenses, certifications, accreditations",
     icon: Shield,
@@ -194,7 +212,16 @@ const STEP_CONFIGS: StepConfig[] = [
     estimatedMinutes: 8,
   },
   {
-    id: 7,
+    id: 8,
+    title: "Admin Setup & Domain",
+    description: "Configure admin credentials and hospital subdomain",
+    icon: UserCog,
+    component: AdminControlStep,
+    category: "Setup",
+    estimatedMinutes: 5,
+  },
+  {
+    id: 9,
     title: "Review & Submission",
     description: "Final review, acknowledgements, publish",
     icon: ListChecks,
@@ -400,6 +427,21 @@ function HospitalOnboardingContent({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const invitationPrefilled = useRef(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  // Welcome modal state - show on first visit
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    if (typeof window !== 'undefined' && token) {
+      return localStorage.getItem(`onboarding-welcome-seen-${token}`) !== 'true';
+    }
+    return true;
+  });
+
+  const handleWelcomeStart = () => {
+    setShowWelcomeModal(false);
+    if (token) {
+      localStorage.setItem(`onboarding-welcome-seen-${token}`, 'true');
+    }
+  };
 
   const currentStepConfig = STEP_CONFIGS[currentStep];
   const CurrentStepComponent = currentStepConfig?.component;
@@ -459,7 +501,8 @@ function HospitalOnboardingContent({
     //   return;
     // }
     
-    if (currentStep === 7) {
+    // Submit only on the final step (step 9 - Review & Submission)
+    if (currentStep === STEP_CONFIGS.length - 1) {
       handleSubmit();
     } else {
       setCurrentStep(currentStep + 1);
@@ -490,9 +533,25 @@ function HospitalOnboardingContent({
       const payload = buildSubmissionPayload();
       console.log("Submitting onboarding payload:", payload);
 
-      // Simulate API submission - replace with actual API call when ready
-      // await onboardingAPI.submitForReview(token, payload);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Submit to backend API
+      const shouldSkipBackendSubmit =
+        !onboardingAPI.hasActiveSession() &&
+        process.env.NODE_ENV === "development";
+
+      if (!shouldSkipBackendSubmit) {
+        await onboardingAPI.submitForReview();
+      } else {
+        console.warn(
+          "[Onboarding] No active session; skipping backend submit in development."
+        );
+        toast.warning({
+          title: "Submitted locally (dev mode)",
+          description:
+            "Backend session not found. Proceeding with local redirect in development.",
+        });
+      }
+      
+      toast.success({ title: "Onboarding submitted successfully!" });
 
       // Clear localStorage after successful submission
       if (validationData?.invitation_id) {
@@ -501,9 +560,9 @@ function HospitalOnboardingContent({
         );
       }
 
-      // Get the hospital subdomain from organization profile
+      // Get the hospital subdomain from admin control or generate from name
       const hospitalSubdomain =
-        data.organizationProfile.subdomain ||
+        data.adminControl?.domain?.subdomain ||
         data.organizationProfile.legal_name
           ?.toLowerCase()
           .replace(/\s+/g, "-")
@@ -515,32 +574,122 @@ function HospitalOnboardingContent({
         const sessionInfo = onboardingAPI.getStoredSessionInfo();
         if (sessionInfo.tenantId) {
           localStorage.setItem(
-            "hospital_admin_tenant_id",
-            sessionInfo.tenantId
+            `hospital-${sessionInfo.tenantId}`,
+            JSON.stringify({
+              subdomain: hospitalSubdomain,
+              name: data.organizationProfile.legal_name,
+              adminEmail: data.adminControl?.admin?.email,
+            })
           );
+          localStorage.setItem("hospital_admin_tenant_id", sessionInfo.tenantId);
         }
         localStorage.setItem("hospital_subdomain", hospitalSubdomain);
       }
 
-      // Clear onboarding session tokens (but keep the main auth token for admin access)
-      const mainAuthToken = localStorage.getItem("onboarding_token");
-      onboardingAPI.clearSession();
-
-      // Migrate the auth token for continued admin access
-      if (mainAuthToken) {
-        localStorage.setItem("hospital_admin_token", mainAuthToken);
+      // Migrate onboarding token to admin token for seamless transition
+      const onboardingToken = localStorage.getItem("onboarding_token");
+      if (onboardingToken) {
+        localStorage.setItem("hospital_admin_token", onboardingToken);
       }
 
-      // Show success message and redirect to staff signin page
-      // Admin will receive credentials via email
-      router.push(
-        `/auth/staff/signin?hospital=${hospitalSubdomain}&onboarding=complete`
-      );
+      // Store the submitted hospital info for later access
+      localStorage.setItem("pending_hospital_subdomain", hospitalSubdomain);
+      localStorage.setItem("pending_hospital_name", data.organizationProfile.legal_name || validationData?.hospital_name || "Hospital");
+      
+      // Store template selection for the hospital landing page
+      if (data.template?.selected_template) {
+        localStorage.setItem("pending_hospital_template", JSON.stringify({
+          id: data.template.selected_template.id,
+          name: data.template.selected_template.name,
+          customizedBlueprint: data.template.selected_template.customizedBlueprint,
+        }));
+      }
+      
+      // Store branding info
+      if (data.branding) {
+        localStorage.setItem("pending_hospital_branding", JSON.stringify({
+          colors: data.branding.colors,
+          logo_url: data.branding.logo_url,
+        }));
+      }
+      
+      // Show success message
+      toast.success({
+        title: "🎉 Congratulations! Your hospital onboarding has been submitted for review.",
+      });
+
+      const redirectToHospitalLanding = (subdomain: string) => {
+        if (typeof window === "undefined") return;
+        const { protocol, hostname, port } = window.location;
+
+        let targetHost = "";
+        if (
+          hostname === "localhost" ||
+          hostname.endsWith(".localhost") ||
+          hostname === "127.0.0.1"
+        ) {
+          targetHost = `${subdomain}.localhost${port ? `:${port}` : ""}`;
+        } else if (hostname.endsWith("athaarva.com")) {
+          targetHost = `${subdomain}.athaarva.com`;
+        } else {
+          const parts = hostname.split(".");
+          const baseDomain = parts.length >= 2 ? parts.slice(-2).join(".") : hostname;
+          targetHost = `${subdomain}.${baseDomain}`;
+        }
+
+        window.location.assign(`${protocol}//${targetHost}`);
+      };
+
+      // Redirect immediately to the hospital landing page
+      redirectToHospitalLanding(hospitalSubdomain);
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
-      setSubmitError(
-        (error as Error)?.message || "Failed to submit onboarding"
-      );
+      const errorMessage = (error as Error)?.message || "Failed to submit onboarding";
+
+      // In development, allow redirect even if backend submission fails
+      const isAuthError = errorMessage.toLowerCase().includes("session expired") ||
+        errorMessage.toLowerCase().includes("authentication") ||
+        errorMessage.toLowerCase().includes("401") ||
+        errorMessage.toLowerCase().includes("unauthorized");
+
+      if (process.env.NODE_ENV === "development" && isAuthError) {
+        toast.warning({
+          title: "Session missing (dev mode)",
+          description:
+            "Backend session is invalid. Redirecting to your hospital landing page in development.",
+        });
+        const fallbackSubdomain =
+          data.adminControl?.domain?.subdomain ||
+          data.organizationProfile.legal_name
+            ?.toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+            .substring(0, 32) || "hospital";
+        const redirectToHospitalLanding = (subdomain: string) => {
+          if (typeof window === "undefined") return;
+          const { protocol, hostname, port } = window.location;
+          let targetHost = "";
+
+          if (
+            hostname === "localhost" ||
+            hostname.endsWith(".localhost") ||
+            hostname === "127.0.0.1"
+          ) {
+            targetHost = `${subdomain}.localhost${port ? `:${port}` : ""}`;
+          } else if (hostname.endsWith("athaarva.com")) {
+            targetHost = `${subdomain}.athaarva.com`;
+          } else {
+            const parts = hostname.split(".");
+            const baseDomain = parts.length >= 2 ? parts.slice(-2).join(".") : hostname;
+            targetHost = `${subdomain}.${baseDomain}`;
+          }
+
+          window.location.assign(`${protocol}//${targetHost}`);
+        };
+        redirectToHospitalLanding(fallbackSubdomain);
+      } else {
+        setSubmitError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -584,6 +733,15 @@ function HospitalOnboardingContent({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-emerald-50">
+      {/* Welcome Modal - Shows on first visit */}
+      <WelcomeModal
+        hospitalName={validationData?.hospital_name || data.organizationProfile?.legal_name}
+        ownerName={validationData?.email?.split('@')[0] || "Administrator"}
+        ownerEmail={validationData?.email}
+        isOpen={showWelcomeModal}
+        onStart={handleWelcomeStart}
+      />
+      
       <OfflineIndicator />
       
       {/* Auto-save Indicator */}
@@ -921,46 +1079,8 @@ function HospitalOnboardingContent({
                   </div>
                 </div>
 
-                {/* Floating Action Bar - Simplified */}
-                <AnimatePresence>
-                  {isStepValid(currentStep) && currentStep < STEP_CONFIGS.length - 1 && (
-                    <motion.div
-                      initial={{ y: 100, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 100, opacity: 0 }}
-                      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)]"
-                    >
-                      <Button 
-                        onClick={handleNext}
-                        size="lg"
-                        className={cn(
-                          "bg-healthcare-emerald hover:bg-healthcare-emerald/90 text-white",
-                          "shadow-2xl shadow-emerald-200/50",
-                          "rounded-full px-8 py-6 h-auto",
-                          "transition-all duration-200",
-                          "active:scale-95 hover:scale-105",
-                          "text-base font-semibold",
-                          "group"
-                        )}
-                      >
-                        <span className="hidden sm:inline">
-                          Continue to {STEP_CONFIGS[currentStep + 1]?.title || "Next"}
-                        </span>
-                        <span className="sm:hidden">
-                          Continue
-                        </span>
-                        <motion.div
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                          className="inline-block ml-2"
-                        >
-                          <ChevronRight className="w-5 h-5" />
-                        </motion.div>
-                      </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Floating Action Bar - Removed for cleaner UX */}
+                {/* Navigation is handled by the footer buttons */}
 
                 {/* Navigation Footer */}
                 <div className="border-t border-gray-100 p-4 sm:p-6 flex-shrink-0">
@@ -1009,7 +1129,7 @@ function HospitalOnboardingContent({
                             Submitting...
                           </span>
                         </>
-                      ) : currentStep === 7 ? (
+                      ) : currentStep === STEP_CONFIGS.length - 1 ? (
                         <>
                           <span className="hidden sm:inline">Submit</span>
                           <CheckCircle className="w-4 h-4" />
