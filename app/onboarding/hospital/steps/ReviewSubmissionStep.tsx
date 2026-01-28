@@ -20,17 +20,15 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const STEP_NAMES = [
-  "Template Selection",
+  "Website Template",
+  "Login Page",
   "Organization Profile",
   "Locations & Contacts",
-  "Branding Studio",
-  "Site Content",
-  "Services & Pricing",
-  "Leadership & Team",
-  "Operational Policies",
-  "Compliance & Documentation",
-  "Integrations",
-  "Admin Invitations",
+  "Departments",
+  "Billing & Financial",
+  "Document Templates",
+  "Licensing & Certification",
+  "Admin Setup & Domain",
   "Review & Submission",
 ];
 
@@ -56,11 +54,11 @@ export default function ReviewSubmissionStep() {
 
   // Collect all uploaded media
   const mediaAssets = [
-    { type: "Logo", url: data.branding.logo_url },
-    { type: "Hero Background", url: data.branding.hero_asset_url },
-    { type: "Favicon", url: data.branding.favicon_url },
+    { type: "Logo", url: data.branding?.logo_url },
+    { type: "Hero Background", url: data.branding?.hero_asset_url },
+    { type: "Favicon", url: data.branding?.favicon_url },
     ...(data.leadershipTeam?.leadership_cards ?? []).map((card) => ({
-      type: `Profile: ${card.full_name}`,
+      type: `Profile: ${card.full_name || "Unknown"}`,
       url: card.profile_photo_url,
     })),
   ].filter((asset) => asset.url);
@@ -93,6 +91,45 @@ export default function ReviewSubmissionStep() {
         <p className="text-sm text-gray-600 mt-2">
           {completedSteps} of {totalSteps} steps completed
         </p>
+      </motion.div>
+
+      {/* Quick Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-white border border-gray-200 rounded-lg p-6"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Summary</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-600 font-medium mb-1">Organization</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {data.organizationProfile?.legal_name || "Not provided"}
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              {data.organizationProfile?.trade_name || "Trade name not set"}
+            </p>
+          </div>
+          <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+            <p className="text-xs text-emerald-600 font-medium mb-1">Template</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {data.template?.selected_template?.name || "Not selected"}
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              {data.template?.selected_template?.description || "No description"}
+            </p>
+          </div>
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <p className="text-xs text-purple-600 font-medium mb-1">Subdomain</p>
+            <p className="text-sm font-semibold text-gray-900 font-mono">
+              {data.adminControl?.domain?.subdomain || "Not configured"}
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              .athaarva.com
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -292,14 +329,14 @@ export default function ReviewSubmissionStep() {
                   Documents
                 </h3>
                 <p className="text-xs text-gray-600">
-                  {data.compliance.documents.length} documents uploaded
+                  {(data.compliance?.documents?.length ?? 0)} documents uploaded
                 </p>
               </div>
             </div>
 
-            {data.compliance.documents.length > 0 ? (
+            {(data.compliance?.documents?.length ?? 0) > 0 ? (
               <div className="space-y-2">
-                {data.compliance.documents.map((doc) => (
+                {(data.compliance?.documents ?? []).map((doc) => (
                   <div
                     key={doc.id}
                     className="flex items-center justify-between p-2 bg-gray-50 rounded"
@@ -307,7 +344,7 @@ export default function ReviewSubmissionStep() {
                     <div className="flex items-center space-x-2 flex-1 min-w-0">
                       <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       <span className="text-sm text-gray-700 truncate">
-                        {doc.type}
+                        {doc.type || "Unnamed document"}
                       </span>
                     </div>
                     <Badge
@@ -316,7 +353,7 @@ export default function ReviewSubmissionStep() {
                       }
                       className="text-xs"
                     >
-                      {doc.status}
+                      {doc.status || "pending"}
                     </Badge>
                   </div>
                 ))}

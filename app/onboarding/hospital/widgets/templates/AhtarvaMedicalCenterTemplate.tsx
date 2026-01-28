@@ -9,8 +9,12 @@ import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
-import { EditableText } from "../EditableText";
-import { HeroImageUploader, AvatarUploader, FacilityImageUploader } from "../ImageUploader";
+import { EditableText, EditModeProvider } from "../EditableText";
+import {
+  HeroImageUploader,
+  AvatarUploader,
+  FacilityImageUploader,
+} from "../ImageUploader";
 import {
   Phone,
   Mail,
@@ -28,6 +32,9 @@ import {
   Baby,
   Sparkles,
   Send,
+  Award,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 
 // ============================================================================
@@ -244,8 +251,14 @@ export function AhtarvaMedicalCenterTemplate({
   };
 
   // Device scaling - only apply when not using responsive mode
-  const scale = useResponsive ? 1 : (device === "desktop" ? 1 : device === "tablet" ? 0.92 : 0.7);
-  
+  const scale = useResponsive
+    ? 1
+    : device === "desktop"
+    ? 1
+    : device === "tablet"
+    ? 0.92
+    : 0.7;
+
   // Responsive breakpoint classes
   const isMobile = useResponsive && device === "mobile";
   const isTablet = useResponsive && device === "tablet";
@@ -269,6 +282,7 @@ export function AhtarvaMedicalCenterTemplate({
   };
 
   return (
+    <EditModeProvider isEditMode={isEditMode}>
     <div
       className={cn(
         "min-h-screen bg-white overflow-hidden antialiased",
@@ -452,6 +466,14 @@ export function AhtarvaMedicalCenterTemplate({
         isEditMode={isEditMode}
       />
 
+      {/* Blog/Social Media Section */}
+      <BlogSection
+        blueprint={blueprint}
+        colors={colors}
+        isEditMode={isEditMode}
+        onUpdate={(blogPosts) => updateBlueprint("blogPosts", blogPosts)}
+      />
+
       {/* Footer Section */}
       <FooterSection
         blueprint={blueprint}
@@ -460,6 +482,7 @@ export function AhtarvaMedicalCenterTemplate({
         onUpdate={(footer) => updateBlueprint("footer", footer)}
       />
     </div>
+    </EditModeProvider>
   );
 }
 
@@ -482,6 +505,7 @@ function NavbarSection({
   setMobileMenuOpen,
 }: NavbarSectionProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [licenseDropdownOpen, setLicenseDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -490,6 +514,8 @@ function NavbarSection({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const licenses = blueprint.licenses || [];
 
   return (
     <nav
@@ -530,6 +556,47 @@ function NavbarSection({
                 {link.name}
               </a>
             ))}
+            
+            {/* License Dropdown - beside Contact */}
+            {licenses.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setLicenseDropdownOpen(!licenseDropdownOpen)}
+                  onBlur={() => setTimeout(() => setLicenseDropdownOpen(false), 150)}
+                  className={`flex items-center gap-1 text-sm font-medium transition-colors duration-300 hover:opacity-70 ${
+                    scrolled ? "text-slate-700" : "text-white/90"
+                  }`}
+                >
+                  <Award size={16} />
+                  License
+                  <ChevronDown size={14} className={`transition-transform ${licenseDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+                
+                {licenseDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                    {licenses.map((license, idx) => (
+                      <a
+                        key={license.id || idx}
+                        href={license.certificate_file instanceof File 
+                          ? URL.createObjectURL(license.certificate_file) 
+                          : typeof license.certificate_file === 'string' 
+                            ? license.certificate_file 
+                            : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <FileText size={18} className="text-teal-600" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{license.name}</p>
+                          <p className="text-xs text-slate-500">View Certificate</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* CTA Button */}
@@ -572,6 +639,33 @@ function NavbarSection({
                 {link.name}
               </a>
             ))}
+            
+            {/* Mobile License Links */}
+            {licenses.length > 0 && (
+              <div className="border-t border-slate-100 pt-4 mt-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Award size={14} /> Licenses & Certifications
+                </p>
+                {licenses.map((license, idx) => (
+                  <a
+                    key={license.id || idx}
+                    href={license.certificate_file instanceof File 
+                      ? URL.createObjectURL(license.certificate_file) 
+                      : typeof license.certificate_file === 'string' 
+                        ? license.certificate_file 
+                        : '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-slate-600 py-2 hover:text-teal-600"
+                  >
+                    <FileText size={16} />
+                    <span className="text-sm">{license.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+            
             <a
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}
@@ -773,7 +867,9 @@ interface AboutSectionProps {
   colors: ColorScheme;
   isEditMode: boolean;
   onUpdate: (about: TemplateBlueprint["about"]) => void;
-  onImageUpdate: (updates: Partial<NonNullable<TemplateBlueprint["images"]>>) => void;
+  onImageUpdate: (
+    updates: Partial<NonNullable<TemplateBlueprint["images"]>>
+  ) => void;
 }
 
 function AboutSection({
@@ -809,13 +905,17 @@ function AboutSection({
                 <FacilityImageUploader
                   value={blueprint.images?.facilityImages?.[0] || null}
                   onChange={(img) => {
-                    const facilityImages = blueprint.images?.facilityImages || [];
+                    const facilityImages =
+                      blueprint.images?.facilityImages || [];
                     if (img) {
                       facilityImages[0] = img;
                     } else {
-                      facilityImages[0] = undefined as unknown as UploadedImageData;
+                      facilityImages[0] =
+                        undefined as unknown as UploadedImageData;
                     }
-                    onImageUpdate({ facilityImages: facilityImages.filter(Boolean) });
+                    onImageUpdate({
+                      facilityImages: facilityImages.filter(Boolean),
+                    });
                   }}
                   className="h-full"
                 />
@@ -1393,6 +1493,422 @@ function AppointmentSection({
             </div>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// BLOG/SOCIAL MEDIA SECTION
+// ============================================================================
+
+interface BlogSectionProps {
+  blueprint: TemplateBlueprint;
+  colors: ColorScheme;
+  isEditMode: boolean;
+  onUpdate: (blogPosts: TemplateBlueprint["blogPosts"]) => void;
+}
+
+function BlogSection({
+  blueprint,
+  colors,
+  isEditMode,
+  onUpdate,
+}: BlogSectionProps) {
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState<{
+    [key: string]: number;
+  }>({});
+
+  const blogPosts = blueprint.blogPosts || [
+    {
+      id: "blog-1",
+      title: "Advancements in Robotic Surgery",
+      excerpt:
+        "How our state-of-the-art robotic surgery systems are improving patient outcomes.",
+      date: "2024-01-20",
+      author: "Dr. Robert Williams",
+      category: "Surgical Innovation",
+      images: [],
+      featured: true,
+    },
+    {
+      id: "blog-2",
+      title: "Nutrition and Healing",
+      excerpt:
+        "The critical role of proper nutrition in post-surgical recovery.",
+      date: "2024-01-12",
+      author: "Dr. Amanda Foster",
+      category: "Nutrition",
+      images: [],
+      featured: false,
+    },
+    {
+      id: "blog-3",
+      title: "Preventive Care: Your First Defense",
+      excerpt:
+        "Regular health checkups can detect issues early. Learn about our screening programs.",
+      date: "2024-01-08",
+      author: "Dr. James Wilson",
+      category: "Preventive Care",
+      images: [],
+      featured: false,
+    },
+  ];
+
+  const handleImageUpload = (
+    postId: string,
+    imageIndex: number,
+    file: File
+  ) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const updated = blogPosts.map((post) => {
+        if (post.id === postId) {
+          const newImages = [...(post.images || [])];
+          newImages[imageIndex] = {
+            file: file,
+            previewUrl: reader.result as string,
+          };
+          return { ...post, images: newImages };
+        }
+        return post;
+      });
+      onUpdate(updated);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addNewImageSlot = (postId: string) => {
+    const updated = blogPosts.map((post) => {
+      if (post.id === postId) {
+        const newImages = [
+          ...(post.images || []),
+          { file: null, previewUrl: "" },
+        ];
+        return { ...post, images: newImages };
+      }
+      return post;
+    });
+    onUpdate(updated);
+  };
+
+  const removeImage = (postId: string, imageIndex: number) => {
+    const updated = blogPosts.map((post) => {
+      if (post.id === postId) {
+        const newImages = (post.images || []).filter(
+          (_, i) => i !== imageIndex
+        );
+        return { ...post, images: newImages };
+      }
+      return post;
+    });
+    onUpdate(updated);
+  };
+
+  const nextImage = (postId: string, totalImages: number) => {
+    setCurrentCarouselIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) + 1) % totalImages,
+    }));
+  };
+
+  const prevImage = (postId: string, totalImages: number) => {
+    setCurrentCarouselIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) - 1 + totalImages) % totalImages,
+    }));
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return (
+    <section
+      className="py-16 lg:py-20"
+      style={{ backgroundColor: colors.lightBg }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-12">
+          <span
+            className="inline-block text-sm font-semibold px-4 py-1.5 rounded-full mb-4"
+            style={{
+              backgroundColor: colors.accent,
+              color: colors.primary,
+            }}
+          >
+            Blog & Updates
+          </span>
+          <h2
+            className="text-3xl sm:text-4xl font-bold mb-4"
+            style={{ color: colors.textPrimary }}
+          >
+            Latest Health Insights
+          </h2>
+          <p
+            className="text-lg max-w-2xl mx-auto"
+            style={{ color: colors.textSecondary }}
+          >
+            Stay informed with our latest medical news and expert health tips.
+          </p>
+        </div>
+
+        {/* Blog Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {blogPosts.map((post, postIndex) => {
+            const currentImageIndex = currentCarouselIndex[post.id] || 0;
+            const validImages = (post.images || []).filter(
+              (img) => img.previewUrl
+            );
+
+            return (
+              <article
+                key={post.id}
+                className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group"
+                style={{ backgroundColor: colors.white }}
+              >
+                {/* Image Carousel */}
+                <div className="relative h-44 bg-gradient-to-br from-teal-50 to-teal-100 overflow-hidden">
+                  {validImages.length > 0 ? (
+                    <>
+                      <img
+                        src={
+                          validImages[currentImageIndex % validImages.length]
+                            ?.previewUrl
+                        }
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+                      {validImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={() =>
+                              prevImage(post.id, validImages.length)
+                            }
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ‹
+                          </button>
+                          <button
+                            onClick={() =>
+                              nextImage(post.id, validImages.length)
+                            }
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ›
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                            {validImages.map((_, i) => (
+                              <button
+                                key={i}
+                                onClick={() =>
+                                  setCurrentCarouselIndex((prev) => ({
+                                    ...prev,
+                                    [post.id]: i,
+                                  }))
+                                }
+                                className={cn(
+                                  "w-1.5 h-1.5 rounded-full transition-all",
+                                  i === currentImageIndex % validImages.length
+                                    ? "bg-white w-3"
+                                    : "bg-white/50"
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div
+                        className="w-14 h-14 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: `${colors.primary}20` }}
+                      >
+                        <Sparkles
+                          className="w-7 h-7"
+                          style={{ color: colors.primary }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {post.featured && (
+                    <span
+                      className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-semibold text-white"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      Featured
+                    </span>
+                  )}
+                </div>
+
+                {/* Edit Mode: Image Controls */}
+                {isEditMode && (
+                  <div
+                    className="px-3 py-2 border-b flex flex-wrap gap-1.5 items-center"
+                    style={{ borderColor: colors.border }}
+                  >
+                    <span
+                      className="text-xs"
+                      style={{ color: colors.textSecondary }}
+                    >
+                      Images:
+                    </span>
+                    {(post.images || []).map((img, imgIndex) => (
+                      <div key={imgIndex} className="relative group/thumb">
+                        {img.previewUrl ? (
+                          <div
+                            className="w-8 h-8 rounded overflow-hidden border"
+                            style={{ borderColor: colors.border }}
+                          >
+                            <img
+                              src={img.previewUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              onClick={() => removeImage(post.id, imgIndex)}
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover/thumb:opacity-100"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            className="w-8 h-8 rounded border-2 border-dashed flex items-center justify-center cursor-pointer"
+                            style={{ borderColor: colors.border }}
+                          >
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file)
+                                  handleImageUpload(post.id, imgIndex, file);
+                              }}
+                            />
+                            <span className="text-gray-400">+</span>
+                          </label>
+                        )}
+                      </div>
+                    ))}
+                    {(post.images || []).length < 5 && (
+                      <button
+                        onClick={() => addNewImageSlot(post.id)}
+                        className="w-8 h-8 rounded border-2 border-dashed flex items-center justify-center"
+                        style={{
+                          borderColor: colors.primary,
+                          color: colors.primary,
+                        }}
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="p-4">
+                  <div
+                    className="flex items-center gap-2 text-xs mb-2"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    <span>{formatDate(post.date)}</span>
+                    <span>•</span>
+                    <EditableText
+                      value={post.author}
+                      onChange={(author) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, author };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Author"
+                      editIndicator="none"
+                    />
+                  </div>
+                  <h3
+                    className="font-bold text-lg mb-2"
+                    style={{ color: colors.textPrimary }}
+                  >
+                    <EditableText
+                      value={post.title}
+                      onChange={(title) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, title };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Post title"
+                      editIndicator="icon"
+                    />
+                  </h3>
+                  <p
+                    className="text-sm line-clamp-2 mb-3"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    <EditableText
+                      value={post.excerpt}
+                      onChange={(excerpt) => {
+                        const updated = [...blogPosts];
+                        updated[postIndex] = { ...post, excerpt };
+                        onUpdate(updated);
+                      }}
+                      as="span"
+                      placeholder="Brief description"
+                      editIndicator="none"
+                    />
+                  </p>
+                  <div
+                    className="flex items-center gap-1 text-sm font-semibold cursor-pointer"
+                    style={{ color: colors.primary }}
+                  >
+                    Read More <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* Add Post Button (Edit Mode) */}
+        {isEditMode && blogPosts.length < 6 && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                const newPost = {
+                  id: `blog-${Date.now()}`,
+                  title: "New Blog Post",
+                  excerpt: "Add a description here...",
+                  date: new Date().toISOString().split("T")[0],
+                  author: "Author Name",
+                  category: "Health",
+                  images: [],
+                  featured: false,
+                };
+                onUpdate([...blogPosts, newPost]);
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all"
+              style={{
+                backgroundColor: `${colors.primary}10`,
+                color: colors.primary,
+                border: `2px dashed ${colors.primary}`,
+              }}
+            >
+              + Add Blog Post
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

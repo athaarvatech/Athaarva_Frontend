@@ -82,6 +82,7 @@ const statusConfig: Record<
 };
 
 export default function TenantsPage() {
+  console.log('🔵 TenantsPage rendering...');
   const router = useRouter();
   const [tenants, setTenants] = useState<TenantResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +90,7 @@ export default function TenantsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [actionDialog, setActionDialog] = useState<{
-    type: "suspend" | "activate" | "archive" | null;
+    type: "suspend" | "activate" | "archive" | "approve" | null;
     tenant: TenantResponse | null;
   }>({
     type: null,
@@ -98,17 +99,20 @@ export default function TenantsPage() {
 
   // Fetch tenants
   const fetchTenants = useCallback(async () => {
+    console.log('🔄 Fetching tenants...');
     setLoading(true);
     try {
       const params: { status?: string; limit?: number } = { limit: 100 };
       if (statusFilter !== "all") {
         params.status = statusFilter;
       }
+      console.log('📡 Calling API with params:', params);
       const data = await superAdminAPI.listTenants(params);
+      console.log('✅ Tenants loaded:', data);
       setTenants(data);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch tenants:", err);
+      console.error("❌ Failed to fetch tenants:", err);
       setError("Failed to load tenants. Please try again.");
     } finally {
       setLoading(false);
@@ -132,9 +136,10 @@ export default function TenantsPage() {
 
   // Handle tenant actions
   const handleAction = async (
-    action: "suspend" | "activate" | "archive",
+    action: "suspend" | "activate" | "archive" | "approve",
     tenant: TenantResponse
   ) => {
+    console.log('🎬 Action triggered:', action, 'for tenant:', tenant.display_name);
     try {
       if (action === "archive") {
         await superAdminAPI.archiveTenant(tenant.id);
@@ -142,11 +147,21 @@ export default function TenantsPage() {
         await superAdminAPI.updateTenant(tenant.id, { status: "suspended" });
       } else if (action === "activate") {
         await superAdminAPI.updateTenant(tenant.id, { status: "active" });
+      } else if (action === "approve") {
+        const result = await superAdminAPI.approveTenant(tenant.id);
+        if (result.credentials_sent) {
+          alert(`Hospital approved! Login credentials sent to ${tenant.contact_email}`);
+        } else if (result.admin_created) {
+          alert(`Hospital approved! Admin account created but email failed to send.`);
+        } else {
+          alert(`Hospital approved and activated.`);
+        }
       }
       fetchTenants();
       setActionDialog({ type: null, tenant: null });
     } catch (err) {
       console.error("Action failed:", err);
+      alert(`Action failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -333,12 +348,12 @@ export default function TenantsPage() {
               {filteredTenants.map((tenant) => (
                 <TableRow
                   key={tenant.id}
-                  className="border-white/10 hover:bg-white/5 cursor-pointer"
-                  onClick={() =>
-                    router.push(`/super-admin/tenants/${tenant.id}`)
-                  }
+                  className="border-white/10 hover:bg-white/5"
                 >
-                  <TableCell>
+                  <TableCell 
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center">
                         <Building2 className="h-5 w-5 text-white/70" />
@@ -349,7 +364,10 @@ export default function TenantsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell 
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  >
                     <div>
                       <p className="font-medium">
                         {tenant.contact_name || "—"}
@@ -359,7 +377,10 @@ export default function TenantsPage() {
                       </p>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell 
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  >
                     <Badge
                       className={cn(
                         "gap-1.5",
@@ -370,7 +391,10 @@ export default function TenantsPage() {
                       {statusConfig[tenant.status]?.label || tenant.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell 
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  >
                     <Badge
                       variant="outline"
                       className="border-white/20 text-white/70"
@@ -378,19 +402,25 @@ export default function TenantsPage() {
                       {tenant.onboarding_stage || "Not Started"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-white/60">
+                  <TableCell 
+                    className="text-white/60 cursor-pointer"
+                    onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                  >
                     {new Date(tenant.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         asChild
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('🔘 Dropdown clicked for:', tenant.display_name);
+                          }}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -441,6 +471,18 @@ export default function TenantsPage() {
                             Reactivate Tenant
                           </DropdownMenuItem>
                         )}
+                        {tenant.status === "pending" && (
+                          <DropdownMenuItem
+                            className="text-emerald-400"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActionDialog({ type: "approve", tenant });
+                            }}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Approve Hospital
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           className="text-red-400"
                           onClick={(e) => {
@@ -474,6 +516,7 @@ export default function TenantsPage() {
               {actionDialog.type === "suspend" && "Suspend Tenant"}
               {actionDialog.type === "activate" && "Reactivate Tenant"}
               {actionDialog.type === "archive" && "Archive Tenant"}
+              {actionDialog.type === "approve" && "Approve Hospital"}
             </DialogTitle>
             <DialogDescription className="text-white/60">
               {actionDialog.type === "suspend" &&
@@ -482,6 +525,8 @@ export default function TenantsPage() {
                 `Are you sure you want to reactivate ${actionDialog.tenant?.display_name}? Users will regain access to the platform.`}
               {actionDialog.type === "archive" &&
                 `Are you sure you want to archive ${actionDialog.tenant?.display_name}? This action cannot be undone.`}
+              {actionDialog.type === "approve" &&
+                `Approve ${actionDialog.tenant?.display_name}? This will activate the hospital, create admin account, and send login credentials via email.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -499,6 +544,8 @@ export default function TenantsPage() {
                 actionDialog.type === "suspend" &&
                   "bg-yellow-600 hover:bg-yellow-700",
                 actionDialog.type === "activate" &&
+                  "bg-emerald-600 hover:bg-emerald-700",
+                actionDialog.type === "approve" &&
                   "bg-emerald-600 hover:bg-emerald-700"
               )}
               onClick={() =>
@@ -510,6 +557,7 @@ export default function TenantsPage() {
               {actionDialog.type === "suspend" && "Suspend"}
               {actionDialog.type === "activate" && "Reactivate"}
               {actionDialog.type === "archive" && "Archive"}
+              {actionDialog.type === "approve" && "Approve & Activate"}
             </Button>
           </DialogFooter>
         </DialogContent>

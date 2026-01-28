@@ -10,6 +10,8 @@ import React, {
   useRef,
   useMemo,
 } from "react";
+import { toast } from "@/lib/toast";
+import { onboardingAPI } from "@/lib/api/onboarding";
 
 // ============================================================================
 // TYPE DEFINITIONS - Operational Hospital Configuration
@@ -562,6 +564,60 @@ export interface CollaboratorData {
   status: "pending" | "active";
 }
 
+// ============================================================================
+// ADMIN CONTROL & DOMAIN TYPES (NEW)
+// ============================================================================
+
+export interface AdminControlData {
+  admin: {
+    full_name: string;
+    email: string;
+    phone: string;
+    age: string;
+  };
+  credentials: {
+    username: string;
+    password: string;
+    generated: boolean;
+  };
+  domain: {
+    subdomain: string;
+    verified: boolean;
+  };
+}
+
+// ============================================================================
+// LOGIN PAGE CUSTOMIZATION TYPES (NEW)
+// ============================================================================
+
+export interface LoginPageConfig {
+  templateId?: string;
+  templateName?: string;
+  templatePreview?: string;
+  // Layout settings
+  layoutTemplate: "split-left" | "split-right" | "centered" | "full-right";
+  // Background settings
+  backgroundImage: string;
+  backgroundBlur: number;
+  backgroundColor: string;
+  useGradientOverlay: boolean;
+  gradientDirection: "to-r" | "to-b" | "to-br" | "to-bl";
+  formPosition: "center" | "left" | "right";
+  formStyle: "card" | "transparent" | "floating" | "minimal";
+  // Content settings
+  showHospitalLogo: boolean;
+  showAthaarvaBranding: boolean;
+  athaarvaPosition: "footer" | "form-bottom";
+  customWelcomeText: string;
+  customSubtext: string;
+  // New fields for two-panel design
+  customHeadline: string;
+  customTagline: string;
+  primaryColor: string;
+  showFeatures: boolean;
+  showStats: boolean;
+}
+
 export interface HospitalOnboardingData {
   // Step 0: Template Selection & Invitation Recap (UNCHANGED)
   invitation: {
@@ -611,6 +667,7 @@ export interface HospitalOnboardingData {
       primary: string;
       secondary: string;
     };
+    document_template_style?: "classic" | "modern" | "minimal";
     report_header: {
       show_logo: boolean;
       show_address: boolean;
@@ -626,6 +683,9 @@ export interface HospitalOnboardingData {
     invoice_header_format: "standard" | "detailed";
     watermark_text?: string;
   };
+
+  // Step 3.5: Login Page Customization (NEW)
+  loginPageConfig: LoginPageConfig;
 
   // Step 4: Facility Management (NEW - Infrastructure for IPD)
   facility: {
@@ -653,6 +713,14 @@ export interface HospitalOnboardingData {
     consultation_params: ConsultationParameters;
     alerts_config: ClinicalAlertsConfiguration;
   };
+
+  // Step 7.5: Licensing & Certification (NEW) - Simplified
+  licenses: Array<{
+    id: string;
+    name: string;
+    certificate_file?: File | string;
+    certificate_file_name?: string;
+  }>;
 
   // Step 8: Pharmacy & Inventory Configuration (NEW)
   pharmacy: {
@@ -696,6 +764,9 @@ export interface HospitalOnboardingData {
 
   // Step 11: Admin & Staff Invitations (ENHANCED)
   adminTeam: TeamMemberData[];
+
+  // Admin Control & Domain Configuration (NEW)
+  adminControl: AdminControlData;
 
   // Step 12: Review & Submission (ENHANCED with Operational Readiness)
   review: {
@@ -802,6 +873,8 @@ export interface HospitalOnboardingContextType {
   currentStep: number;
   activityLog: ActivityLogEntry[];
   collaborators: CollaboratorData[];
+  lastSaved: Date | null;
+  isSaving: boolean;
   isStepValid: (step: number) => boolean;
   getStepCompletion: () => { [step: number]: boolean };
   updateData: <T extends keyof HospitalOnboardingData>(
@@ -890,6 +963,30 @@ const initialData: HospitalOnboardingData = {
     prescription_header_format: "standard",
     invoice_header_format: "standard",
     watermark_text: "",
+  },
+
+  // Step 3.5: Login Page Customization (NEW)
+  loginPageConfig: {
+    templateId: "healthcare-teal",
+    templateName: "Healthcare Teal",
+    backgroundImage: "/images/medical-background.jpg",
+    backgroundBlur: 4,
+    backgroundColor: "#0a0a0a",
+    useGradientOverlay: true,
+    gradientDirection: "to-r",
+    layoutTemplate: "centered",
+    formPosition: "center",
+    formStyle: "card",
+    showHospitalLogo: true,
+    showAthaarvaBranding: true,
+    athaarvaPosition: "footer",
+    customWelcomeText: "Welcome back",
+    customSubtext: "Sign in to access your healthcare portal",
+    customHeadline: "Welcome back",
+    customTagline: "Your care starts here",
+    primaryColor: "#007C7C",
+    showFeatures: true,
+    showStats: true,
   },
 
   // Step 4: Facility Management (NEW)
@@ -984,6 +1081,9 @@ const initialData: HospitalOnboardingData = {
     },
   },
 
+  // Step 7.5: Licensing & Certification (NEW)
+  licenses: [],
+
   // Step 8: Pharmacy & Inventory (NEW)
   pharmacy: {
     license: {
@@ -1050,6 +1150,25 @@ const initialData: HospitalOnboardingData = {
 
   // Step 11: Admin Team
   adminTeam: [],
+
+  // Admin Control & Domain Configuration
+  adminControl: {
+    admin: {
+      full_name: "",
+      email: "",
+      phone: "",
+      age: "",
+    },
+    credentials: {
+      username: "",
+      password: "",
+      generated: false,
+    },
+    domain: {
+      subdomain: "",
+      verified: false,
+    },
+  },
 
   // Step 12: Review & Submission (Enhanced)
   review: {
@@ -1123,7 +1242,7 @@ const initialData: HospitalOnboardingData = {
   },
 };
 
-const TOTAL_STEPS = 11; // 0-10 (removed integrations step)
+const TOTAL_STEPS = 10; // 0-9 (includes login page & document templates)
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -1179,6 +1298,8 @@ export const HospitalOnboardingProvider: React.FC<
   const [currentStep, setCurrentStep] = useState(0);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [collaborators, setCollaborators] = useState<CollaboratorData[]>([]);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ============================================================================
@@ -1253,123 +1374,77 @@ export const HospitalOnboardingProvider: React.FC<
   const isStepValid = useCallback(
     (step: number): boolean => {
       switch (step) {
-        case 0: // Template Selection (UNCHANGED)
+        case 0: // Invitation & Template Selection
           return !!data.template.selected_template;
 
-        case 1: // Organization Profile (Enhanced)
+        case 1: // Login Page Customization - visual selection
+          return !!data.loginPageConfig?.templateId;
+
+        case 2: // Organization Profile - Only check fields that exist in form
           const org = data.organizationProfile;
           return !!(
             org.legal_name &&
             org.registration_number &&
-            org.gst_number &&
-            org.pan_number &&
-            org.clinical_establishment_number &&
             org.established_date &&
-            org.ownership_model &&
-            org.bed_count_licensed > 0 &&
             org.timezone &&
             org.locale
           );
 
-        case 2: // Locations & Contacts (Enhanced)
+        case 3: // Locations & Contacts
           return (
             data.locations.length > 0 &&
             data.locations.every(
               (loc) =>
                 loc.name &&
-                loc.location_code &&
                 loc.address_line_1 &&
                 loc.city &&
                 loc.state &&
                 loc.pincode &&
-                isValidPhone(loc.contact_phone) &&
-                isValidEmail(loc.contact_email)
+                loc.contact_phone
             )
           );
 
-        case 3: // Branding & Report Configuration (Reduced)
-          const branding = data.branding;
-          return !!(
-            (branding.logo_url || branding.logo_file) &&
-            isValidHexColor(branding.colors.primary) &&
-            isValidHexColor(branding.colors.secondary)
-          );
-
-        case 4: // Facility Management (NEW)
-          // At least one wing with one ward and one bed
-          return (
-            data.facility.wings.length > 0 &&
-            data.facility.wings.some(
-              (wing) =>
-                wing.floors.length > 0 &&
-                wing.floors.some(
-                  (floor) =>
-                    floor.wards.length > 0 &&
-                    floor.wards.some((ward) => ward.beds.length > 0)
-                )
-            )
-          );
-
-        case 5: // Clinical Departments & Cost Centers (NEW)
+        case 4: // Departments - Only check what exists in form
           return (
             data.departments.length > 0 &&
-            data.departments.some((dept) => dept.is_opd_enabled) &&
             data.departments.every(
               (dept) =>
                 dept.name &&
-                dept.code &&
-                dept.cost_center_code &&
-                dept.default_consultation_duration > 0
+                dept.code
             )
           );
 
-        case 6: // Billing & Financial Configuration (NEW)
+        case 5: // Billing & Financial - Only bank details
           const billing = data.billing;
           return !!(
             billing.bank_details.bank_name &&
             billing.bank_details.account_number &&
             billing.bank_details.ifsc_code &&
-            billing.bank_details.beneficiary_name &&
-            billing.invoice_config.invoice_prefix &&
-            billing.invoice_config.receipt_prefix
+            billing.bank_details.beneficiary_name
           );
 
-        case 7: // Clinical Configuration (NEW)
-          const clinical = data.clinical;
+        case 6: // Document Templates - visual selection
+          return !!data.branding?.document_template_style;
+
+        case 7: // Licensing & Certification - at least one license with name and PDF
+          return (
+            data.licenses &&
+            data.licenses.length > 0 &&
+            data.licenses.some((license) => license.name && license.certificate_file)
+          );
+
+        case 8: // Admin Setup & Domain
           return !!(
-            clinical.consultation_params.default_opd_slot_duration > 0 &&
-            clinical.consultation_params.new_patient_slot_duration > 0 &&
-            clinical.prescription_config.default_prescription_language
+            data.adminControl?.admin?.full_name &&
+            data.adminControl?.admin?.email &&
+            data.adminControl?.domain?.subdomain
           );
 
-        case 8: // Pharmacy & Inventory Configuration (NEW)
-          const pharmacy = data.pharmacy;
-          return !!(
-            pharmacy.license.drug_license_number_retail &&
-            pharmacy.license.pharmacist_registration_number &&
-            pharmacy.license.pharmacist_name &&
-            pharmacy.stores.length > 0 &&
-            pharmacy.stores.some((store) => store.is_dispensing_point)
-          );
-
-        case 9: // Operational Policies & Scheduling (Enhanced)
-          const policies = data.operationalPolicies;
-          return !!(
-            policies.operating_hours.length > 0 &&
-            policies.appointment_policies.min_booking_advance_hours >= 0 &&
-            policies.ipd_policies.checkout_time
-          );
-
-        case 10: // Review & Submission (Enhanced)
+        case 9: // Review & Submission - basic acknowledgements
           const review = data.review;
           return !!(
             review.acknowledgements.terms &&
-            review.acknowledgements.privacy &&
-            review.acknowledgements.dpa &&
-            review.acknowledgements.baa &&
-            review.acknowledgements.sla &&
-            review.publication_plan.launch_mode &&
-            review.publication_plan.go_live_checklist_completed
+            review.acknowledgements.privacy
           );
 
         default:
@@ -1446,8 +1521,45 @@ export const HospitalOnboardingProvider: React.FC<
   // PERSISTENCE
   // ============================================================================
 
+  // Track last backend sync to avoid excessive API calls
+  const lastBackendSyncRef = useRef<number>(0);
+  const BACKEND_SYNC_INTERVAL = 10000; // 10 seconds minimum between backend syncs
+
+  const saveToBackend = useCallback(async (stepData: Record<string, unknown>, stepNumber: number) => {
+    // Skip step 0 - it's handled by acceptInvitation, not saveStep
+    // Backend expects steps 1-10
+    if (stepNumber < 1) {
+      console.log("[Autosave] Step 0 is handled by acceptInvitation, skipping backend sync");
+      return;
+    }
+
+    // Only sync to backend if we have an active session
+    if (!onboardingAPI.hasActiveSession()) {
+      console.log("[Autosave] No active session, skipping backend sync");
+      return;
+    }
+
+    // Check if enough time has passed since last sync
+    const now = Date.now();
+    if (now - lastBackendSyncRef.current < BACKEND_SYNC_INTERVAL) {
+      console.log("[Autosave] Too soon since last sync, skipping");
+      return;
+    }
+
+    try {
+      lastBackendSyncRef.current = now;
+      await onboardingAPI.saveStep(stepNumber, stepData, false);
+      console.log(`[Autosave] Successfully synced step ${stepNumber} to backend`);
+    } catch (error) {
+      // Silent failure for autosave - don't disrupt user experience
+      console.warn("[Autosave] Backend sync failed:", error);
+      // Optionally show a subtle indicator but don't toast
+    }
+  }, []);
+
   const saveToLocalStorage = useCallback(() => {
     try {
+      setIsSaving(true);
       const invitationId = data.invitation.invitation_id || "default";
       const storageKey = `hospital-onboarding-${invitationId}`;
 
@@ -1470,10 +1582,21 @@ export const HospitalOnboardingProvider: React.FC<
         `${storageKey}-collaborators`,
         JSON.stringify(collaborators)
       );
+      
+      setLastSaved(new Date());
+      
+      // Also sync to backend (non-blocking)
+      saveToBackend(dataToSave, currentStep);
+      
+      setTimeout(() => {
+        setIsSaving(false);
+        // Removed toast - using top banner in page.tsx instead
+      }, 300);
     } catch (error) {
       console.error("Failed to save onboarding data:", error);
+      setIsSaving(false);
     }
-  }, [data, currentStep, activityLog, collaborators]);
+  }, [data, currentStep, activityLog, collaborators, saveToBackend]);
 
   const loadFromLocalStorage = useCallback(() => {
     try {
@@ -1609,6 +1732,8 @@ export const HospitalOnboardingProvider: React.FC<
         version: data.template.selected_template?.version,
         preview_snapshot_url:
           data.template.selected_template?.preview_snapshot_url,
+        // Include full customized blueprint for persistence
+        customized_blueprint: data.template.selected_template?.customizedBlueprint,
       },
 
       // Step 1: Organization Profile
@@ -1620,7 +1745,7 @@ export const HospitalOnboardingProvider: React.FC<
         // Remove file objects for serialization
       })),
 
-      // Step 3: Branding & Report Configuration
+      // Step 3: Branding & Report Configuration (includes template content for DB)
       branding: {
         logo_url: data.branding.logo_url,
         logo_size: data.branding.logo_size,
@@ -1631,6 +1756,11 @@ export const HospitalOnboardingProvider: React.FC<
         prescription_header_format: data.branding.prescription_header_format,
         invoice_header_format: data.branding.invoice_header_format,
         watermark_text: data.branding.watermark_text,
+        // NEW: Include template data for database persistence
+        template_id: data.template.selected_template?.id,
+        template_content: data.template.selected_template?.customizedBlueprint,
+        // NEW: Include login page config for database persistence
+        login_page_config: data.loginPageConfig,
       },
 
       // Step 4: Facility Management (Wings/Floors/Wards/Beds)
@@ -1743,6 +1873,27 @@ export const HospitalOnboardingProvider: React.FC<
   }, []);
 
   // ============================================================================
+  // TOKEN REFRESH - Auto-refresh token before expiry
+  // ============================================================================
+  
+  useEffect(() => {
+    // Refresh token every 12 hours (half of 24h expiry) to ensure it never expires
+    const refreshInterval = setInterval(async () => {
+      try {
+        if (onboardingAPI.hasActiveSession()) {
+          await onboardingAPI.refreshToken();
+          console.log('[TokenRefresh] Token refreshed successfully');
+        }
+      } catch (error) {
+        console.error('[TokenRefresh] Failed to refresh token:', error);
+        // Don't show toast - silent refresh, will be handled on next API call
+      }
+    }, 12 * 60 * 60 * 1000); // 12 hours
+    
+    return () => clearInterval(refreshInterval);
+  }, []);
+
+  // ============================================================================
   // CONTEXT VALUE
   // ============================================================================
 
@@ -1752,6 +1903,8 @@ export const HospitalOnboardingProvider: React.FC<
       currentStep,
       activityLog,
       collaborators,
+      lastSaved,
+      isSaving,
       isStepValid,
       getStepCompletion,
       updateData,
@@ -1771,6 +1924,8 @@ export const HospitalOnboardingProvider: React.FC<
       currentStep,
       activityLog,
       collaborators,
+      lastSaved,
+      isSaving,
       isStepValid,
       getStepCompletion,
       updateData,

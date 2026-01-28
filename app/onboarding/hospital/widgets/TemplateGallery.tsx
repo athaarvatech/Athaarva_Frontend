@@ -26,9 +26,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type {
-  TemplateData,
-  CustomizedTemplateData,
+import {
+  useHospitalOnboarding,
+  type TemplateData,
+  type CustomizedTemplateData,
 } from "@/contexts/HospitalOnboardingContextV2";
 import {
   TEMPLATE_BLUEPRINTS,
@@ -41,6 +42,7 @@ import {
   AhtarvaMedicalCenterTemplate,
   AhtarvaHealthcareTemplate,
 } from "./templates";
+import { TemplateGuidedTour } from "./TemplateTour";
 
 // Re-export for convenience
 export type { CustomizedTemplateData } from "@/contexts/HospitalOnboardingContextV2";
@@ -131,9 +133,80 @@ export function TemplateGallery({
   const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
     null
   );
+  const [showTour, setShowTour] = useState(true);
+
+  const handleRestartTour = () => {
+    localStorage.removeItem("template-tour-completed");
+    sessionStorage.removeItem("template-tour-skipped");
+    setShowTour(false);
+    setTimeout(() => setShowTour(true), 100);
+  };
+
+  // Demo actions for the guided tour to control UI
+  const tourDemoActions = {
+    openPreview: (templateId: string) => {
+      const template = templates.find((t: TemplateData) => t.id === templateId);
+      if (template) {
+        setPreviewTemplate(template);
+      }
+    },
+    toggleEditMode: (enabled: boolean) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "toggleEditMode", value: enabled },
+        })
+      );
+    },
+    openColorPicker: () => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "openColorPicker" },
+        })
+      );
+    },
+    changeColor: (colorIndex: number) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "changeColor", value: colorIndex },
+        })
+      );
+    },
+    openFontPicker: () => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "openFontPicker" },
+        })
+      );
+    },
+    changeFont: (fontIndex: number) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "changeFont", value: fontIndex },
+        })
+      );
+    },
+    toggleFullscreen: (enabled: boolean) => {
+      window.dispatchEvent(
+        new CustomEvent("tour-demo-action", {
+          detail: { action: "toggleFullscreen", value: enabled },
+        })
+      );
+    },
+  };
 
   return (
     <div className={cn("space-y-6", className)}>
+      {/* Guided Tour */}
+      {showTour && (
+        <TemplateGuidedTour
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+          autoStart={true}
+          enableAutoPlay={true}
+          demoActions={tourDemoActions}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -144,12 +217,23 @@ export function TemplateGallery({
             Select a design that best represents your hospital&apos;s identity
           </p>
         </div>
-        <Badge
-          variant="secondary"
-          className="bg-healthcare-primary/10 text-healthcare-primary"
-        >
-          {templates.length} Templates
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRestartTour}
+            className="text-teal-600 border-teal-200 hover:bg-teal-50"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Show Tour
+          </Button>
+          <Badge
+            variant="secondary"
+            className="bg-healthcare-primary/10 text-healthcare-primary"
+          >
+            {templates.length} Templates
+          </Badge>
+        </div>
       </div>
 
       {/* Gallery Grid */}
@@ -282,6 +366,7 @@ function TemplateCard({
           : "border-gray-200 hover:border-healthcare-primary/50 hover:shadow-md"
       )}
       onClick={onSelect}
+      data-tour="template-card"
     >
       {/* Thumbnail - Mini Preview */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -302,16 +387,17 @@ function TemplateCard({
           </div>
         )}
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+        {/* Overlay on hover - Enhanced visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/70 transition-all flex items-center justify-center">
           <Button
             variant="secondary"
             size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            className="opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900 border-2 border-white/50 hover:border-healthcare-primary hover:scale-105"
             onClick={(e) => {
               e.stopPropagation();
               onPreview();
             }}
+            data-tour="preview-button"
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview
@@ -528,13 +614,57 @@ function TemplatePreviewModal({
   onSelect,
   isSelected,
 }: TemplatePreviewModalProps) {
+  const { data } = useHospitalOnboarding();
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
     "desktop"
   );
   const [isEditMode, setIsEditMode] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Listen for tour demo actions
+  useEffect(() => {
+    const handleTourAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { action, value } = customEvent.detail;
+
+      switch (action) {
+        case "toggleEditMode":
+          setIsEditMode(value);
+          break;
+        case "openColorPicker":
+          setShowThemePanel(true);
+          break;
+        case "changeColor":
+          // Will be handled by ThemeCustomizer
+          break;
+        case "openFontPicker":
+          setShowThemePanel(true);
+          break;
+        case "changeFont":
+          // Will be handled by ThemeCustomizer
+          break;
+        case "toggleFullscreen":
+          setIsFullScreen(value);
+          break;
+      }
+    };
+
+    window.addEventListener("tour-demo-action", handleTourAction);
+    return () => {
+      window.removeEventListener("tour-demo-action", handleTourAction);
+    };
+  }, []);
+  // Get licenses from context and convert to template format
+  const contextLicenses = useMemo(() => {
+    return (data.licenses || []).map((license) => ({
+      id: license.id,
+      name: license.name,
+      certificateUrl: license.certificate_file instanceof File 
+        ? URL.createObjectURL(license.certificate_file) 
+        : license.certificate_file || "",
+    }));
+  }, [data.licenses]);
 
   // Keyboard handler for ESC key to exit fullscreen
   useEffect(() => {
@@ -563,13 +693,20 @@ function TemplatePreviewModal({
   );
   const [editedBlueprint, setEditedBlueprint] =
     useState<TemplateBlueprint | null>(
-      originalBlueprint ? { ...originalBlueprint } : null
+      originalBlueprint ? { ...originalBlueprint, licenses: contextLicenses } : null
     );
+
+  // Update licenses when context changes
+  useEffect(() => {
+    if (editedBlueprint) {
+      setEditedBlueprint(prev => prev ? { ...prev, licenses: contextLicenses } : null);
+    }
+  }, [contextLicenses]);
 
   // Reset handler
   const handleReset = () => {
     if (originalBlueprint) {
-      setEditedBlueprint({ ...originalBlueprint });
+      setEditedBlueprint({ ...originalBlueprint, licenses: contextLicenses });
     }
   };
 
@@ -621,6 +758,7 @@ function TemplatePreviewModal({
             },
             quickLinks: editedBlueprint.footer.quickLinks || [],
           },
+          licenses: editedBlueprint.licenses || [],
         }
       : undefined;
 
@@ -721,6 +859,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="color-picker"
                     >
                       <Palette className="w-4 h-4" />
                       <span className="hidden sm:inline">Colors</span>
@@ -864,6 +1003,7 @@ function TemplatePreviewModal({
                       variant="outline"
                       size="sm"
                       className="gap-1.5 hover:border-healthcare-primary hover:text-healthcare-primary"
+                      data-tour="font-picker"
                     >
                       <Type className="w-4 h-4" />
                       <span className="hidden sm:inline">Fonts</span>
@@ -999,6 +1139,7 @@ function TemplatePreviewModal({
               size="sm"
               onClick={() => setIsFullScreen(true)}
               className="text-gray-600 hover:text-healthcare-primary hover:border-healthcare-primary"
+              data-tour="fullscreen-button"
             >
               <Maximize2 className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Full Screen</span>
@@ -1013,6 +1154,7 @@ function TemplatePreviewModal({
                 isEditMode &&
                   "bg-healthcare-primary hover:bg-healthcare-primary/90"
               )}
+              data-tour="edit-toggle"
             >
               {isEditMode ? (
                 <>
@@ -1214,7 +1356,7 @@ function TemplatePreviewModal({
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-600 rounded-full z-10" />
               )}
 
-              {/* Screen Container */}
+              {/* Screen Container - Enhanced sizing for better preview */}
               <div
                 className={cn(
                   "bg-white overflow-hidden",
@@ -1225,10 +1367,10 @@ function TemplatePreviewModal({
                 style={{
                   height:
                     device === "desktop"
-                      ? "600px"
+                      ? "650px"
                       : device === "tablet"
-                      ? "580px"
-                      : "480px",
+                      ? "620px"
+                      : "520px",
                   overflow: "hidden",
                 }}
               >
@@ -1314,6 +1456,7 @@ function TemplatePreviewModal({
               onClick={handleSelect}
               className="bg-healthcare-primary hover:bg-healthcare-primary/90"
               size="lg"
+              data-tour="select-button"
             >
               {isSelected ? (
                 <>

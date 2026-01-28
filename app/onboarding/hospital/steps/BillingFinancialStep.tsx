@@ -207,7 +207,7 @@ export default function BillingFinancialStep() {
           <TabsTrigger value="tax">Tax & GST</TabsTrigger>
           <TabsTrigger value="payment">Payment</TabsTrigger>
           <TabsTrigger value="bank">Bank Details</TabsTrigger>
-          <TabsTrigger value="panels">TPA & Corporate</TabsTrigger>
+          <TabsTrigger value="panels">TPA & Corporate (Optional)</TabsTrigger>
         </TabsList>
 
         {/* Tax Configuration Tab */}
@@ -659,10 +659,10 @@ export default function BillingFinancialStep() {
                 <Shield className="w-5 h-5 text-purple-600" />
                 <div>
                   <h4 className="font-medium text-gray-900">
-                    TPA & Insurance Panels
+                    TPA & Insurance Panels (Optional)
                   </h4>
                   <p className="text-xs text-gray-500">
-                    Configure empaneled TPAs and insurers
+                    Configure empaneled TPAs and insurers - Skip if not applicable
                   </p>
                 </div>
               </div>
@@ -939,10 +939,10 @@ export default function BillingFinancialStep() {
                 <Briefcase className="w-5 h-5 text-blue-600" />
                 <div>
                   <h4 className="font-medium text-gray-900">
-                    Corporate Panels
+                    Corporate Panels (Optional)
                   </h4>
                   <p className="text-xs text-gray-500">
-                    Configure corporate tie-ups
+                    Configure corporate tie-ups - Skip if not applicable
                   </p>
                 </div>
               </div>

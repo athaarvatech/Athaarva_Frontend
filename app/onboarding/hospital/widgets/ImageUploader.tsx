@@ -2,14 +2,16 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Camera, Trash2, RefreshCw } from "lucide-react";
+import { Upload, X, Camera, Trash2, RefreshCw, ImageIcon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ImageToolbox, type ImageCategory } from "@/components/onboarding/ImageToolbox";
 
 export interface UploadedImage {
   file: File | null;
   previewUrl: string;
   originalUrl?: string;
+  source?: "upload" | "stock" | "ai" | "recent";
 }
 
 export interface ImageUploaderProps {
@@ -23,6 +25,10 @@ export interface ImageUploaderProps {
   variant?: "default" | "compact" | "circle" | "hero";
   showOverlay?: boolean;
   disabled?: boolean;
+  /** Enable the ImageToolbox for stock images, AI generation, etc. */
+  enableToolbox?: boolean;
+  /** Category for ImageToolbox filtering */
+  toolboxCategory?: ImageCategory;
 }
 
 const aspectRatioClasses = {
@@ -36,6 +42,7 @@ const aspectRatioClasses = {
 /**
  * ImageUploader - A component for uploading and previewing images in the canvas editor.
  * Supports drag-and-drop, click to upload, and preview with remove functionality.
+ * Now also supports ImageToolbox integration for stock images, AI generation, etc.
  */
 export function ImageUploader({
   value,
@@ -48,10 +55,23 @@ export function ImageUploader({
   variant = "default",
   showOverlay = true,
   disabled = false,
+  enableToolbox = false,
+  toolboxCategory = "general",
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Handler for ImageToolbox selection
+  const handleToolboxSelect = useCallback((url: string, metadata?: { source: "ai" | "stock" | "upload" | "recent" }) => {
+    setError(null);
+    onChange({
+      file: null,
+      previewUrl: url,
+      originalUrl: value?.originalUrl,
+      source: metadata?.source || "stock",
+    });
+  }, [onChange, value?.originalUrl]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -76,6 +96,7 @@ export function ImageUploader({
         file,
         previewUrl,
         originalUrl: value?.originalUrl,
+        source: "upload",
       });
     },
     [acceptedTypes, maxSizeMB, onChange, value?.originalUrl]
@@ -267,6 +288,48 @@ export function ImageUploader({
             <p className="text-xs text-gray-400 mt-1">
               PNG, JPG, WebP up to {maxSizeMB}MB
             </p>
+            
+            {/* ImageToolbox Integration */}
+            {enableToolbox && !disabled && (
+              <div className="mt-3 flex gap-2">
+                <ImageToolbox
+                  onImageSelect={handleToolboxSelect}
+                  category={toolboxCategory}
+                  currentImage={value?.previewUrl}
+                  title="Choose Image"
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ImageIcon className="w-3 h-3 mr-1" />
+                      Stock
+                    </Button>
+                  }
+                />
+                <ImageToolbox
+                  onImageSelect={handleToolboxSelect}
+                  category={toolboxCategory}
+                  currentImage={value?.previewUrl}
+                  title="AI Image Generator"
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      AI Generate
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </div>
         )}
       </motion.div>
@@ -323,9 +386,10 @@ export function AvatarUploader(
 
 /**
  * HeroImageUploader - Specialized uploader for hero section images
+ * Includes ImageToolbox integration for stock images and AI generation
  */
 export function HeroImageUploader(
-  props: Omit<ImageUploaderProps, "aspectRatio" | "variant">
+  props: Omit<ImageUploaderProps, "aspectRatio" | "variant" | "enableToolbox" | "toolboxCategory">
 ) {
   return (
     <ImageUploader
@@ -333,15 +397,18 @@ export function HeroImageUploader(
       aspectRatio="landscape"
       variant="hero"
       placeholder="Upload hero image or video thumbnail"
+      enableToolbox={true}
+      toolboxCategory="banner"
     />
   );
 }
 
 /**
  * FacilityImageUploader - Specialized uploader for facility photos
+ * Includes ImageToolbox integration for stock images
  */
 export function FacilityImageUploader(
-  props: Omit<ImageUploaderProps, "aspectRatio" | "variant">
+  props: Omit<ImageUploaderProps, "aspectRatio" | "variant" | "enableToolbox" | "toolboxCategory">
 ) {
   return (
     <ImageUploader
@@ -349,6 +416,8 @@ export function FacilityImageUploader(
       aspectRatio="landscape"
       variant="default"
       placeholder="Upload facility photo"
+      enableToolbox={true}
+      toolboxCategory="general"
     />
   );
 }

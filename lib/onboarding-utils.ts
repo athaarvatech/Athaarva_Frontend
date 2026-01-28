@@ -202,6 +202,63 @@ export async function uploadDocument(
 }
 
 /**
+ * Validate image dimensions
+ */
+export async function validateImageDimensions(
+  file: File,
+  options: {
+    minWidth?: number;
+    minHeight?: number;
+    maxWidth?: number;
+    maxHeight?: number;
+  } = {}
+): Promise<{ valid: boolean; error?: string; dimensions?: { width: number; height: number } }> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith("image/")) {
+      resolve({ valid: true }); // Skip for non-images
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      
+      const { width, height } = img;
+      const { minWidth = 0, minHeight = 0, maxWidth = Infinity, maxHeight = Infinity } = options;
+
+      if (width < minWidth || height < minHeight) {
+        resolve({
+          valid: false,
+          error: `Image must be at least ${minWidth}×${minHeight}px (current: ${width}×${height}px)`,
+          dimensions: { width, height },
+        });
+        return;
+      }
+
+      if (width > maxWidth || height > maxHeight) {
+        resolve({
+          valid: false,
+          error: `Image must be at most ${maxWidth}×${maxHeight}px (current: ${width}×${height}px)`,
+          dimensions: { width, height },
+        });
+        return;
+      }
+
+      resolve({ valid: true, dimensions: { width, height } });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ valid: false, error: "Failed to load image" });
+    };
+
+    img.src = url;
+  });
+}
+
+/**
  * Validate file size and type
  */
 export function validateFile(

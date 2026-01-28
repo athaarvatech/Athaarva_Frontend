@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Building2, FileText, Globe } from "lucide-react";
+import { Building2, FileText, Globe, CheckCircle } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SmartInput } from "@/components/ui/smart-input";
 import {
   Select,
   SelectContent,
@@ -50,6 +51,11 @@ export default function OrganizationProfileStep() {
     updateData("organizationProfile", { [field]: value });
   };
 
+  // Validation helpers
+  const isLegalNameValid = profile.legal_name && profile.legal_name.length >= 3;
+  const isRegistrationValid = profile.registration_number && profile.registration_number.length >= 5;
+  const isEstablishedDateValid = profile.established_date && profile.established_date.length > 0;
+
   return (
     <div className="space-y-6">
       {/* Section: Legal Information */}
@@ -86,10 +92,13 @@ export default function OrganizationProfileStep() {
               ],
             }}
           >
-            <Input
+            <SmartInput
               value={profile.legal_name}
               onChange={(e) => handleChange("legal_name", e.target.value)}
               placeholder="e.g., City Care Hospital Pvt. Ltd."
+              isValid={isLegalNameValid}
+              showValidation={true}
+              errorMessage="Legal name must be at least 3 characters"
             />
           </FormField>
 
@@ -118,114 +127,28 @@ export default function OrganizationProfileStep() {
                 "Company registration or incorporation number issued by the registrar",
             }}
           >
-            <Input
+            <SmartInput
               value={profile.registration_number}
               onChange={(e) =>
                 handleChange("registration_number", e.target.value)
               }
               placeholder="e.g., U85110DL2010PTC123456"
+              isValid={isRegistrationValid}
+              showValidation={true}
+              errorMessage="Registration number must be at least 5 characters"
             />
           </FormField>
 
           <FormField label="Established Date" required>
-            <Input
+            <SmartInput
               type="date"
               value={profile.established_date}
               onChange={(e) => handleChange("established_date", e.target.value)}
               max={new Date().toISOString().split("T")[0]}
+              isValid={isEstablishedDateValid}
+              showValidation={true}
+              errorMessage="Please select an established date"
             />
-          </FormField>
-        </div>
-      </motion.div>
-
-      {/* Section: Tax & Compliance */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white border border-gray-200 rounded-lg p-6"
-      >
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-            <FileText className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Tax & Compliance IDs
-            </h3>
-            <p className="text-sm text-gray-600">
-              Required for billing and regulatory compliance
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            label="GST Number"
-            required
-            help={{
-              title: "GST Number",
-              content:
-                "Goods and Services Tax Identification Number (15 characters)",
-              examples: ["22AAAAA0000A1Z5"],
-              tips: [
-                "Format: 2 digits (state) + 10 digits (PAN) + 1 digit + 1 letter + 1 alphanumeric",
-              ],
-            }}
-          >
-            <Input
-              value={profile.gst_number}
-              onChange={(e) =>
-                handleChange("gst_number", e.target.value.toUpperCase())
-              }
-              placeholder="e.g., 22AAAAA0000A1Z5"
-              maxLength={15}
-            />
-          </FormField>
-
-          <FormField
-            label="PAN Number"
-            required
-            help={{
-              title: "PAN Number",
-              content: "Permanent Account Number (10 characters)",
-              examples: ["AAAAA0000A"],
-              tips: ["Format: 5 letters + 4 digits + 1 letter"],
-            }}
-          >
-            <Input
-              value={profile.pan_number}
-              onChange={(e) =>
-                handleChange("pan_number", e.target.value.toUpperCase())
-              }
-              placeholder="e.g., AAAAA0000A"
-              maxLength={10}
-            />
-          </FormField>
-
-          <FormField
-            label="Ownership Model"
-            required
-            help={{
-              title: "Ownership Model",
-              content: "The legal structure of your organization",
-            }}
-          >
-            <Select
-              value={profile.ownership_model}
-              onValueChange={(value) => handleChange("ownership_model", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select ownership type" />
-              </SelectTrigger>
-              <SelectContent>
-                {OWNERSHIP_MODELS.map((model) => (
-                  <SelectItem key={model} value={model}>
-                    {model}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </FormField>
         </div>
       </motion.div>

@@ -7,6 +7,14 @@ export interface UploadedImageData {
   originalUrl?: string;
 }
 
+// License data type for certificates
+export interface LicenseData {
+  id: string;
+  name: string;
+  certificate_file?: File | string;
+  certificate_file_name?: string;
+}
+
 export type TemplateBlueprint = {
   id: TemplateData["id"];
   // Branding images
@@ -17,6 +25,8 @@ export type TemplateBlueprint = {
     doctorAvatars?: UploadedImageData[];
     facilityImages?: UploadedImageData[];
   };
+  // Licenses & Certifications for navbar dropdown
+  licenses?: LicenseData[];
   hero: {
     eyebrow: string;
     title: string;
@@ -112,6 +122,18 @@ export type TemplateBlueprint = {
     outcome: string;
   }>;
   faqs?: Array<{ question: string; answer: string }>;
+  // Blog/Social Media Section
+  blogPosts?: Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    author: string;
+    category: string;
+    images: UploadedImageData[]; // Multiple images for carousel
+    readTime?: string;
+    featured?: boolean;
+  }>;
 };
 
 export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
@@ -1534,6 +1556,41 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         { label: "Cookie Policy", href: "#" },
       ],
     },
+    blogPosts: [
+      {
+        id: "blog-1",
+        title: "The Future of Personalized Medicine",
+        excerpt:
+          "Discover how genetic testing and AI are revolutionizing treatment plans for individual patients.",
+        date: "2024-01-15",
+        author: "Dr. Sarah Johnson",
+        category: "Medical Innovation",
+        images: [],
+        featured: true,
+      },
+      {
+        id: "blog-2",
+        title: "Healthy Heart Tips for 2024",
+        excerpt:
+          "Expert cardiologists share essential lifestyle changes for better cardiovascular health.",
+        date: "2024-01-10",
+        author: "Dr. Michael Chen",
+        category: "Heart Health",
+        images: [],
+        featured: false,
+      },
+      {
+        id: "blog-3",
+        title: "Understanding Mental Wellness",
+        excerpt:
+          "Breaking the stigma around mental health and exploring modern therapeutic approaches.",
+        date: "2024-01-05",
+        author: "Dr. Emily Parker",
+        category: "Mental Health",
+        images: [],
+        featured: false,
+      },
+    ],
   },
 
   // ============================================================================
@@ -1732,6 +1789,41 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         { label: "HIPAA Compliance", href: "#" },
       ],
     },
+    blogPosts: [
+      {
+        id: "blog-1",
+        title: "Advancements in Robotic Surgery",
+        excerpt:
+          "How our state-of-the-art robotic surgery systems are improving patient outcomes and recovery times.",
+        date: "2024-01-20",
+        author: "Dr. Robert Williams",
+        category: "Surgical Innovation",
+        images: [],
+        featured: true,
+      },
+      {
+        id: "blog-2",
+        title: "Nutrition and Healing",
+        excerpt:
+          "The critical role of proper nutrition in post-surgical recovery and overall wellness.",
+        date: "2024-01-12",
+        author: "Dr. Amanda Foster",
+        category: "Nutrition",
+        images: [],
+        featured: false,
+      },
+      {
+        id: "blog-3",
+        title: "Preventive Care: Your First Defense",
+        excerpt:
+          "Regular health checkups can detect issues early. Learn about our comprehensive screening programs.",
+        date: "2024-01-08",
+        author: "Dr. James Wilson",
+        category: "Preventive Care",
+        images: [],
+        featured: false,
+      },
+    ],
   },
   // ============================================================================
   // AHTARVA HEALTHCARE TEMPLATE (Based on Athh-Frontend Landing Page)
@@ -1936,5 +2028,40 @@ export const TEMPLATE_BLUEPRINTS: Record<string, TemplateBlueprint> = {
         { label: "Patient Rights", href: "#" },
       ],
     },
+    blogPosts: [
+      {
+        id: "blog-1",
+        title: "Community Health Initiatives 2024",
+        excerpt:
+          "Our commitment to community wellness through free health camps and awareness programs.",
+        date: "2024-01-18",
+        author: "Dr. Priya Sharma",
+        category: "Community Health",
+        images: [],
+        featured: true,
+      },
+      {
+        id: "blog-2",
+        title: "Managing Diabetes Effectively",
+        excerpt:
+          "Expert endocrinologists share tips for blood sugar management and lifestyle modifications.",
+        date: "2024-01-14",
+        author: "Dr. Rajesh Kumar",
+        category: "Diabetes Care",
+        images: [],
+        featured: false,
+      },
+      {
+        id: "blog-3",
+        title: "Women's Health: Breaking Barriers",
+        excerpt:
+          "Comprehensive women's health services and the importance of regular screenings.",
+        date: "2024-01-06",
+        author: "Dr. Meera Patel",
+        category: "Women's Health",
+        images: [],
+        featured: false,
+      },
+    ],
   },
 };

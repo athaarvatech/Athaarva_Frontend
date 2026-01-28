@@ -1,0 +1,56 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { useHospital } from "../HospitalContext";
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { hospital, subdomain, theme, loading } = useHospital();
+
+  useEffect(() => {
+    // Check if user is authenticated as admin
+    const token = localStorage.getItem("hospital_admin_token") || localStorage.getItem("access_token");
+    const user = localStorage.getItem("user");
+    
+    if (!token || !user) {
+      router.push("/auth/staff");
+      return;
+    }
+
+    try {
+      const userData = JSON.parse(user);
+      const allowedRoles = ["hospital_admin", "staff", "super_admin"];
+      
+      if (!allowedRoles.includes(userData.user_type)) {
+        router.push("/auth/staff");
+      }
+    } catch {
+      router.push("/auth/staff");
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">Loading admin portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="min-h-screen bg-gray-50"
+      style={{
+        "--hospital-primary": theme.primaryColor,
+        "--hospital-secondary": theme.secondaryColor,
+      } as React.CSSProperties}
+    >
+      {children}
+    </div>
+  );
+}

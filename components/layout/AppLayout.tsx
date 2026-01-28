@@ -60,6 +60,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   if (pathname?.startsWith("/super-admin")) {
     return <>{children}</>;
   }
+  // Secure super-admin route (obfuscated path)
+  if (pathname?.startsWith("/platform-ctrl-9x7k2m")) {
+    return <>{children}</>;
+  }
+  if (pathname?.startsWith("/pharmacy")) {
+    return <>{children}</>;
+  }
 
   // All Patient routes - no auth guard, accessible to all with sidebar
   if (pathname?.startsWith("/patient")) {
