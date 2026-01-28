@@ -10,7 +10,7 @@ import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
-import { EditableText } from "../EditableText";
+import { EditableText, EditModeProvider } from "../EditableText";
 import {
   HeroImageUploader,
   AvatarUploader,
@@ -143,6 +143,7 @@ export function AhtarvaProfessionalTemplate({
   };
 
   return (
+    <EditModeProvider isEditMode={isEditMode}>
     <div
       className={cn(
         "min-h-screen bg-white overflow-hidden",
@@ -328,6 +329,7 @@ export function AhtarvaProfessionalTemplate({
         onUpdate={(footer) => updateBlueprint("footer", footer)}
       />
     </div>
+    </EditModeProvider>
   );
 }
 
@@ -2033,23 +2035,23 @@ function ProfessionalTestimonials({
 }: ProfessionalTestimonialsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const testimonials = blueprint.testimonials?.slice(0, 3) || [
+  const testimonials = blueprint.testimonials?.length ? blueprint.testimonials.slice(0, 3) : [
     {
       name: "Ramesh K.",
       procedure: "Cardiac Bypass Surgery",
-      content:
+      quote:
         "The cardiac team saved my life. From the moment I arrived with chest pain, every staff member showed incredible professionalism and compassion.",
     },
     {
       name: "Meera S.",
       procedure: "Knee Replacement",
-      content:
+      quote:
         "From my first consultation to post-surgery recovery, every step was handled with utmost professionalism. The nursing staff was incredibly supportive.",
     },
     {
       name: "Vikram P.",
       procedure: "Pediatric Care",
-      content:
+      quote:
         "Bringing my child here was the best decision. The pediatric team made my son feel comfortable and at ease.",
     },
   ];

@@ -9,7 +9,7 @@ import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
-import { EditableText } from "../EditableText";
+import { EditableText, EditModeProvider } from "../EditableText";
 import {
   HeroImageUploader,
   AvatarUploader,
@@ -282,6 +282,7 @@ export function AhtarvaMedicalCenterTemplate({
   };
 
   return (
+    <EditModeProvider isEditMode={isEditMode}>
     <div
       className={cn(
         "min-h-screen bg-white overflow-hidden antialiased",
@@ -481,6 +482,7 @@ export function AhtarvaMedicalCenterTemplate({
         onUpdate={(footer) => updateBlueprint("footer", footer)}
       />
     </div>
+    </EditModeProvider>
   );
 }
 

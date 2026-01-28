@@ -32,6 +32,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { API_CONFIG } from "@/lib/api-config";
 import { cn } from "@/lib/utils";
 
+interface LoginPageConfig {
+  logo_url?: string;
+  background_type?: 'image' | 'gradient' | 'solid';
+  background_image?: string;
+  background_gradient?: string;
+  background_color?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  welcome_text?: string;
+  tagline?: string;
+}
+
 interface HospitalBranding {
   logo_url?: string;
   primary_color?: string;
@@ -39,6 +51,8 @@ interface HospitalBranding {
   hero_text?: string;
   welcome_message?: string;
   background_image_url?: string;
+  // NEW: Login page specific configuration
+  login_page_config?: LoginPageConfig;
 }
 
 interface Hospital {
@@ -338,13 +352,45 @@ export default function AuthPage() {
   const heroText =
     hospital?.branding?.hero_text || "Your Health, Simplified & Secure";
 
+  // Get login page config with fallbacks to branding
+  const loginConfig = hospital?.branding?.login_page_config;
+  const loginPrimaryColor = loginConfig?.primary_color || primaryColor;
+  const loginSecondaryColor = loginConfig?.secondary_color || secondaryColor;
+  const loginWelcomeText = loginConfig?.welcome_text || heroText;
+  const loginTagline = loginConfig?.tagline || hospital?.branding?.welcome_message || "Join thousands of patients who trust us for comprehensive healthcare management with holistic care approach.";
+  const loginLogoUrl = loginConfig?.logo_url || hospital?.branding?.logo_url;
+  
+  // Determine background style based on login_page_config
+  const getBackgroundStyle = () => {
+    if (loginConfig?.background_type === 'image' && loginConfig?.background_image) {
+      return { type: 'image', url: loginConfig.background_image };
+    }
+    if (loginConfig?.background_type === 'solid' && loginConfig?.background_color) {
+      return { type: 'solid', color: loginConfig.background_color };
+    }
+    if (loginConfig?.background_type === 'gradient' && loginConfig?.background_gradient) {
+      return { type: 'gradient', gradient: loginConfig.background_gradient };
+    }
+    // Fallback to legacy branding
+    if (hospital?.branding?.background_image_url) {
+      return { type: 'image', url: hospital.branding.background_image_url };
+    }
+    // Default gradient
+    return { 
+      type: 'gradient', 
+      gradient: `linear-gradient(135deg, ${loginPrimaryColor} 0%, ${loginSecondaryColor} 100%)` 
+    };
+  };
+  
+  const backgroundStyle = getBackgroundStyle();
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Dynamic Background with Hospital Branding */}
-      {hospital?.branding?.background_image_url ? (
+      {backgroundStyle.type === 'image' ? (
         <div className="absolute inset-0">
           <Image
-            src={hospital.branding.background_image_url}
+            src={backgroundStyle.url!}
             alt="Hospital Background"
             fill
             className="object-cover opacity-20"
@@ -353,15 +399,22 @@ export default function AuthPage() {
           <div
             className="absolute inset-0 bg-gradient-to-br opacity-80"
             style={{
-              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+              background: `linear-gradient(135deg, ${loginPrimaryColor} 0%, ${loginSecondaryColor} 100%)`,
             }}
           />
         </div>
+      ) : backgroundStyle.type === 'solid' ? (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: backgroundStyle.color,
+          }}
+        />
       ) : (
         <div
           className="absolute inset-0 bg-gradient-to-br opacity-90"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+            background: backgroundStyle.gradient,
           }}
         />
       )}
@@ -431,9 +484,9 @@ export default function AuthPage() {
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {hospital?.branding?.logo_url ? (
+                    {loginLogoUrl ? (
                       <Image
-                        src={hospital.branding.logo_url}
+                        src={loginLogoUrl}
                         alt="Hospital Logo"
                         width={64}
                         height={64}
@@ -452,15 +505,14 @@ export default function AuthPage() {
                   variants={itemVariants}
                   className="text-5xl font-bold text-white leading-tight drop-shadow-lg"
                 >
-                  {heroText}
+                  {loginWelcomeText}
                 </motion.h2>
 
                 <motion.p
                   variants={itemVariants}
                   className="text-xl text-white/90 leading-relaxed max-w-md drop-shadow-md"
                 >
-                  {hospital?.branding?.welcome_message ||
-                    "Join thousands of patients who trust us for comprehensive healthcare management with holistic care approach."}
+                  {loginTagline}
                 </motion.p>
               </div>
 

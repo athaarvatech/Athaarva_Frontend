@@ -27,6 +27,14 @@ export { DischargeTemplate as DischargeSummary } from "./DischargeTemplate";
 export { default as LabReportTemplate } from "./LabReportTemplate";
 export { LabReportTemplate as LabReport } from "./LabReportTemplate";
 
-// Template Builder
+// Template Builder (with visual styles)
 export { default as DocumentTemplateBuilder } from "./DocumentTemplateBuilder";
 export { DocumentTemplateBuilder as TemplateBuilder } from "./DocumentTemplateBuilder";
+export { 
+  TEMPLATE_VISUAL_STYLES,
+  type TemplateVisualStyle,
+  type TemplateStyleDefinition,
+} from "./DocumentTemplateBuilder";
+
+// Document Preview Component
+export { default as DocumentPreview } from "./DocumentPreview";

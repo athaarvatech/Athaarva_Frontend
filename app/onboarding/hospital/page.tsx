@@ -50,8 +50,10 @@ import {
   Palette,
   UserCog,
   FileText,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   useHospitalOnboarding,
   HospitalOnboardingProvider,
@@ -237,6 +239,7 @@ interface TokenValidationResponse {
   email?: string;
   expires_at?: string;
   hospital_name?: string;
+  owner_name?: string;
   message: string;
 }
 
@@ -245,51 +248,29 @@ function HospitalOnboardingWrapper() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   
-  // 🔥 INSTANT DEVELOPMENT BYPASS - Set initial state based on environment
-  const initialState = process.env.NODE_ENV === "development" ? {
-    loading: false,
-    valid: true,
-    data: {
-      valid: true,
-      invitation_id: "dev-bypass-invitation",
-      email: "dev@hospital.com",
-      hospital_name: "Development Hospital",
-      message: "Development mode - Token validation bypassed",
-    } as TokenValidationResponse
-  } : {
-    loading: true,
-    valid: false,
-  };
-  
+  // SECURITY: Always start with loading state - no bypass allowed
   const [validationState, setValidationState] = useState<{
     loading: boolean;
     valid: boolean;
     data?: TokenValidationResponse;
     error?: string;
-  }>(initialState);
+  }>({
+    loading: true,
+    valid: false,
+  });
 
   useEffect(() => {
-    // Skip validation entirely in development
-    if (process.env.NODE_ENV === "development") {
-      console.log("🚀 Development mode: Validation bypassed");
-      return;
-    }
-    
     const validateToken = async () => {
-      // Production token validation
+      // SECURITY: No token = redirect to invalid page (middleware should catch this, but double-check)
       if (!token) {
-        setValidationState({
-          loading: false,
-          valid: false,
-          error: "No invitation token provided. Please check your invitation link.",
-        });
+        router.replace("/onboarding/hospital/invalid-token?reason=missing");
         return;
       }
 
       try {
-        // Add 5 second timeout to prevent infinite loading
+        // Add 8 second timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Request timeout. Please check your connection and try again.")), 5000)
+          setTimeout(() => reject(new Error("Request timeout. Please check your connection and try again.")), 8000)
         );
         
         const response = await Promise.race([
@@ -303,50 +284,37 @@ function HospitalOnboardingWrapper() {
             valid: true,
             data: {
               valid: true,
-              invitation_id: undefined, // Will be set after accept
+              invitation_id: response.invitation_id || undefined,
               email: response.email || undefined,
               expires_at: response.expires_at || undefined,
               hospital_name: response.hospital_name || "",
+              owner_name: response.owner_name || "",
               message: response.message,
             },
           });
         } else {
-          setValidationState({
-            loading: false,
-            valid: false,
-            error: response.message || "Invalid or expired invitation token",
-          });
+          // Redirect to invalid token page with specific reason
+          const reason = response.status || "invalid";
+          router.replace(`/onboarding/hospital/invalid-token?reason=${reason}`);
         }
       } catch (error) {
         console.error("Token validation failed:", error);
-        setValidationState({
-          loading: false,
-          valid: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Network error. Please check your connection and try again.",
-        });
+        // SECURITY: On any error, redirect to invalid token page
+        const errorMessage = error instanceof Error ? error.message : "validation_failed";
+        router.replace(`/onboarding/hospital/invalid-token?reason=network_error&message=${encodeURIComponent(errorMessage)}`);
       }
     };
 
     validateToken();
-  }, [token]);
+  }, [token, router]);
 
-  // In development, just render the content directly
-  if (process.env.NODE_ENV === "development") {
-    return (
-      <HospitalOnboardingContent
-        token={token}
-        validationData={validationState.data}
-      />
-    );
-  }
-
+  // Show loading state while validating
   if (validationState.loading) {
     return <OnboardingSkeleton />;
   }
 
+  // If validation failed, this component shouldn't render (middleware redirects)
+  // But as a safety net, show the error UI
   if (!validationState.valid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-red-50 flex items-center justify-center p-4">
@@ -367,7 +335,7 @@ function HospitalOnboardingWrapper() {
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Invitation Error
             </h2>
-            <p className="text-gray-600 mb-2 text-lg">{validationState.error}</p>
+            <p className="text-gray-600 mb-2 text-lg">{validationState.error || "Invalid invitation"}</p>
             <p className="text-sm text-gray-500 mb-8">If you believe this is a mistake, please contact your hospital administrator.</p>
             <div className="flex flex-col gap-3">
               <Button
@@ -391,6 +359,7 @@ function HospitalOnboardingWrapper() {
     );
   }
 
+  // Valid token - render the onboarding content
   return (
     <HospitalOnboardingContent
       token={token}
@@ -425,6 +394,12 @@ function HospitalOnboardingContent({
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submissionComplete, setSubmissionComplete] = useState(false);
+  const [submittedHospitalInfo, setSubmittedHospitalInfo] = useState<{
+    subdomain: string;
+    name: string;
+    adminEmail: string;
+  } | null>(null);
   const invitationPrefilled = useRef(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   
@@ -533,7 +508,48 @@ function HospitalOnboardingContent({
       const payload = buildSubmissionPayload();
       console.log("Submitting onboarding payload:", payload);
 
-      // Submit to backend API
+      // Get the hospital subdomain from admin control or generate from name
+      const hospitalSubdomain =
+        data.adminControl?.domain?.subdomain ||
+        data.organizationProfile.legal_name
+          ?.toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "")
+          .substring(0, 32) || "hospital";
+
+      // STEP 1: Accept invitation to create tenant, user, hospital_profile
+      // This is critical - without this, the hospital won't exist in the database
+      console.log("[Onboarding] Calling acceptInvitation to create tenant...");
+      try {
+        const acceptResult = await onboardingAPI.acceptInvitation({
+          token,
+          full_name: data.adminControl?.admin?.full_name,
+          phone: data.adminControl?.admin?.phone,
+          // Password is optional - will be auto-generated and sent via email after approval
+          hospital_code: hospitalSubdomain,
+          hospital_name: data.organizationProfile.legal_name || validationData?.hospital_name || "Hospital",
+        });
+        
+        console.log("[Onboarding] Invitation accepted:", acceptResult);
+        
+        // Store the tenant_id and session info from acceptInvitation
+        if (acceptResult.tenant_id) {
+          localStorage.setItem("hospital_admin_tenant_id", acceptResult.tenant_id);
+          if (acceptResult.access_token) {
+            localStorage.setItem("onboarding_token", acceptResult.access_token);
+            localStorage.setItem("hospital_admin_token", acceptResult.access_token);
+          }
+        }
+      } catch (acceptError: any) {
+        // If tenant already exists, we can continue (idempotent check)
+        if (acceptError.message?.includes("already exists") || acceptError.message?.includes("already accepted")) {
+          console.log("[Onboarding] Invitation already accepted, continuing...");
+        } else {
+          throw acceptError;
+        }
+      }
+
+      // STEP 2: Submit for review
       const shouldSkipBackendSubmit =
         !onboardingAPI.hasActiveSession() &&
         process.env.NODE_ENV === "development";
@@ -559,15 +575,6 @@ function HospitalOnboardingContent({
           `hospital-onboarding-${validationData.invitation_id}`
         );
       }
-
-      // Get the hospital subdomain from admin control or generate from name
-      const hospitalSubdomain =
-        data.adminControl?.domain?.subdomain ||
-        data.organizationProfile.legal_name
-          ?.toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "")
-          .substring(0, 32) || "hospital";
 
       // Store hospital info for the admin dashboard
       if (typeof window !== "undefined") {
@@ -613,35 +620,20 @@ function HospitalOnboardingContent({
         }));
       }
       
-      // Show success message
+      // Show success message and set state to show submission complete page
       toast.success({
         title: "🎉 Congratulations! Your hospital onboarding has been submitted for review.",
+        description: "You'll receive login credentials via email once your application is approved.",
       });
 
-      const redirectToHospitalLanding = (subdomain: string) => {
-        if (typeof window === "undefined") return;
-        const { protocol, hostname, port } = window.location;
-
-        let targetHost = "";
-        if (
-          hostname === "localhost" ||
-          hostname.endsWith(".localhost") ||
-          hostname === "127.0.0.1"
-        ) {
-          targetHost = `${subdomain}.localhost${port ? `:${port}` : ""}`;
-        } else if (hostname.endsWith("athaarva.com")) {
-          targetHost = `${subdomain}.athaarva.com`;
-        } else {
-          const parts = hostname.split(".");
-          const baseDomain = parts.length >= 2 ? parts.slice(-2).join(".") : hostname;
-          targetHost = `${subdomain}.${baseDomain}`;
-        }
-
-        window.location.assign(`${protocol}//${targetHost}`);
-      };
-
-      // Redirect immediately to the hospital landing page
-      redirectToHospitalLanding(hospitalSubdomain);
+      // Set state to show submission success instead of redirecting
+      // The hospital subdomain won't work until admin approves (status='active')
+      setSubmissionComplete(true);
+      setSubmittedHospitalInfo({
+        subdomain: hospitalSubdomain,
+        name: data.organizationProfile.legal_name || validationData?.hospital_name || "Hospital",
+        adminEmail: data.adminControl?.admin?.email || validationData?.email || "",
+      });
     } catch (error) {
       console.error("Failed to submit onboarding:", error);
       const errorMessage = (error as Error)?.message || "Failed to submit onboarding";
@@ -656,7 +648,7 @@ function HospitalOnboardingContent({
         toast.warning({
           title: "Session missing (dev mode)",
           description:
-            "Backend session is invalid. Redirecting to your hospital landing page in development.",
+            "Backend session may be invalid. Showing submission success page.",
         });
         const fallbackSubdomain =
           data.adminControl?.domain?.subdomain ||
@@ -665,28 +657,14 @@ function HospitalOnboardingContent({
             .replace(/\s+/g, "-")
             .replace(/[^a-z0-9-]/g, "")
             .substring(0, 32) || "hospital";
-        const redirectToHospitalLanding = (subdomain: string) => {
-          if (typeof window === "undefined") return;
-          const { protocol, hostname, port } = window.location;
-          let targetHost = "";
-
-          if (
-            hostname === "localhost" ||
-            hostname.endsWith(".localhost") ||
-            hostname === "127.0.0.1"
-          ) {
-            targetHost = `${subdomain}.localhost${port ? `:${port}` : ""}`;
-          } else if (hostname.endsWith("athaarva.com")) {
-            targetHost = `${subdomain}.athaarva.com`;
-          } else {
-            const parts = hostname.split(".");
-            const baseDomain = parts.length >= 2 ? parts.slice(-2).join(".") : hostname;
-            targetHost = `${subdomain}.${baseDomain}`;
-          }
-
-          window.location.assign(`${protocol}//${targetHost}`);
-        };
-        redirectToHospitalLanding(fallbackSubdomain);
+        
+        // Show success page instead of redirecting
+        setSubmissionComplete(true);
+        setSubmittedHospitalInfo({
+          subdomain: fallbackSubdomain,
+          name: data.organizationProfile.legal_name || validationData?.hospital_name || "Hospital",
+          adminEmail: data.adminControl?.admin?.email || validationData?.email || "",
+        });
       } else {
         setSubmitError(errorMessage);
       }
@@ -730,6 +708,97 @@ function HospitalOnboardingContent({
     (sum, step) => sum + step.estimatedMinutes,
     0
   );
+
+  // Show submission success page
+  if (submissionComplete && submittedHospitalInfo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-emerald-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-xl w-full"
+        >
+          <Card className="border-0 shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-8 text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center mb-4"
+              >
+                <CheckCircle className="w-12 h-12 text-emerald-500" />
+              </motion.div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Submission Complete!
+              </h1>
+              <p className="text-emerald-100">
+                Your hospital onboarding application has been submitted
+              </p>
+            </div>
+            
+            <CardContent className="p-8 space-y-6">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <h3 className="font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  What happens next?
+                </h3>
+                <ul className="text-sm text-emerald-700 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">1.</span>
+                    Our team will review your application (typically 1-2 business days)
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">2.</span>
+                    Once approved, you&apos;ll receive login credentials via email
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-0.5">3.</span>
+                    Your hospital portal will be activated at{" "}
+                    <code className="bg-emerald-100 px-1.5 py-0.5 rounded font-mono text-xs">
+                      {submittedHospitalInfo.subdomain}.athaarva.com
+                    </code>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold text-slate-700 mb-3">Submission Details</h3>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Hospital Name</dt>
+                    <dd className="font-medium text-slate-700">{submittedHospitalInfo.name}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Subdomain</dt>
+                    <dd className="font-mono text-slate-700">{submittedHospitalInfo.subdomain}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Admin Email</dt>
+                    <dd className="font-medium text-slate-700">{submittedHospitalInfo.adminEmail}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-800 rounded-lg">
+                <Mail className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm">
+                  Credentials will be sent to <strong>{submittedHospitalInfo.adminEmail}</strong> upon approval
+                </p>
+              </div>
+
+              <Button
+                onClick={() => window.location.href = "/"}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+              >
+                Return to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-emerald-50">

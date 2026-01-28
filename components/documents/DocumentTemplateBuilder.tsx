@@ -4,6 +4,7 @@
  * DocumentTemplateBuilder - Phase 5: Clinical Document Branding
  * 
  * A visual editor for customizing document templates including:
+ * - Template style selection (Classic, Modern, Minimal) based on professional designs
  * - Header configuration (logo, hospital info placement)
  * - Footer configuration (QR code, disclaimer, signatures)
  * - Style settings (colors, fonts, paper size)
@@ -57,6 +58,8 @@ import {
   Calendar,
   ChevronRight,
   Loader2,
+  Sparkles,
+  Check,
 } from "lucide-react";
 import {
   DocumentType,
@@ -71,14 +74,288 @@ import {
 } from "./types";
 
 // ============================================================================
+// TEMPLATE STYLES (Based on professional prescription designs)
+// ============================================================================
+
+/**
+ * Three professional document styles based on real-world clinic letterheads:
+ * - Classic: Dotted pattern on right side with colored vertical bar
+ * - Modern: Large watermark logo with curved corner accent
+ * - Minimal: Diagonal geometric corners, clean corporate look
+ */
+export type TemplateVisualStyle = "classic" | "modern" | "minimal";
+
+export interface TemplateStyleDefinition {
+  id: TemplateVisualStyle;
+  name: string;
+  description: string;
+  features: string[];
+}
+
+export const TEMPLATE_VISUAL_STYLES: Record<TemplateVisualStyle, TemplateStyleDefinition> = {
+  classic: {
+    id: "classic",
+    name: "Classic Clinical",
+    description: "Professional design with dotted pattern accent and colored sidebar. Traditional healthcare aesthetic.",
+    features: ["Dotted pattern decoration", "Vertical sidebar accent", "Left-aligned footer", "Clean professional look"],
+  },
+  modern: {
+    id: "modern",
+    name: "Modern Watermark",
+    description: "Contemporary design with subtle logo watermark and curved corner accents. Elegant and memorable.",
+    features: ["Large watermark logo", "Curved corner accent", "Centered footer", "Elegant modern feel"],
+  },
+  minimal: {
+    id: "minimal",
+    name: "Minimal Geometric",
+    description: "Clean minimalist design with diagonal corner shapes. Modern corporate healthcare style.",
+    features: ["Diagonal corner shapes", "Ultra-clean layout", "Right-aligned footer", "Corporate modern style"],
+  },
+};
+
+// ============================================================================
+// TEMPLATE STYLE DECORATIVE COMPONENTS
+// ============================================================================
+
+const ClassicDecorations = ({ primaryColor }: { primaryColor: string }) => (
+  <>
+    {/* Vertical bar on right edge */}
+    <div
+      className="absolute right-0 top-0 bottom-0 w-2"
+      style={{ backgroundColor: primaryColor }}
+    />
+    {/* Dotted pattern */}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+      {[...Array(15)].map((_, row) => (
+        <div key={row} className="flex gap-1">
+          {[...Array(3)].map((_, col) => (
+            <div
+              key={col}
+              className="w-1.5 h-1.5 rounded-sm"
+              style={{ backgroundColor: primaryColor }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  </>
+);
+
+const ModernDecorations = ({ 
+  primaryColor, 
+  logoUrl 
+}: { 
+  primaryColor: string;
+  logoUrl?: string;
+}) => (
+  <>
+    {/* Large watermark in center */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      {logoUrl ? (
+        <img 
+          src={logoUrl} 
+          alt="" 
+          className="w-48 h-48 object-contain opacity-[0.04]"
+        />
+      ) : (
+        <div 
+          className="text-[120px] font-bold opacity-[0.03]"
+          style={{ color: primaryColor }}
+        >
+          ⚕
+        </div>
+      )}
+    </div>
+    {/* Curved corner at bottom-left */}
+    <div 
+      className="absolute bottom-0 left-0 w-24 h-12"
+      style={{
+        backgroundColor: primaryColor,
+        borderTopRightRadius: "100%",
+      }}
+    />
+  </>
+);
+
+const MinimalDecorations = ({ primaryColor }: { primaryColor: string }) => (
+  <>
+    {/* Diagonal shape top-right */}
+    <div
+      className="absolute top-0 right-0"
+      style={{
+        width: 0,
+        height: 0,
+        borderStyle: "solid",
+        borderWidth: "0 60px 60px 0",
+        borderColor: `transparent ${primaryColor} transparent transparent`,
+      }}
+    />
+    {/* Diagonal shape bottom-left */}
+    <div
+      className="absolute bottom-0 left-0"
+      style={{
+        width: 0,
+        height: 0,
+        borderStyle: "solid",
+        borderWidth: "60px 0 0 60px",
+        borderColor: `transparent transparent transparent ${primaryColor}`,
+      }}
+    />
+  </>
+);
+
+// ============================================================================
+// TEMPLATE STYLE CARD COMPONENT
+// ============================================================================
+
+interface TemplateStyleCardProps {
+  style: TemplateVisualStyle;
+  isSelected: boolean;
+  onSelect: () => void;
+  primaryColor: string;
+}
+
+const TemplateStyleCard = ({
+  style,
+  isSelected,
+  onSelect,
+  primaryColor,
+}: TemplateStyleCardProps) => {
+  const definition = TEMPLATE_VISUAL_STYLES[style];
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onSelect}
+      className={cn(
+        "relative rounded-xl border-2 p-4 text-left transition-all duration-300 w-full",
+        isSelected
+          ? "border-healthcare-primary bg-healthcare-primary/5 shadow-lg"
+          : "border-gray-200 hover:border-gray-300 bg-white"
+      )}
+    >
+      {/* Selection indicator */}
+      {isSelected && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-healthcare-primary flex items-center justify-center z-10"
+        >
+          <Check className="w-4 h-4 text-white" />
+        </motion.div>
+      )}
+
+      {/* Mini preview */}
+      <div
+        className="relative h-24 mb-3 rounded-lg overflow-hidden bg-white border border-gray-100"
+        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+      >
+        {/* Classic style preview */}
+        {style === "classic" && (
+          <>
+            <div
+              className="absolute right-0 top-0 bottom-0 w-1"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-0.5">
+                  {[...Array(2)].map((_, j) => (
+                    <div
+                      key={j}
+                      className="w-0.5 h-0.5 rounded-sm"
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Modern style preview */}
+        {style === "modern" && (
+          <>
+            <div
+              className="absolute bottom-0 left-0 w-6 h-3"
+              style={{
+                backgroundColor: primaryColor,
+                borderTopRightRadius: "100%",
+              }}
+            />
+            <div
+              className="absolute inset-0 flex items-center justify-center text-3xl font-bold opacity-[0.05]"
+              style={{ color: primaryColor }}
+            >
+              ⚕
+            </div>
+          </>
+        )}
+
+        {/* Minimal style preview */}
+        {style === "minimal" && (
+          <>
+            <div
+              className="absolute top-0 right-0"
+              style={{
+                width: 0,
+                height: 0,
+                borderStyle: "solid",
+                borderWidth: "0 18px 18px 0",
+                borderColor: `transparent ${primaryColor} transparent transparent`,
+              }}
+            />
+            <div
+              className="absolute bottom-0 left-0"
+              style={{
+                width: 0,
+                height: 0,
+                borderStyle: "solid",
+                borderWidth: "18px 0 0 18px",
+                borderColor: `transparent transparent transparent ${primaryColor}`,
+              }}
+            />
+          </>
+        )}
+
+        {/* Common preview content */}
+        <div className="p-2">
+          <div className="flex items-center gap-1 mb-1.5">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <div className="h-1 w-8 rounded bg-gray-300" />
+          </div>
+          <div className="space-y-0.5">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-0.5 rounded bg-gray-200"
+                style={{ width: `${50 + i * 15}%` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Template info */}
+      <h4 className="font-semibold text-gray-900 text-sm">{definition.name}</h4>
+      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{definition.description}</p>
+    </motion.button>
+  );
+};
+
+// ============================================================================
 // TYPES
 // ============================================================================
 
 interface DocumentTemplateBuilderProps {
-  initialConfig?: Partial<DocumentTemplateConfig>;
+  initialConfig?: Partial<DocumentTemplateConfig> & { visualStyle?: TemplateVisualStyle };
   hospitalBranding: HospitalBranding;
-  onSave?: (config: DocumentTemplateConfig) => Promise<void>;
-  onChange?: (config: DocumentTemplateConfig) => void;
+  onSave?: (config: DocumentTemplateConfig & { visualStyle: TemplateVisualStyle }) => Promise<void>;
+  onChange?: (config: DocumentTemplateConfig & { visualStyle: TemplateVisualStyle }) => void;
   className?: string;
 }
 
@@ -172,6 +449,9 @@ export function DocumentTemplateBuilder({
   className,
 }: DocumentTemplateBuilderProps) {
   // State
+  const [visualStyle, setVisualStyle] = useState<TemplateVisualStyle>(
+    initialConfig?.visualStyle || "classic"
+  );
   const [documentType, setDocumentType] = useState<DocumentType>(
     initialConfig?.documentType || "prescription"
   );
@@ -196,10 +476,10 @@ export function DocumentTemplateBuilder({
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [devicePreview, setDevicePreview] = useState<DevicePreview>("desktop");
-  const [activeTab, setActiveTab] = useState("header");
+  const [activeTab, setActiveTab] = useState("style");
 
   // Build full config
-  const fullConfig = useMemo<DocumentTemplateConfig>(() => ({
+  const fullConfig = useMemo(() => ({
     id: initialConfig?.id || `template-${Date.now()}`,
     name: templateName,
     documentType,
@@ -207,9 +487,10 @@ export function DocumentTemplateBuilder({
     header: headerConfig,
     footer: footerConfig,
     style: styleConfig,
+    visualStyle,
     createdAt: initialConfig?.createdAt || new Date(),
     updatedAt: new Date(),
-  }), [initialConfig?.id, templateName, documentType, isDefault, headerConfig, footerConfig, styleConfig, initialConfig?.createdAt]);
+  }), [initialConfig?.id, templateName, documentType, isDefault, headerConfig, footerConfig, styleConfig, visualStyle, initialConfig?.createdAt]);
 
   // Notify parent of changes
   React.useEffect(() => {
@@ -266,6 +547,7 @@ export function DocumentTemplateBuilder({
     });
     setTemplateName(defaultTemplate?.name || "Custom Template");
     setIsDefault(false);
+    setVisualStyle("classic");
   }, [documentType, hospitalBranding]);
 
   // Preview dimensions
@@ -357,7 +639,11 @@ export function DocumentTemplateBuilder({
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <CardHeader className="pb-2">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="style" className="text-xs">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  Style
+                </TabsTrigger>
                 <TabsTrigger value="header" className="text-xs">
                   <Layout className="w-4 h-4 mr-1" />
                   Header
@@ -366,9 +652,9 @@ export function DocumentTemplateBuilder({
                   <Settings className="w-4 h-4 mr-1" />
                   Footer
                 </TabsTrigger>
-                <TabsTrigger value="style" className="text-xs">
+                <TabsTrigger value="colors" className="text-xs">
                   <Palette className="w-4 h-4 mr-1" />
-                  Style
+                  Colors
                 </TabsTrigger>
                 <TabsTrigger value="advanced" className="text-xs">
                   <Type className="w-4 h-4 mr-1" />
@@ -378,6 +664,45 @@ export function DocumentTemplateBuilder({
             </CardHeader>
 
             <CardContent>
+              {/* Template Visual Style Selection */}
+              <TabsContent value="style" className="space-y-4 mt-0">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-sm flex items-center gap-2 mb-3">
+                      <Sparkles className="w-4 h-4 text-healthcare-primary" />
+                      Choose Template Style
+                    </h4>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Select a visual style that will be applied to all document decorations.
+                    </p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {(Object.keys(TEMPLATE_VISUAL_STYLES) as TemplateVisualStyle[]).map((style) => (
+                        <TemplateStyleCard
+                          key={style}
+                          style={style}
+                          isSelected={visualStyle === style}
+                          onSelect={() => setVisualStyle(style)}
+                          primaryColor={styleConfig.primaryColor}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Current style features */}
+                  <div>
+                    <h4 className="font-medium text-sm mb-2">Style Features</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {TEMPLATE_VISUAL_STYLES[visualStyle].features.map((feature, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
               {/* Header Configuration */}
               <TabsContent value="header" className="space-y-4 mt-0">
                 <div className="space-y-4">
@@ -615,8 +940,8 @@ export function DocumentTemplateBuilder({
                 </div>
               </TabsContent>
 
-              {/* Style Configuration */}
-              <TabsContent value="style" className="space-y-4 mt-0">
+              {/* Colors Configuration (formerly Style) */}
+              <TabsContent value="colors" className="space-y-4 mt-0">
                 <div className="space-y-4">
                   {/* Colors */}
                   <div className="space-y-3">
@@ -995,12 +1320,12 @@ export function DocumentTemplateBuilder({
             >
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={devicePreview}
+                  key={`${devicePreview}-${visualStyle}`}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-white shadow-xl"
+                  className="bg-white shadow-xl relative overflow-hidden"
                   style={{
                     width: `${currentPreview.width * currentPreview.scale}px`,
                     minHeight: `${currentPreview.height * currentPreview.scale}px`,
@@ -1008,17 +1333,31 @@ export function DocumentTemplateBuilder({
                     transformOrigin: "top center",
                     fontFamily: styleConfig.fontFamily,
                     fontSize: `${styleConfig.fontSize * currentPreview.scale}pt`,
-                    padding: `${styleConfig.margins.top}mm ${styleConfig.margins.right}mm ${styleConfig.margins.bottom}mm ${styleConfig.margins.left}mm`,
                   }}
                 >
-                  {/* Preview Header */}
+                  {/* Template Style Decorations */}
+                  {visualStyle === "classic" && <ClassicDecorations primaryColor={styleConfig.primaryColor} />}
+                  {visualStyle === "modern" && (
+                    <ModernDecorations primaryColor={styleConfig.primaryColor} logoUrl={hospitalBranding.logoUrl} />
+                  )}
+                  {visualStyle === "minimal" && <MinimalDecorations primaryColor={styleConfig.primaryColor} />}
+
+                  {/* Content with padding */}
                   <div
-                    className="border-b-2 pb-3 mb-3"
+                    className="relative z-10"
                     style={{
-                      borderColor: styleConfig.primaryColor,
-                      backgroundColor: headerConfig.headerBackground,
+                      padding: `${styleConfig.margins.top}mm ${styleConfig.margins.right}mm ${styleConfig.margins.bottom}mm ${styleConfig.margins.left}mm`,
+                      paddingRight: visualStyle === "classic" ? `${styleConfig.margins.right + 15}mm` : `${styleConfig.margins.right}mm`,
                     }}
                   >
+                    {/* Preview Header */}
+                    <div
+                      className="border-b-2 pb-3 mb-3"
+                      style={{
+                        borderColor: styleConfig.primaryColor,
+                        backgroundColor: headerConfig.headerBackground,
+                      }}
+                    >
                     <div
                       className={cn(
                         "flex items-start gap-3",
@@ -1116,7 +1455,11 @@ export function DocumentTemplateBuilder({
 
                   {/* Preview Footer */}
                   <div
-                    className="border-t pt-2 mt-4"
+                    className={cn(
+                      "border-t pt-2 mt-4",
+                      visualStyle === "modern" && "mb-14", // Space for curved corner
+                      visualStyle === "minimal" && "pl-12", // Space for diagonal corner
+                    )}
                     style={{
                       borderColor: styleConfig.primaryColor,
                       backgroundColor: footerConfig.footerBackground,
@@ -1144,6 +1487,7 @@ export function DocumentTemplateBuilder({
                       )}
                     </div>
                   </div>
+                  </div>{/* End content wrapper */}
                 </motion.div>
               </AnimatePresence>
             </div>

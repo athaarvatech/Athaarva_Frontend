@@ -14,6 +14,13 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Building2,
   Search,
   MoreVertical,
@@ -32,26 +39,49 @@ export default function SecureTenantsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
 
+  const getTenantUrl = (code: string) => {
+    if (typeof window === "undefined") return `https://${code}.athaarva.com`;
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname.endsWith(".localhost");
+
+    // Local subdomain testing: http://t.localhost:3000
+    if (isLocalhost) {
+      const port = window.location.port || "3000";
+      return `http://${code}.localhost:${port}`;
+    }
+
+    return `https://${code}.athaarva.com`;
+  };
+
+  const loadTenants = async () => {
+    setLoading(true);
+    try {
+      const data = await superAdminAPI.listTenants({ limit: 50 });
+      setTenants(data);
+    } catch (error) {
+      console.error("Failed to load tenants:", error);
+      toast.error("Failed to load tenants");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTenants = async () => {
-      try {
-        const data = await superAdminAPI.listTenants({ limit: 50 });
-        setTenants(data);
-      } catch (error) {
-        console.error("Failed to load tenants:", error);
-        toast.error("Failed to load tenants");
-      } finally {
-        setLoading(false);
-      }
-    };
     loadTenants();
   }, []);
 
   const filteredTenants = tenants.filter((tenant) => {
+    const name = (tenant.display_name || "").toLowerCase();
+    const code = (tenant.code || "").toLowerCase();
+    const contactEmail = (tenant.contact_email || "").toLowerCase();
+    const q = searchTerm.toLowerCase();
+
     const matchesSearch =
       !searchTerm ||
-      tenant.hospital_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.subdomain.toLowerCase().includes(searchTerm.toLowerCase());
+      name.includes(q) ||
+      code.includes(q) ||
+      contactEmail.includes(q);
     const matchesStatus = !statusFilter || tenant.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -184,17 +214,19 @@ export default function SecureTenantsPage() {
                   filteredTenants.map((tenant) => (
                     <TableRow key={tenant.id}>
                       <TableCell>
-                        <div className="font-semibold">{tenant.hospital_name}</div>
-                        <div className="text-sm text-white/60">{tenant.contact_email}</div>
+                        <div className="font-semibold">{tenant.display_name}</div>
+                        <div className="text-sm text-white/60">
+                          {tenant.contact_email || "—"}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <code className="text-sm bg-white/10 px-2 py-1 rounded">
-                          {tenant.subdomain}
+                          {tenant.code}
                         </code>
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-blue-500/20 text-blue-100 border-0">
-                          {tenant.plan_tier || "Standard"}
+                          {tenant.plan_id ? "Assigned" : "Standard"}
                         </Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(tenant.status)}</TableCell>
@@ -207,22 +239,130 @@ export default function SecureTenantsPage() {
                             variant="ghost"
                             size="icon"
                             className="text-white/70"
-                            onClick={() =>
-                              window.open(
-                                `https://${tenant.subdomain}.athaarva.com`,
-                                "_blank"
-                              )
-                            }
+                            onClick={() => window.open(getTenantUrl(tenant.code), "_blank")}
+                            title="Open tenant site"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/70"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/70"
+                                title="Actions"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => window.open(getTenantUrl(tenant.code), "_blank")}
+                              >
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Open site
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+
+                              {tenant.status === "pending" && (
+                                <DropdownMenuItem
+                                  className="text-emerald-300"
+                                  onClick={async () => {
+                                    try {
+                                      await superAdminAPI.approveTenant(tenant.id);
+                                      toast.success(`Approved ${tenant.display_name}`);
+                                      await loadTenants();
+                                    } catch (e) {
+                                      console.error(e);
+                                      toast.error(
+                                        e instanceof Error
+                                          ? e.message
+                                          : "Approval failed"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Approve & Activate
+                                </DropdownMenuItem>
+                              )}
+
+                              {tenant.status === "active" && (
+                                <DropdownMenuItem
+                                  className="text-yellow-300"
+                                  onClick={async () => {
+                                    try {
+                                      await superAdminAPI.updateTenant(tenant.id, {
+                                        status: "suspended",
+                                      });
+                                      toast.success(`Suspended ${tenant.display_name}`);
+                                      await loadTenants();
+                                    } catch (e) {
+                                      console.error(e);
+                                      toast.error(
+                                        e instanceof Error
+                                          ? e.message
+                                          : "Suspend failed"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <Clock className="h-4 w-4 mr-2" />
+                                  Suspend
+                                </DropdownMenuItem>
+                              )}
+
+                              {tenant.status === "suspended" && (
+                                <DropdownMenuItem
+                                  className="text-emerald-300"
+                                  onClick={async () => {
+                                    try {
+                                      await superAdminAPI.updateTenant(tenant.id, {
+                                        status: "active",
+                                      });
+                                      toast.success(
+                                        `Reactivated ${tenant.display_name}`
+                                      );
+                                      await loadTenants();
+                                    } catch (e) {
+                                      console.error(e);
+                                      toast.error(
+                                        e instanceof Error
+                                          ? e.message
+                                          : "Reactivate failed"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Reactivate
+                                </DropdownMenuItem>
+                              )}
+
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-300"
+                                onClick={async () => {
+                                  try {
+                                    await superAdminAPI.archiveTenant(tenant.id);
+                                    toast.success(`Archived ${tenant.display_name}`);
+                                    await loadTenants();
+                                  } catch (e) {
+                                    console.error(e);
+                                    toast.error(
+                                      e instanceof Error
+                                        ? e.message
+                                        : "Archive failed"
+                                    );
+                                  }
+                                }}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Archive
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>

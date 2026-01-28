@@ -163,12 +163,18 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(notFoundUrl);
     }
 
-    // Valid subdomain - the (hospital) route group handles all paths
-    // Just inject the subdomain context and let Next.js route to (hospital)/*
-    const response = NextResponse.next();
+    // Valid subdomain - rewrite to (hospital) route group
+    // The (hospital) route group is a "route group" that doesn't affect URL
+    // We need to rewrite the URL to include a hospital marker that layout can detect
+    
+    // Create the rewritten URL - we'll use a special internal path pattern
+    // that the (hospital) layout can detect via headers
+    const url = request.nextUrl.clone();
     
     // Add hospital context to headers for components to access
+    const response = NextResponse.rewrite(url);
     response.headers.set('x-hospital-code', subdomain);
+    response.headers.set('x-hospital-subdomain', 'true');
     
     // Set hospital_code cookie (host-only for security)
     response.cookies.set('hospital_code', subdomain, {
@@ -200,18 +206,21 @@ export async function middleware(request: NextRequest) {
   }
 
   // Hospital Onboarding: Validate invitation token
+  // SECURITY: Token validation is ALWAYS required - no exceptions, no dev bypass
   if (pathname.startsWith('/onboarding/hospital') && pathname !== '/onboarding/hospital/invalid-token') {
     const token = request.nextUrl.searchParams.get('token');
     
-    // Development bypass - allow access without token validation
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 DEV MODE: Bypassing token validation in middleware');
-      return NextResponse.next();
+    // If no token provided, redirect immediately to invalid-token page
+    if (!token) {
+      console.warn('[Middleware] No token provided for onboarding route');
+      const redirectUrl = new URL('/onboarding/hospital/invalid-token?reason=missing', request.url);
+      return NextResponse.redirect(redirectUrl);
     }
     
-    // If no token provided, redirect to invalid-token page
-    if (!token) {
-      const redirectUrl = new URL('/onboarding/hospital/invalid-token?reason=invalid', request.url);
+    // Basic token format validation (prevent malformed tokens from hitting API)
+    if (token.length < 20 || token.length > 512) {
+      console.warn('[Middleware] Token format invalid - length:', token.length);
+      const redirectUrl = new URL('/onboarding/hospital/invalid-token?reason=malformed', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -258,7 +267,9 @@ export async function middleware(request: NextRequest) {
       return nextResponse;
       
     } catch (error) {
-      console.error('Token validation error:', error);
+      console.error('[Middleware] Token validation network error:', error);
+      // SECURITY: Fail closed - if we can't validate, don't allow access
+      // This applies to ALL environments including development
       const redirectUrl = new URL('/onboarding/hospital/invalid-token?reason=network_error', request.url);
       return NextResponse.redirect(redirectUrl);
     }

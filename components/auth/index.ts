@@ -12,5 +12,12 @@ export {
 } from "./RecentHospitals";
 export type { RecentHospital } from "./RecentHospitals";
 
-// Re-export MFASetup if needed
+export { HospitalFiltersComponent } from "./HospitalFilters";
+export type { HospitalFilters } from "./HospitalFilters";
+
+export { HospitalSortView } from "./HospitalSortView";
+export type { SortOption, ViewMode } from "./HospitalSortView";
+
+// MFA & 2FA Components
 export { default as MFASetup } from "./MFASetup";
+export { default as EmailOTP2FA } from "./EmailOTP2FA";

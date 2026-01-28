@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Sparkles,
   Heart,
+  Map,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_CONFIG } from "@/lib/api-config";
 import { SubdomainService } from "@/lib/subdomain-service";
-import { HospitalCard, HospitalCardData } from "@/components/auth/HospitalCard";
-import { HospitalSearch } from "@/components/auth/HospitalSearch";
-import { RecentHospitals, recentHospitalsStorage } from "@/components/auth/RecentHospitals";
+import {
+  HospitalCard,
+  HospitalCardData,
+  HospitalSearch,
+  RecentHospitals,
+  recentHospitalsStorage,
+  HospitalFiltersComponent,
+  HospitalFilters,
+  HospitalSortView,
+  SortOption,
+  ViewMode,
+} from "@/components/auth";
 
 interface HospitalListResponse {
   hospitals: HospitalCardData[];
@@ -43,6 +54,17 @@ export default function HospitalSelectorPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<HospitalCardData | null>(null);
+
+  // New state for filters, sorting, and view mode
+  const [filters, setFilters] = useState<HospitalFilters>({
+    specialties: [],
+    cities: [],
+    states: [],
+    minRating: 0,
+  });
+  const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [activeTab, setActiveTab] = useState<"all" | "nearby">("all");
 
   // Fetch all hospitals on mount
   useEffect(() => {
@@ -153,7 +175,91 @@ export default function HospitalSelectorPage() {
     setIsSearchActive(false);
   }, []);
 
-  const displayHospitals = isSearchActive ? searchResults : hospitals;
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    setFilters({
+      specialties: [],
+      cities: [],
+      states: [],
+      minRating: 0,
+    });
+  }, []);
+
+  // Apply filters to hospital list
+  const applyFilters = useCallback((hospitalList: HospitalCardData[]): HospitalCardData[] => {
+    return hospitalList.filter((hospital) => {
+      // Filter by specialties
+      if (filters.specialties.length > 0) {
+        const hasSpecialty = hospital.specialties?.some((s) =>
+          filters.specialties.includes(s)
+        );
+        if (!hasSpecialty) return false;
+      }
+
+      // Filter by cities
+      if (filters.cities.length > 0) {
+        if (!hospital.city || !filters.cities.includes(hospital.city)) {
+          return false;
+        }
+      }
+
+      // Filter by states
+      if (filters.states.length > 0) {
+        if (!hospital.state || !filters.states.includes(hospital.state)) {
+          return false;
+        }
+      }
+
+      // Filter by minimum rating
+      if (filters.minRating > 0) {
+        if (!hospital.rating || hospital.rating < filters.minRating) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [filters]);
+
+  // Sort hospitals
+  const sortHospitals = useCallback((hospitalList: HospitalCardData[]): HospitalCardData[] => {
+    return [...hospitalList].sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return a.hospital_name.localeCompare(b.hospital_name);
+        case "name-desc":
+          return b.hospital_name.localeCompare(a.hospital_name);
+        case "rating-desc":
+          return (b.rating || 0) - (a.rating || 0);
+        case "rating-asc":
+          return (a.rating || 0) - (b.rating || 0);
+        case "city-asc":
+          return (a.city || "").localeCompare(b.city || "");
+        case "recent":
+          // Assuming newer hospitals have higher IDs or we could use a date field
+          return b.id.localeCompare(a.id);
+        default:
+          return 0;
+      }
+    });
+  }, [sortBy]);
+
+  // Get the final display list of hospitals
+  const displayHospitals = useMemo(() => {
+    const baseList = isSearchActive ? searchResults : hospitals;
+    const filtered = applyFilters(baseList);
+    return sortHospitals(filtered);
+  }, [isSearchActive, searchResults, hospitals, applyFilters, sortHospitals]);
+
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.specialties.length > 0 ||
+      filters.cities.length > 0 ||
+      filters.states.length > 0 ||
+      filters.minRating > 0
+    );
+  }, [filters]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-teal-50/30">
@@ -226,10 +332,33 @@ export default function HospitalSelectorPage() {
             )}
 
             {/* Hospital Grid */}
-            <div>
+            <div className="space-y-4">
+              {/* Filters */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <HospitalFiltersComponent
+                  hospitals={isSearchActive ? searchResults : hospitals}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  onClearFilters={handleClearFilters}
+                />
+              </motion.div>
+
+              {/* Sort and View controls + Results count */}
+              <HospitalSortView
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                totalCount={displayHospitals.length}
+              />
+
               {/* Section header */}
-              {!isSearchActive && (
-                <div className="flex items-center gap-2 mb-4">
+              {!isSearchActive && !hasActiveFilters && (
+                <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-healthcare-primary" />
                   <h2 className="text-sm font-medium text-gray-700">
                     Featured Hospitals
@@ -238,13 +367,13 @@ export default function HospitalSelectorPage() {
               )}
 
               {isSearchActive && (
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Search className="h-4 w-4 text-gray-400" />
                     <h2 className="text-sm font-medium text-gray-700">
                       {isSearching
                         ? "Searching..."
-                        : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""} found`}
+                        : `${displayHospitals.length} result${displayHospitals.length !== 1 ? "s" : ""} found`}
                     </h2>
                   </div>
                   <Button
@@ -277,24 +406,43 @@ export default function HospitalSelectorPage() {
                     <Building2 className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {isSearchActive ? "No hospitals found" : "No hospitals available"}
+                    {isSearchActive || hasActiveFilters
+                      ? "No hospitals found"
+                      : "No hospitals available"}
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    {isSearchActive
-                      ? "Try a different search term or browse all hospitals"
+                    {isSearchActive || hasActiveFilters
+                      ? "Try adjusting your search or filters"
                       : "Check back soon or contact support for assistance"}
                   </p>
-                  {isSearchActive && (
-                    <Button variant="outline" onClick={handleClearSearch}>
-                      Browse all hospitals
-                    </Button>
+                  {(isSearchActive || hasActiveFilters) && (
+                    <div className="flex justify-center gap-2">
+                      {isSearchActive && (
+                        <Button variant="outline" onClick={handleClearSearch}>
+                          Clear search
+                        </Button>
+                      )}
+                      {hasActiveFilters && (
+                        <Button variant="outline" onClick={handleClearFilters}>
+                          Clear filters
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </motion.div>
               )}
 
               {/* Hospital grid */}
               {!loading && displayHospitals.length > 0 && (
-                <div className="grid md:grid-cols-2 gap-4">
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid md:grid-cols-2 gap-4"
+                      : viewMode === "list"
+                      ? "space-y-3"
+                      : "grid grid-cols-2 md:grid-cols-3 gap-3"
+                  }
+                >
                   <AnimatePresence mode="popLayout">
                     {displayHospitals.map((hospital, index) => (
                       <HospitalCard
@@ -302,7 +450,13 @@ export default function HospitalSelectorPage() {
                         hospital={hospital}
                         onClick={handleHospitalSelect}
                         isSelected={selectedHospital?.id === hospital.id}
-                        variant="featured"
+                        variant={
+                          viewMode === "grid"
+                            ? "featured"
+                            : viewMode === "list"
+                            ? "default"
+                            : "compact"
+                        }
                         index={index}
                       />
                     ))}

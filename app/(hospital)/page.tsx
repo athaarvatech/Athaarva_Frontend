@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHospital } from "./HospitalContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   AhtarvaHealthcareTemplate,
   AhtarvaMedicalCenterTemplate,
@@ -69,33 +70,22 @@ const TEMPLATE_COMPONENTS: Record<string, React.ComponentType<{
   "professional": AhtarvaProfessionalTemplate,
 };
 
-// Get stored template from localStorage
-function getStoredTemplate(): { id: string; name: string; customizedBlueprint?: TemplateBlueprint } | null {
-  if (typeof window === "undefined") return null;
+// Extract template config from hospital branding (from API)
+function getTemplateFromBranding(branding?: Record<string, unknown>): { id: string; name: string; customizedBlueprint?: TemplateBlueprint } | null {
+  if (!branding) return null;
   
-  const stored = localStorage.getItem("pending_hospital_template");
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
-// Get stored branding from localStorage
-function getStoredBranding(): { colors?: { primary?: string; secondary?: string }; logo_url?: string } | null {
-  if (typeof window === "undefined") return null;
+  // New schema: template_id and template_content are stored directly
+  const templateId = branding.template_id as string | undefined;
+  const templateContent = branding.template_content as TemplateBlueprint | undefined;
   
-  const stored = localStorage.getItem("pending_hospital_branding");
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
+  if (templateId) {
+    return {
+      id: templateId,
+      name: templateId,
+      customizedBlueprint: templateContent,
+    };
   }
+  
   return null;
 }
 
@@ -159,6 +149,7 @@ function createDefaultBlueprint(hospitalName: string, branding?: { colors?: { pr
 
 export default function HospitalHomePage() {
   const { hospital, subdomain, theme } = useHospital();
+  const { user, isAuthenticated } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [templateData, setTemplateData] = useState<{
     id: string;
@@ -170,34 +161,65 @@ export default function HospitalHomePage() {
     logo_url?: string;
   } | null>(null);
 
+  // Get the dashboard URL based on user type
+  const getDashboardUrl = () => {
+    if (!user) return "/auth";
+    switch (user.user_type) {
+      case "patient":
+        return "/patient/dashboard";
+      case "doctor":
+        return "/doctor/dashboard";
+      case "hospital_admin":
+        return "/hospital/admin/dashboard";
+      default:
+        return "/patient/dashboard";
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
-    // Load template and branding from localStorage
-    const storedTemplate = getStoredTemplate();
-    const storedBranding = getStoredBranding();
     
-    if (storedTemplate) {
-      console.log("[HospitalPage] Loaded template from localStorage:", storedTemplate.id);
-      setTemplateData(storedTemplate);
-    } else {
-      // DEV MODE: Default to a template for testing when nothing is stored
-      // Check URL params for template override
-      const urlParams = new URLSearchParams(window.location.search);
-      const templateParam = urlParams.get("template");
-      
-      if (templateParam && TEMPLATE_COMPONENTS[templateParam]) {
-        console.log("[HospitalPage] Using template from URL param:", templateParam);
-        setTemplateData({ id: templateParam, name: templateParam });
-      } else if (window.location.hostname.includes("localhost")) {
-        // In dev mode, default to ahtarva-professional for demonstration
-        console.log("[HospitalPage] Dev mode: defaulting to ahtarva-professional template");
-        setTemplateData({ id: "ahtarva-professional", name: "Ahtarva Professional" });
+    // ALWAYS set branding colors from hospital data (when available)
+    if (hospital?.branding) {
+      const brandingData = hospital.branding as Record<string, unknown>;
+      setBranding({
+        colors: {
+          primary: (brandingData.primary_color as string) || "#007C7C",
+          secondary: (brandingData.secondary_color as string) || "#20B2AA",
+        },
+        logo_url: brandingData.logo_url as string,
+      });
+      console.log("[HospitalPage] Loaded branding from API:", {
+        primary: brandingData.primary_color,
+        secondary: brandingData.secondary_color,
+        template_id: brandingData.template_id,
+      });
+    }
+    
+    // Check for template from API branding
+    if (hospital?.branding) {
+      const apiTemplate = getTemplateFromBranding(hospital.branding as Record<string, unknown>);
+      if (apiTemplate) {
+        console.log("[HospitalPage] Loaded template from API:", apiTemplate.id);
+        setTemplateData(apiTemplate);
+        return;
       }
     }
-    if (storedBranding) {
-      setBranding(storedBranding);
+    
+    // Fallback for dev mode: URL param for template override
+    const urlParams = new URLSearchParams(window.location.search);
+    const templateParam = urlParams.get("template");
+    
+    if (templateParam && TEMPLATE_COMPONENTS[templateParam]) {
+      console.log("[HospitalPage] Using template from URL param:", templateParam);
+      setTemplateData({ id: templateParam, name: templateParam });
+      return;
     }
-  }, []);
+    
+    // Default to professional template (uses hospital branding colors already set above)
+    console.log("[HospitalPage] Using default ahtarva-professional template");
+    setTemplateData({ id: "ahtarva-professional", name: "Ahtarva Professional" });
+  }, [hospital]);
 
   // Determine which template component to use
   const TemplateComponent = useMemo(() => {
@@ -329,19 +351,32 @@ export default function HospitalHomePage() {
 
             {/* Auth Buttons */}
             <div className="flex items-center gap-3">
-              <Link href="/auth">
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth?mode=signup">
-                <Button
-                  size="sm"
-                  style={{ backgroundColor: theme.primaryColor }}
-                >
-                  Book Appointment
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link href={getDashboardUrl()}>
+                  <Button
+                    size="sm"
+                    style={{ backgroundColor: theme.primaryColor }}
+                  >
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/auth?mode=login">
+                    <Button variant="ghost" size="sm">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/auth?mode=signup">
+                    <Button
+                      size="sm"
+                      style={{ backgroundColor: theme.primaryColor }}
+                    >
+                      Book Appointment
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -397,20 +432,41 @@ export default function HospitalHomePage() {
               </motion.p>
 
               <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
-                <Link href="/auth?mode=signup">
-                  <Button
-                    size="lg"
-                    className="gap-2"
-                    style={{ backgroundColor: theme.primaryColor }}
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Book Appointment
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link href={getDashboardUrl()}>
+                    <Button
+                      size="lg"
+                      className="gap-2"
+                      style={{ backgroundColor: theme.primaryColor }}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth?mode=signup">
+                      <Button
+                        size="lg"
+                        className="gap-2"
+                        style={{ backgroundColor: theme.primaryColor }}
+                      >
+                        <Calendar className="h-4 w-4" />
+                        Book Appointment
+                      </Button>
+                    </Link>
+                    <Link href="/auth?mode=login">
+                      <Button size="lg" variant="outline" className="gap-2">
+                        Login
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
                 <Link href="#services">
-                  <Button size="lg" variant="outline" className="gap-2">
+                  <Button size="lg" variant="ghost" className="gap-2">
                     View Services
-                    <ArrowRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </motion.div>

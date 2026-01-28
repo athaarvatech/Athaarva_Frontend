@@ -188,22 +188,6 @@ module.exports = {
   				'100%': {
   					transform: 'translateZ(0) rotate(360deg)'
   				}
-  			},
-  			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
-  			},
-  			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
   			}
   		},
   		animation: {
@@ -218,9 +202,7 @@ module.exports = {
   			marquee: 'marquee 30s linear infinite',
   			'marquee-reverse': 'marquee-reverse 30s linear infinite',
   			'shimmer-slide': 'shimmer-slide var(--speed) ease-in-out infinite alternate',
-  			'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear',
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear'
   		},
   		zIndex: {
   			dropdown: '50',

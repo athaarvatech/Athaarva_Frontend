@@ -8,58 +8,17 @@ import {
   Phone,
   Calendar,
   Globe,
-  Key,
   Check,
   X,
   Loader2,
-  RefreshCw,
-  Eye,
-  EyeOff,
-  Copy,
   Shield,
-  AlertCircle,
+  Info,
 } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-// Helper function to generate a secure password
-function generateSecurePassword(length: number = 16): string {
-  const lowercase = "abcdefghijklmnopqrstuvwxyz";
-  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
-  const allChars = lowercase + uppercase + numbers + symbols;
-
-  let password = "";
-  // Ensure at least one of each type
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += symbols[Math.floor(Math.random() * symbols.length)];
-
-  // Fill the rest
-  for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
-  }
-
-  // Shuffle the password
-  return password
-    .split("")
-    .sort(() => Math.random() - 0.5)
-    .join("");
-}
-
-// Helper function to generate username from email
-function generateUsername(email: string): string {
-  return email
-    .split("@")[0]
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-}
 
 // Simulated domain availability check (replace with actual API call)
 async function checkDomainAvailability(
@@ -113,9 +72,7 @@ async function checkDomainAvailability(
 export default function AdminControlStep() {
   const { data, updateData } = useHospitalOnboarding();
 
-  // Local state for form
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordCopied, setPasswordCopied] = useState(false);
+  // Local state for domain checking
   const [domainCheckLoading, setDomainCheckLoading] = useState(false);
   const [domainStatus, setDomainStatus] = useState<{
     checked: boolean;
@@ -130,11 +87,6 @@ export default function AdminControlStep() {
       email: data.invitation?.email || "",
       phone: "",
       age: "",
-    },
-    credentials: {
-      username: "",
-      password: "",
-      generated: false,
     },
     domain: {
       subdomain: "",
@@ -155,53 +107,6 @@ export default function AdminControlStep() {
     updateAdminControl({
       admin: { ...adminControl.admin, [field]: value },
     });
-
-    // Auto-generate username when email changes
-    if (field === "email" && value) {
-      const username = generateUsername(value);
-      updateAdminControl({
-        admin: { ...adminControl.admin, [field]: value },
-        credentials: { ...adminControl.credentials, username },
-      });
-    }
-  };
-
-  // Generate credentials
-  const handleGenerateCredentials = () => {
-    const password = generateSecurePassword(16);
-    const username =
-      adminControl.credentials.username ||
-      generateUsername(adminControl.admin.email);
-
-    updateAdminControl({
-      credentials: {
-        username,
-        password,
-        generated: true,
-      },
-    });
-  };
-
-  // Regenerate password only
-  const handleRegeneratePassword = () => {
-    const password = generateSecurePassword(16);
-    updateAdminControl({
-      credentials: {
-        ...adminControl.credentials,
-        password,
-      },
-    });
-  };
-
-  // Copy password to clipboard
-  const handleCopyPassword = async () => {
-    try {
-      await navigator.clipboard.writeText(adminControl.credentials.password);
-      setPasswordCopied(true);
-      setTimeout(() => setPasswordCopied(false), 2000);
-    } catch {
-      console.error("Failed to copy password");
-    }
   };
 
   // Check domain availability
@@ -376,119 +281,40 @@ export default function AdminControlStep() {
         </div>
       </motion.div>
 
-      {/* Credential Generation Section */}
+      {/* Credentials Info Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white border border-gray-200 rounded-lg p-6"
+        className="bg-blue-50 border border-blue-200 rounded-lg p-4"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Key className="w-5 h-5 text-green-600" />
-            <h4 className="font-medium text-gray-900">Admin Credentials</h4>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Info className="w-5 h-5 text-blue-600" />
           </div>
-          {!adminControl.credentials.generated ? (
-            <Button
-              onClick={handleGenerateCredentials}
-              disabled={!adminControl.admin.email}
-              size="sm"
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              <Key className="w-4 h-4 mr-2" />
-              Generate Credentials
-            </Button>
-          ) : (
-            <Badge className="bg-green-100 text-green-700 border-green-200">
-              <Check className="w-3 h-3 mr-1" />
-              Credentials Generated
-            </Badge>
-          )}
-        </div>
-
-        {adminControl.credentials.generated ? (
-          <div className="space-y-4">
-            {/* Username Display */}
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Username
-              </Label>
-              <div className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
-                <span className="font-mono text-sm">
-                  {adminControl.credentials.username}
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  Auto-generated from email
-                </Badge>
-              </div>
-            </div>
-
-            {/* Password Display */}
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Password
-              </Label>
-              <div className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center gap-3">
-                <span className="font-mono text-sm flex-1">
-                  {showPassword
-                    ? adminControl.credentials.password
-                    : "••••••••••••••••"}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="h-8 w-8 p-0"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyPassword}
-                    className="h-8 w-8 p-0"
-                  >
-                    {passwordCopied ? (
-                      <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRegeneratePassword}
-                    className="h-8 w-8 p-0"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-amber-800">
-                <strong>Important:</strong> Please save these credentials
-                securely. The password will be required for your first login.
-                You can change it after logging in.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Key className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-sm">
-              Enter your email address first, then generate secure credentials
-              for your admin account.
+          <div>
+            <h4 className="font-medium text-blue-900 mb-1">
+              Login Credentials Will Be Emailed
+            </h4>
+            <p className="text-sm text-blue-700">
+              Once your onboarding is approved by the platform admin, secure login credentials 
+              will be automatically generated and sent via email to:
+            </p>
+            <ul className="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
+              <li>
+                <strong>Admin Email:</strong>{" "}
+                {adminControl.admin.email || "(Enter email above)"}
+              </li>
+              <li>
+                <strong>Hospital Owner:</strong> The email used to receive the onboarding invitation
+              </li>
+            </ul>
+            <p className="mt-2 text-xs text-blue-600">
+              Please ensure the email addresses are correct. You will use these credentials to 
+              access your hospital admin dashboard.
             </p>
           </div>
-        )}
+        </div>
       </motion.div>
 
       {/* Domain Selection Section */}

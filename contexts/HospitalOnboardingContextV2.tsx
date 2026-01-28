@@ -1526,6 +1526,13 @@ export const HospitalOnboardingProvider: React.FC<
   const BACKEND_SYNC_INTERVAL = 10000; // 10 seconds minimum between backend syncs
 
   const saveToBackend = useCallback(async (stepData: Record<string, unknown>, stepNumber: number) => {
+    // Skip step 0 - it's handled by acceptInvitation, not saveStep
+    // Backend expects steps 1-10
+    if (stepNumber < 1) {
+      console.log("[Autosave] Step 0 is handled by acceptInvitation, skipping backend sync");
+      return;
+    }
+
     // Only sync to backend if we have an active session
     if (!onboardingAPI.hasActiveSession()) {
       console.log("[Autosave] No active session, skipping backend sync");
@@ -1725,6 +1732,8 @@ export const HospitalOnboardingProvider: React.FC<
         version: data.template.selected_template?.version,
         preview_snapshot_url:
           data.template.selected_template?.preview_snapshot_url,
+        // Include full customized blueprint for persistence
+        customized_blueprint: data.template.selected_template?.customizedBlueprint,
       },
 
       // Step 1: Organization Profile
@@ -1736,7 +1745,7 @@ export const HospitalOnboardingProvider: React.FC<
         // Remove file objects for serialization
       })),
 
-      // Step 3: Branding & Report Configuration
+      // Step 3: Branding & Report Configuration (includes template content for DB)
       branding: {
         logo_url: data.branding.logo_url,
         logo_size: data.branding.logo_size,
@@ -1747,6 +1756,11 @@ export const HospitalOnboardingProvider: React.FC<
         prescription_header_format: data.branding.prescription_header_format,
         invoice_header_format: data.branding.invoice_header_format,
         watermark_text: data.branding.watermark_text,
+        // NEW: Include template data for database persistence
+        template_id: data.template.selected_template?.id,
+        template_content: data.template.selected_template?.customizedBlueprint,
+        // NEW: Include login page config for database persistence
+        login_page_config: data.loginPageConfig,
       },
 
       // Step 4: Facility Management (Wings/Floors/Wards/Beds)
@@ -1856,6 +1870,27 @@ export const HospitalOnboardingProvider: React.FC<
   useEffect(() => {
     loadFromLocalStorage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ============================================================================
+  // TOKEN REFRESH - Auto-refresh token before expiry
+  // ============================================================================
+  
+  useEffect(() => {
+    // Refresh token every 12 hours (half of 24h expiry) to ensure it never expires
+    const refreshInterval = setInterval(async () => {
+      try {
+        if (onboardingAPI.hasActiveSession()) {
+          await onboardingAPI.refreshToken();
+          console.log('[TokenRefresh] Token refreshed successfully');
+        }
+      } catch (error) {
+        console.error('[TokenRefresh] Failed to refresh token:', error);
+        // Don't show toast - silent refresh, will be handled on next API call
+      }
+    }, 12 * 60 * 60 * 1000); // 12 hours
+    
+    return () => clearInterval(refreshInterval);
   }, []);
 
   // ============================================================================
