@@ -65,7 +65,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 // Define types
 interface Appointment {
@@ -203,8 +203,7 @@ Reason: ${appointment.reason}`;
     navigator.clipboard.writeText(details).then(() => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-      toast({
-        title: "Copied to clipboard",
+      toast.success("Copied to clipboard", {
         description: "Appointment details have been copied to your clipboard.",
       });
     });
@@ -217,8 +216,7 @@ Reason: ${appointment.reason}`;
 
   const confirmCancellation = () => {
     // In a real app, this would call an API
-    toast({
-      title: "Appointment Cancelled",
+    toast.success("Appointment Cancelled", {
       description: "Your appointment has been successfully cancelled.",
     });
     setIsCancelling(false);
@@ -243,8 +241,7 @@ Reason: ${appointment.reason}`;
   // Toggle reminders
   const toggleReminders = () => {
     setReminderEnabled(!reminderEnabled);
-    toast({
-      title: reminderEnabled ? "Reminders disabled" : "Reminders enabled",
+    toast.success(reminderEnabled ? "Reminders disabled" : "Reminders enabled", {
       description: reminderEnabled
         ? "You will no longer receive reminders for this appointment."
         : "You will receive reminders for this appointment.",

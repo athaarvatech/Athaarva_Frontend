@@ -11,6 +11,7 @@ import React, {
   useMemo,
 } from "react";
 import { toast } from "@/lib/toast";
+import { onboardingAPI } from "@/lib/api/onboarding";
 
 // ============================================================================
 // TYPE DEFINITIONS - Operational Hospital Configuration
@@ -585,6 +586,38 @@ export interface AdminControlData {
   };
 }
 
+// ============================================================================
+// LOGIN PAGE CUSTOMIZATION TYPES (NEW)
+// ============================================================================
+
+export interface LoginPageConfig {
+  templateId?: string;
+  templateName?: string;
+  templatePreview?: string;
+  // Layout settings
+  layoutTemplate: "split-left" | "split-right" | "centered" | "full-right";
+  // Background settings
+  backgroundImage: string;
+  backgroundBlur: number;
+  backgroundColor: string;
+  useGradientOverlay: boolean;
+  gradientDirection: "to-r" | "to-b" | "to-br" | "to-bl";
+  formPosition: "center" | "left" | "right";
+  formStyle: "card" | "transparent" | "floating" | "minimal";
+  // Content settings
+  showHospitalLogo: boolean;
+  showAthaarvaBranding: boolean;
+  athaarvaPosition: "footer" | "form-bottom";
+  customWelcomeText: string;
+  customSubtext: string;
+  // New fields for two-panel design
+  customHeadline: string;
+  customTagline: string;
+  primaryColor: string;
+  showFeatures: boolean;
+  showStats: boolean;
+}
+
 export interface HospitalOnboardingData {
   // Step 0: Template Selection & Invitation Recap (UNCHANGED)
   invitation: {
@@ -634,6 +667,7 @@ export interface HospitalOnboardingData {
       primary: string;
       secondary: string;
     };
+    document_template_style?: "classic" | "modern" | "minimal";
     report_header: {
       show_logo: boolean;
       show_address: boolean;
@@ -649,6 +683,9 @@ export interface HospitalOnboardingData {
     invoice_header_format: "standard" | "detailed";
     watermark_text?: string;
   };
+
+  // Step 3.5: Login Page Customization (NEW)
+  loginPageConfig: LoginPageConfig;
 
   // Step 4: Facility Management (NEW - Infrastructure for IPD)
   facility: {
@@ -928,6 +965,30 @@ const initialData: HospitalOnboardingData = {
     watermark_text: "",
   },
 
+  // Step 3.5: Login Page Customization (NEW)
+  loginPageConfig: {
+    templateId: "healthcare-teal",
+    templateName: "Healthcare Teal",
+    backgroundImage: "/images/medical-background.jpg",
+    backgroundBlur: 4,
+    backgroundColor: "#0a0a0a",
+    useGradientOverlay: true,
+    gradientDirection: "to-r",
+    layoutTemplate: "centered",
+    formPosition: "center",
+    formStyle: "card",
+    showHospitalLogo: true,
+    showAthaarvaBranding: true,
+    athaarvaPosition: "footer",
+    customWelcomeText: "Welcome back",
+    customSubtext: "Sign in to access your healthcare portal",
+    customHeadline: "Welcome back",
+    customTagline: "Your care starts here",
+    primaryColor: "#007C7C",
+    showFeatures: true,
+    showStats: true,
+  },
+
   // Step 4: Facility Management (NEW)
   facility: {
     wings: [],
@@ -1181,7 +1242,7 @@ const initialData: HospitalOnboardingData = {
   },
 };
 
-const TOTAL_STEPS = 8; // 0-7 (added licensing step)
+const TOTAL_STEPS = 10; // 0-9 (includes login page & document templates)
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -1316,7 +1377,10 @@ export const HospitalOnboardingProvider: React.FC<
         case 0: // Invitation & Template Selection
           return !!data.template.selected_template;
 
-        case 1: // Organization Profile - Only check fields that exist in form
+        case 1: // Login Page Customization - visual selection
+          return !!data.loginPageConfig?.templateId;
+
+        case 2: // Organization Profile - Only check fields that exist in form
           const org = data.organizationProfile;
           return !!(
             org.legal_name &&
@@ -1326,7 +1390,7 @@ export const HospitalOnboardingProvider: React.FC<
             org.locale
           );
 
-        case 2: // Locations & Contacts
+        case 3: // Locations & Contacts
           return (
             data.locations.length > 0 &&
             data.locations.every(
@@ -1340,7 +1404,7 @@ export const HospitalOnboardingProvider: React.FC<
             )
           );
 
-        case 3: // Departments - Only check what exists in form
+        case 4: // Departments - Only check what exists in form
           return (
             data.departments.length > 0 &&
             data.departments.every(
@@ -1350,7 +1414,7 @@ export const HospitalOnboardingProvider: React.FC<
             )
           );
 
-        case 4: // Billing & Financial - Only bank details
+        case 5: // Billing & Financial - Only bank details
           const billing = data.billing;
           return !!(
             billing.bank_details.bank_name &&
@@ -1359,20 +1423,24 @@ export const HospitalOnboardingProvider: React.FC<
             billing.bank_details.beneficiary_name
           );
 
-        case 5: // Clinical Configuration - prescription only
-          const clinical = data.clinical;
-          return !!(
-            clinical.prescription_config.default_prescription_language
-          );
+        case 6: // Document Templates - visual selection
+          return !!data.branding?.document_template_style;
 
-        case 6: // Licensing & Certification - at least one license with name and PDF
+        case 7: // Licensing & Certification - at least one license with name and PDF
           return (
             data.licenses &&
             data.licenses.length > 0 &&
             data.licenses.some((license) => license.name && license.certificate_file)
           );
 
-        case 7: // Review & Submission - basic acknowledgements
+        case 8: // Admin Setup & Domain
+          return !!(
+            data.adminControl?.admin?.full_name &&
+            data.adminControl?.admin?.email &&
+            data.adminControl?.domain?.subdomain
+          );
+
+        case 9: // Review & Submission - basic acknowledgements
           const review = data.review;
           return !!(
             review.acknowledgements.terms &&
@@ -1453,6 +1521,42 @@ export const HospitalOnboardingProvider: React.FC<
   // PERSISTENCE
   // ============================================================================
 
+  // Track last backend sync to avoid excessive API calls
+  const lastBackendSyncRef = useRef<number>(0);
+  const BACKEND_SYNC_INTERVAL = 10000; // 10 seconds minimum between backend syncs
+
+  const saveToBackend = useCallback(async (stepData: Record<string, unknown>, stepNumber: number) => {
+    // Skip step 0 - it's handled by acceptInvitation, not saveStep
+    // Backend expects steps 1-10
+    if (stepNumber < 1) {
+      console.log("[Autosave] Step 0 is handled by acceptInvitation, skipping backend sync");
+      return;
+    }
+
+    // Only sync to backend if we have an active session
+    if (!onboardingAPI.hasActiveSession()) {
+      console.log("[Autosave] No active session, skipping backend sync");
+      return;
+    }
+
+    // Check if enough time has passed since last sync
+    const now = Date.now();
+    if (now - lastBackendSyncRef.current < BACKEND_SYNC_INTERVAL) {
+      console.log("[Autosave] Too soon since last sync, skipping");
+      return;
+    }
+
+    try {
+      lastBackendSyncRef.current = now;
+      await onboardingAPI.saveStep(stepNumber, stepData, false);
+      console.log(`[Autosave] Successfully synced step ${stepNumber} to backend`);
+    } catch (error) {
+      // Silent failure for autosave - don't disrupt user experience
+      console.warn("[Autosave] Backend sync failed:", error);
+      // Optionally show a subtle indicator but don't toast
+    }
+  }, []);
+
   const saveToLocalStorage = useCallback(() => {
     try {
       setIsSaving(true);
@@ -1480,6 +1584,10 @@ export const HospitalOnboardingProvider: React.FC<
       );
       
       setLastSaved(new Date());
+      
+      // Also sync to backend (non-blocking)
+      saveToBackend(dataToSave, currentStep);
+      
       setTimeout(() => {
         setIsSaving(false);
         // Removed toast - using top banner in page.tsx instead
@@ -1488,7 +1596,7 @@ export const HospitalOnboardingProvider: React.FC<
       console.error("Failed to save onboarding data:", error);
       setIsSaving(false);
     }
-  }, [data, currentStep, activityLog, collaborators]);
+  }, [data, currentStep, activityLog, collaborators, saveToBackend]);
 
   const loadFromLocalStorage = useCallback(() => {
     try {
@@ -1624,6 +1732,8 @@ export const HospitalOnboardingProvider: React.FC<
         version: data.template.selected_template?.version,
         preview_snapshot_url:
           data.template.selected_template?.preview_snapshot_url,
+        // Include full customized blueprint for persistence
+        customized_blueprint: data.template.selected_template?.customizedBlueprint,
       },
 
       // Step 1: Organization Profile
@@ -1635,7 +1745,7 @@ export const HospitalOnboardingProvider: React.FC<
         // Remove file objects for serialization
       })),
 
-      // Step 3: Branding & Report Configuration
+      // Step 3: Branding & Report Configuration (includes template content for DB)
       branding: {
         logo_url: data.branding.logo_url,
         logo_size: data.branding.logo_size,
@@ -1646,6 +1756,11 @@ export const HospitalOnboardingProvider: React.FC<
         prescription_header_format: data.branding.prescription_header_format,
         invoice_header_format: data.branding.invoice_header_format,
         watermark_text: data.branding.watermark_text,
+        // NEW: Include template data for database persistence
+        template_id: data.template.selected_template?.id,
+        template_content: data.template.selected_template?.customizedBlueprint,
+        // NEW: Include login page config for database persistence
+        login_page_config: data.loginPageConfig,
       },
 
       // Step 4: Facility Management (Wings/Floors/Wards/Beds)
@@ -1755,6 +1870,27 @@ export const HospitalOnboardingProvider: React.FC<
   useEffect(() => {
     loadFromLocalStorage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ============================================================================
+  // TOKEN REFRESH - Auto-refresh token before expiry
+  // ============================================================================
+  
+  useEffect(() => {
+    // Refresh token every 12 hours (half of 24h expiry) to ensure it never expires
+    const refreshInterval = setInterval(async () => {
+      try {
+        if (onboardingAPI.hasActiveSession()) {
+          await onboardingAPI.refreshToken();
+          console.log('[TokenRefresh] Token refreshed successfully');
+        }
+      } catch (error) {
+        console.error('[TokenRefresh] Failed to refresh token:', error);
+        // Don't show toast - silent refresh, will be handled on next API call
+      }
+    }, 12 * 60 * 60 * 1000); // 12 hours
+    
+    return () => clearInterval(refreshInterval);
   }, []);
 
   // ============================================================================

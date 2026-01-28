@@ -44,6 +44,13 @@ export interface TenantResponse {
   updated_at: string;
 }
 
+export interface TenantApprovalResponse {
+  tenant: TenantResponse;
+  admin_created: boolean;
+  credentials_sent: boolean;
+  message: string;
+}
+
 export interface InvitationResponse {
   id: string;
   tenant_id: string | null;
@@ -264,6 +271,14 @@ class SuperAdminAPI {
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<TenantResponse>(response);
+  }
+
+  async approveTenant(tenantId: string): Promise<TenantApprovalResponse> {
+    const response = await fetch(`${this.baseUrl}/tenants/${tenantId}/approve`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<TenantApprovalResponse>(response);
   }
 
   // =========================================================================

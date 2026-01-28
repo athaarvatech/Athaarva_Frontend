@@ -9,7 +9,7 @@ import type {
   TemplateBlueprint,
   UploadedImageData,
 } from "../templateBlueprints";
-import { EditableText } from "../EditableText";
+import { EditableText, EditModeProvider } from "../EditableText";
 import {
   HeroImageUploader,
   AvatarUploader,
@@ -45,6 +45,7 @@ import {
   User,
   ChevronDown,
   FileText,
+  Sparkles,
 } from "lucide-react";
 
 // ============================================================================
@@ -315,6 +316,7 @@ export function AhtarvaHealthcareTemplate({
   };
 
   return (
+    <EditModeProvider isEditMode={isEditMode}>
     <div
       className={cn(
         "min-h-screen bg-white overflow-hidden antialiased",
@@ -520,6 +522,7 @@ export function AhtarvaHealthcareTemplate({
         isEditMode={isEditMode}
       />
     </div>
+    </EditModeProvider>
   );
 }
 

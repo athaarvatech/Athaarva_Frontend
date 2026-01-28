@@ -16,10 +16,10 @@ export interface ValidateTokenResponse {
 
 export interface AcceptInvitationRequest {
   token: string;
-  full_name: string;
+  full_name?: string;  // Optional - will use email prefix if not provided
   phone?: string;
-  password: string;
-  confirm_password: string;
+  password?: string;   // Optional - will be auto-generated if not provided
+  confirm_password?: string;
   hospital_code: string;
   hospital_name: string;
 }
@@ -254,6 +254,41 @@ class OnboardingAPI {
     return response.json();
   }
 
+  /**
+   * Enhanced fetch with automatic token refresh on 401.
+   */
+  private async fetchWithRetry<T>(
+    url: string,
+    options: RequestInit,
+    retryOnAuth: boolean = true
+  ): Promise<T> {
+    try {
+      const response = await fetch(url, options);
+      return await this.handleResponse<T>(response);
+    } catch (error: any) {
+      // If 401 and we haven't retried yet, try refreshing token and retry
+      if (retryOnAuth && error.message?.includes('Session expired')) {
+        try {
+          console.log('[OnboardingAPI] Token expired, attempting refresh...');
+          await this.refreshToken();
+          console.log('[OnboardingAPI] Token refreshed, retrying request...');
+          
+          // Retry with new token (no retry on 2nd attempt)
+          const newOptions = {
+            ...options,
+            headers: this.getAuthHeaders(),
+          };
+          const response = await fetch(url, newOptions);
+          return await this.handleResponse<T>(response);
+        } catch (refreshError) {
+          console.error('[OnboardingAPI] Token refresh failed:', refreshError);
+          throw error; // Throw original error
+        }
+      }
+      throw error;
+    }
+  }
+
   // =========================================================================
   // Public Endpoints (No Auth Required)
   // =========================================================================
@@ -302,10 +337,10 @@ class OnboardingAPI {
    * Get current onboarding wizard state.
    */
   async getSession(): Promise<OnboardingWizardState> {
-    const response = await fetch(`${this.baseUrl}/session`, {
-      headers: this.getAuthHeaders(),
-    });
-    return this.handleResponse<OnboardingWizardState>(response);
+    return this.fetchWithRetry<OnboardingWizardState>(
+      `${this.baseUrl}/session`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   /**
@@ -319,23 +354,47 @@ class OnboardingAPI {
     data: Record<string, unknown>,
     markComplete: boolean = false
   ): Promise<OnboardingSessionResponse> {
-    const response = await fetch(`${this.baseUrl}/session/step/${stepNumber}`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify({ data, mark_complete: markComplete }),
-    });
-    return this.handleResponse<OnboardingSessionResponse>(response);
+    return this.fetchWithRetry<OnboardingSessionResponse>(
+      `${this.baseUrl}/session/step/${stepNumber}`,
+      {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ data, mark_complete: markComplete }),
+      }
+    );
   }
 
   /**
    * Submit onboarding for super admin review.
    */
   async submitForReview(): Promise<OnboardingSessionResponse> {
-    const response = await fetch(`${this.baseUrl}/session/submit`, {
+    return this.fetchWithRetry<OnboardingSessionResponse>(
+      `${this.baseUrl}/session/submit`,
+      {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+      }
+    );
+  }
+
+  /**
+   * Refresh the JWT token to extend the session.
+   * Returns a new token with extended expiry (24 hours).
+   */
+  async refreshToken(): Promise<{ access_token: string; expires_in: number; message: string }> {
+    // Don't use fetchWithRetry for refresh (no retry on 401)
+    const response = await fetch(`${this.baseUrl}/session/refresh-token`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<OnboardingSessionResponse>(response);
+    const result = await this.handleResponse<{ access_token: string; expires_in: number; message: string }>(response);
+    
+    // Update stored token
+    if (result.access_token && typeof window !== 'undefined') {
+      localStorage.setItem('onboarding_token', result.access_token);
+    }
+    
+    return result;
   }
 
   // =========================================================================

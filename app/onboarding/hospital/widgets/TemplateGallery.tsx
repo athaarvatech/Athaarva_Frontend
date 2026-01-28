@@ -387,12 +387,12 @@ function TemplateCard({
           </div>
         )}
 
-        {/* Overlay on hover - Very subtle */}
-        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors flex items-center justify-center">
+        {/* Overlay on hover - Enhanced visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/70 transition-all flex items-center justify-center">
           <Button
             variant="secondary"
             size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+            className="opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900 border-2 border-white/50 hover:border-healthcare-primary hover:scale-105"
             onClick={(e) => {
               e.stopPropagation();
               onPreview();
@@ -1356,7 +1356,7 @@ function TemplatePreviewModal({
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-600 rounded-full z-10" />
               )}
 
-              {/* Screen Container */}
+              {/* Screen Container - Enhanced sizing for better preview */}
               <div
                 className={cn(
                   "bg-white overflow-hidden",
@@ -1367,10 +1367,10 @@ function TemplatePreviewModal({
                 style={{
                   height:
                     device === "desktop"
-                      ? "600px"
+                      ? "650px"
                       : device === "tablet"
-                      ? "580px"
-                      : "480px",
+                      ? "620px"
+                      : "520px",
                   overflow: "hidden",
                 }}
               >
