@@ -10,7 +10,7 @@
  * - Complete initial setup
  */
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -118,7 +118,7 @@ const SETUP_STEPS: SetupStep[] = [
 // MAIN COMPONENT
 // ============================================================================
 
-export default function AdminSetupPage() {
+function AdminSetupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -687,5 +687,25 @@ export default function AdminSetupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminSetupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-healthcare-cool-white via-white to-healthcare-light-cyan">
+          <div className="container max-w-4xl mx-auto py-8 px-4">
+            <div className="animate-pulse space-y-6">
+              <div className="h-10 bg-gray-200 rounded" />
+              <div className="h-6 bg-gray-200 rounded w-2/3" />
+              <div className="h-48 bg-gray-100 rounded" />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <AdminSetupPageContent />
+    </Suspense>
   );
 }

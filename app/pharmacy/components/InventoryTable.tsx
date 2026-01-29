@@ -150,29 +150,34 @@ export function InventoryTable({
                       id: item.medicineId || item.id,
                       name: item.medicineName,
                       batchNo: item.batchNo,
-                      expiry: item.expiry,
                       currentStock: item.qty,
-                      reorderPoint: 50,
-                      isExpired: item.isExpired || false,
-                      isExpiringSoon: item.isExpiringSoon || false,
-                      trend: "stable",
+                      minStock: 50,
+                      maxStock: Math.max(100, item.qty * 2),
                       avgDailySales: Math.floor(Math.random() * 20) + 5,
+                      daysUntilExpiry: Math.ceil(
+                        (item.expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                      ),
                       daysUntilStockout: item.qty < 50 ? Math.floor(item.qty / 5) : null,
+                      lastRestocked: new Date().toLocaleDateString("en-IN"),
+                      pricePerUnit: item.rate,
+                      trend: "stable",
+                      trendPercent: 0,
                     }}
-                  >
-                    <div className="flex items-start gap-2 cursor-pointer hover:text-healthcare-primary transition-colors">
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">
-                          {item.medicineName}
-                        </p>
-                        {item.medicineId && (
-                          <p className="text-xs text-gray-500">
-                            ID: {item.medicineId}
+                    trigger={
+                      <div className="flex items-start gap-2 cursor-pointer hover:text-healthcare-primary transition-colors">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {item.medicineName}
                           </p>
-                        )}
+                          {item.medicineId && (
+                            <p className="text-xs text-gray-500">
+                              ID: {item.medicineId}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </InventoryHoverCard>
+                    }
+                  />
                 </TableCell>
                 <TableCell className="text-center text-sm text-gray-600 font-mono">
                   {item.hsn || "-"}

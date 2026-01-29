@@ -51,8 +51,8 @@ export function BatchAnalysisModal({ open, onOpenChange, stats }: BatchAnalysisM
   const [discountSliders, setDiscountSliders] = useState<Record<string, number>>({});
 
   const criticalBatches = stats.batchesNeedingAction.filter(b => b.urgency === "critical");
-  const urgentBatches = stats.batchesNeedingAction.filter(b => b.urgency === "urgent" || b.urgency === "high");
-  const warningBatches = stats.batchesNeedingAction.filter(b => b.urgency === "warning" || b.urgency === "medium");
+  const urgentBatches = stats.batchesNeedingAction.filter(b => b.urgency === "urgent");
+  const warningBatches = stats.batchesNeedingAction.filter(b => b.urgency === "warning");
 
   // Mock supplier data (in real app, this would come from API)
   const supplierData: Record<string, { name: string; rating: string; issues: number; reliability: number }> = {
@@ -72,7 +72,7 @@ export function BatchAnalysisModal({ open, onOpenChange, stats }: BatchAnalysisM
   // Calculate days until expiry (mock)
   const getDaysUntilExpiry = (batch: typeof stats.batchesNeedingAction[0]) => {
     if (batch.urgency === "critical") return Math.floor(Math.random() * 15) + 1;
-    if (batch.urgency === "urgent" || batch.urgency === "high") return Math.floor(Math.random() * 60) + 15;
+    if (batch.urgency === "urgent") return Math.floor(Math.random() * 60) + 15;
     return Math.floor(Math.random() * 90) + 60;
   };
 
@@ -212,7 +212,7 @@ Limited Stock - First Come First Served!`;
     const csvHeader = "Batch No,Medicine Name,Action,Urgency,Reason,Days Until Expiry,Estimated Loss\n";
     const csvRows = stats.batchesNeedingAction.map(b => {
       const days = getDaysUntilExpiry(b);
-      const loss = b.urgency === "critical" ? 15000 : b.urgency === "high" ? 8000 : 3000;
+      const loss = b.urgency === "critical" ? 15000 : b.urgency === "urgent" ? 8000 : 3000;
       return `${b.batchNo},${b.medicineName},${b.action},${b.urgency},${b.reason},${days},₹${loss}`;
     }).join('\n');
     
