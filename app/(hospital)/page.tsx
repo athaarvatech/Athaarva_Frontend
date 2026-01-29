@@ -73,6 +73,17 @@ const TEMPLATE_COMPONENTS: Record<string, React.ComponentType<{
 // Extract template config from hospital branding (from API)
 function getTemplateFromBranding(branding?: Record<string, unknown>): { id: string; name: string; customizedBlueprint?: TemplateBlueprint } | null {
   if (!branding) return null;
+
+  const isValidBlueprint = (bp: unknown): bp is TemplateBlueprint => {
+    if (!bp || typeof bp !== "object") return false;
+    const obj = bp as Record<string, unknown>;
+    // Minimal shape checks to avoid treating `{}` (the DB default) as a usable blueprint.
+    return (
+      typeof obj.id === "string" &&
+      typeof obj.hero === "object" &&
+      typeof obj.palette === "object"
+    );
+  };
   
   // New schema: template_id and template_content are stored directly
   const templateId = branding.template_id as string | undefined;
@@ -82,8 +93,25 @@ function getTemplateFromBranding(branding?: Record<string, unknown>): { id: stri
     return {
       id: templateId,
       name: templateId,
-      customizedBlueprint: templateContent,
+      customizedBlueprint: isValidBlueprint(templateContent) ? templateContent : undefined,
     };
+  }
+
+  // Backward/partial-data safety:
+  // If template_id is missing but template_content exists, try to infer the template id from the blueprint.
+  // Our blueprints include an `id` field (e.g., "ahtarva-medical-center").
+  if (templateContent && typeof templateContent === "object") {
+    const inferredId =
+      (templateContent as unknown as { id?: unknown; templateId?: unknown }).id ??
+      (templateContent as unknown as { templateId?: unknown }).templateId;
+
+    if (typeof inferredId === "string" && inferredId.trim().length > 0) {
+      return {
+        id: inferredId,
+        name: inferredId,
+        customizedBlueprint: isValidBlueprint(templateContent) ? templateContent : undefined,
+      };
+    }
   }
   
   return null;

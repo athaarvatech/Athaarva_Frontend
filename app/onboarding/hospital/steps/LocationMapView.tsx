@@ -24,7 +24,11 @@ export default function LocationMapView({
 }: LocationMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
-  const marker = useRef<maptilersdk.Marker | null>(null);
+  // NOTE: `@maptiler/sdk`'s `Marker` extends `maplibre-gl`'s Marker.
+  // In some installs, TypeScript can't find `maplibre-gl`'s bundled .d.ts,
+  // which makes inherited methods like `setLngLat` disappear from the type.
+  // We keep this as `any` to avoid build-blocking type errors.
+  const marker = useRef<any>(null);
 
   // Initialize map
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function LocationMapView({
         if (marker.current) {
           marker.current.setLngLat([location.lng, location.lat]);
         } else {
-          marker.current = new maptilersdk.Marker({ color: "#0d9488" })
+          marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
             .setLngLat([location.lng, location.lat])
             .addTo(map.current);
         }
@@ -71,7 +75,7 @@ export default function LocationMapView({
 
     // If initial location exists, add marker
     if (location) {
-      marker.current = new maptilersdk.Marker({ color: "#0d9488" })
+      marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
         .setLngLat([location.lng, location.lat])
         .addTo(map.current);
     }
@@ -85,7 +89,7 @@ export default function LocationMapView({
         if (marker.current) {
           marker.current.setLngLat([lng, lat]);
         } else if (map.current) {
-          marker.current = new maptilersdk.Marker({ color: "#0d9488" })
+          marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
             .setLngLat([lng, lat])
             .addTo(map.current);
         }

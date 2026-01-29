@@ -8,9 +8,11 @@
 // Types matching backend responses
 export interface ValidateTokenResponse {
   valid: boolean;
+  invitation_id?: string | null;
   email: string | null;
   hospital_name: string | null;
   expires_at: string | null;
+  owner_name?: string | null;
   message: string;
 }
 

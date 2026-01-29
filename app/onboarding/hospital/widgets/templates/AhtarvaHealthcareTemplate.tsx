@@ -43,6 +43,7 @@ import {
   Instagram,
   Clock,
   User,
+  ArrowRight,
   ChevronDown,
   FileText,
   Sparkles,

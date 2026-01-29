@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { isValidEmail, isValidPhone } from "@/lib/onboarding-utils";
+import { IMaskInput } from "react-imask";
 
 import type { TeamMemberData } from "@/contexts/HospitalOnboardingContextV2";
 
