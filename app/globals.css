@@ -1,6 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+
+/* MapTiler SDK Styles */
+@import url("https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.css");
 
 @tailwind base;
 @tailwind components;
@@ -9,33 +11,37 @@
 /* HealthCare Modern Theme Variables */
 :root {
   /* HealthCare Brand Colors */
-  --healthcare-primary: #007C7C;
-  --healthcare-secondary: #20B2AA;
+  --healthcare-primary: #007c7c;
+  --healthcare-secondary: #20b2aa;
   --healthcare-teal: #008080;
-  --healthcare-emerald: #50C878;
-  --healthcare-indigo: #4F46E5;
-  --healthcare-cool-white: #FAFAFA;
-  --healthcare-soft-grey: #F3F4F6;
-  --healthcare-dark: #1F2937;
+  --healthcare-emerald: #50c878;
+  --healthcare-indigo: #4f46e5;
+  --healthcare-cool-white: #fafafa;
+  --healthcare-soft-grey: #f3f4f6;
+  --healthcare-dark: #1f2937;
 
   /* Legacy Support */
-  --color-primary: #06B6D4;
-  --color-primary-light: #ECFEFF;
-  --color-secondary: #4A6572;
-  --color-accent: #F9A826;
-  --color-positive: #34D399;
-  --color-danger: #F87171;
-  --color-warning: #FBBF24;
-  --color-background: #FFFFFF;
-  --color-surface: #F9FAFB;
+  --color-primary: #06b6d4;
+  --color-primary-light: #ecfeff;
+  --color-secondary: #4a6572;
+  --color-accent: #f9a826;
+  --color-positive: #34d399;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
 
   /* Modern Shadow System */
   --healthcare-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --healthcare-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --healthcare-shadow-md: 0 6px 10px -1px rgba(0, 0, 0, 0.1), 0 2px 5px -1px rgba(0, 0, 0, 0.06);
-  --healthcare-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --healthcare-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+  --healthcare-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --healthcare-shadow-md: 0 6px 10px -1px rgba(0, 0, 0, 0.1),
+    0 2px 5px -1px rgba(0, 0, 0, 0.06);
+  --healthcare-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --healthcare-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
   /* Border Radius System */
   --healthcare-radius-sm: 0.375rem;
   --healthcare-radius: 0.5rem;
@@ -44,7 +50,7 @@
   --healthcare-radius-xl: 1.5rem;
   --healthcare-radius-2xl: 2rem;
   --healthcare-radius-3xl: 3rem;
-  
+
   /* Z-Index System */
   --healthcare-z-dropdown: 50;
   --healthcare-z-modal: 100;
@@ -54,17 +60,22 @@
 
 /* Modern Typography */
 body {
-  font-family: 'Inter', 'Satoshi', sans-serif;
-  color: #1F2937;
-  background-color: #FFFFFF;
+  font-family: "Inter", "Poppins", sans-serif;
+  color: #1f2937;
+  background-color: #ffffff;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Modern Headings */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', 'Satoshi', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", "Poppins", sans-serif;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
@@ -116,7 +127,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -125,7 +137,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(0, 124, 124, 0.1);
   }
   50% {
@@ -160,7 +173,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Custom Slider Styles */
 .slider {
-  background: linear-gradient(to right, #007C7C, #20B2AA);
+  background: linear-gradient(to right, #007c7c, #20b2aa);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -172,7 +185,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
@@ -181,7 +194,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -198,7 +211,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .appointment-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Draggable Element Styles */
@@ -230,27 +244,35 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #94a3b8;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .animate-fade-in {
@@ -326,5 +348,3 @@ h1, h2, h3, h4, h5, h6 {
   @apply w-full px-4 mx-auto;
   @apply sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px];
 }
-
-
