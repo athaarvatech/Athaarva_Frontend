@@ -121,39 +121,41 @@ export function usePharmacyStats(items: StockEntryItem[]): PharmacyStats {
       .slice(0, 5);
 
     // 5. Batch Action Recommendations
-    const batchesNeedingAction = items
-      .filter(item => item.isExpired || item.isExpiringSoon || item.qty < 10)
-      .map(item => {
+    const batchesNeedingAction = items.reduce<PharmacyStats["batchesNeedingAction"]>(
+      (acc, item) => {
         if (item.isExpired) {
-          return {
+          acc.push({
             batchNo: item.batchNo,
             medicineName: item.medicineName,
-            action: "remove" as const,
+            action: "remove",
             reason: "Expired - immediate removal required",
-            urgency: "critical" as const,
-          };
+            urgency: "critical",
+          });
+          return acc;
         }
         if (item.isExpiringSoon && item.qty > 20) {
-          return {
+          acc.push({
             batchNo: item.batchNo,
             medicineName: item.medicineName,
-            action: "discount" as const,
+            action: "discount",
             reason: `${item.qty} units expiring soon - run clearance sale`,
-            urgency: "urgent" as const,
-          };
+            urgency: "urgent",
+          });
+          return acc;
         }
         if (item.qty < 10) {
-          return {
+          acc.push({
             batchNo: item.batchNo,
             medicineName: item.medicineName,
-            action: "return" as const,
+            action: "return",
             reason: "Low quantity - consider returning to supplier",
-            urgency: "warning" as const,
-          };
+            urgency: "warning",
+          });
         }
-        return null;
-      })
-      .filter(Boolean) as typeof batchesNeedingAction;
+        return acc;
+      },
+      []
+    );
 
     return {
       healthScore,

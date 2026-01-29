@@ -624,7 +624,8 @@ export interface HospitalOnboardingData {
     token: string;
     email: string;
     expires_at: string;
-    invitation_id?: number;
+    invitation_id?: string;
+    hospital_name_preview?: string;
   };
   template: {
     selected_template: CustomizedTemplateData | null;
@@ -1525,11 +1526,63 @@ export const HospitalOnboardingProvider: React.FC<
   const lastBackendSyncRef = useRef<number>(0);
   const BACKEND_SYNC_INTERVAL = 10000; // 10 seconds minimum between backend syncs
 
-  const saveToBackend = useCallback(async (stepData: Record<string, unknown>, stepNumber: number) => {
-    // Skip step 0 - it's handled by acceptInvitation, not saveStep
+  const buildBackendSyncRequest = useCallback(
+    (
+      uiStepIndex: number,
+      snapshot: HospitalOnboardingData
+    ): { backendStepNumber: number; data: Record<string, unknown> } | null => {
+      // IMPORTANT:
+      // - The backend onboarding wizard has its own step numbering and expected models.
+      // - This frontend wizard's step order is DIFFERENT (it includes Template/Login steps up front).
+      // Therefore: always map UI step -> backend step explicitly.
+
+      // Helper: backend step_3 is the ONLY step that persists tenant_branding (template_id/template_content/login_page_config).
+      const brandingPayload: Record<string, unknown> = {
+        ...(snapshot.branding || {}),
+        template_id: snapshot.template?.selected_template?.id,
+        template_content: snapshot.template?.selected_template?.customizedBlueprint,
+        login_page_config: snapshot.loginPageConfig,
+      };
+
+      // Map UI steps to backend steps.
+      // Backend steps:
+      // 1=Organization Profile, 2=Locations, 3=Branding
+      switch (uiStepIndex) {
+        case 0: // Website Template (persist via backend branding step)
+          return {
+            backendStepNumber: 3,
+            data: brandingPayload,
+          };
+        case 1: // Login Page (persist via backend branding step)
+          return {
+            backendStepNumber: 3,
+            data: brandingPayload,
+          };
+        case 2: // Organization Profile (UI)
+          return {
+            backendStepNumber: 1,
+            data: (snapshot.organizationProfile || {}) as unknown as Record<string, unknown>,
+          };
+        case 3: // Locations & Contacts (UI)
+          return {
+            backendStepNumber: 2,
+            data: {
+              locations: snapshot.locations || [],
+            },
+          };
+        default:
+          // The rest of the UI steps don't have stable backend models yet.
+          // Avoid sending mismatched payloads that can confuse review or future validation.
+          return null;
+      }
+    },
+    []
+  );
+
+  const saveToBackend = useCallback(async (stepData: Record<string, unknown>, backendStepNumber: number) => {
     // Backend expects steps 1-10
-    if (stepNumber < 1) {
-      console.log("[Autosave] Step 0 is handled by acceptInvitation, skipping backend sync");
+    if (backendStepNumber < 1) {
+      console.log("[Autosave] Invalid backend step number, skipping backend sync");
       return;
     }
 
@@ -1548,8 +1601,8 @@ export const HospitalOnboardingProvider: React.FC<
 
     try {
       lastBackendSyncRef.current = now;
-      await onboardingAPI.saveStep(stepNumber, stepData, false);
-      console.log(`[Autosave] Successfully synced step ${stepNumber} to backend`);
+      await onboardingAPI.saveStep(backendStepNumber, stepData, false);
+      console.log(`[Autosave] Successfully synced backend step ${backendStepNumber}`);
     } catch (error) {
       // Silent failure for autosave - don't disrupt user experience
       console.warn("[Autosave] Backend sync failed:", error);
@@ -1585,8 +1638,15 @@ export const HospitalOnboardingProvider: React.FC<
       
       setLastSaved(new Date());
       
-      // Also sync to backend (non-blocking)
-      saveToBackend(dataToSave, currentStep);
+      // Also sync to backend (non-blocking) with mapped UI->backend step payload
+      const syncRequest = buildBackendSyncRequest(currentStep, dataToSave as HospitalOnboardingData);
+      if (syncRequest && Object.keys(syncRequest.data).length > 0) {
+        saveToBackend(syncRequest.data, syncRequest.backendStepNumber);
+      } else {
+        console.log(
+          `[Autosave] No backend sync mapping for UI step ${currentStep}, skipping backend sync`
+        );
+      }
       
       setTimeout(() => {
         setIsSaving(false);
@@ -1596,7 +1656,7 @@ export const HospitalOnboardingProvider: React.FC<
       console.error("Failed to save onboarding data:", error);
       setIsSaving(false);
     }
-  }, [data, currentStep, activityLog, collaborators, saveToBackend]);
+  }, [data, currentStep, activityLog, collaborators, saveToBackend, buildBackendSyncRequest]);
 
   const loadFromLocalStorage = useCallback(() => {
     try {

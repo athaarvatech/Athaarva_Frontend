@@ -40,7 +40,7 @@ export function InventoryIntelligence({ stats }: InventoryIntelligenceProps) {
       { medicineName: "Azithromycin 500mg", daysUntilStockout: 8, suggestedReorderQty: 150 },
     ],
     batchesNeedingAction: [
-      { batchNo: "BTH123", medicineName: "Crocin", action: "discount", reason: "Expiring soon", urgency: "high" },
+      { batchNo: "BTH123", medicineName: "Crocin", action: "discount", reason: "Expiring soon", urgency: "urgent" },
       { batchNo: "BTH456", medicineName: "Dolo 650", action: "remove", reason: "Expired", urgency: "critical" },
     ],
   };

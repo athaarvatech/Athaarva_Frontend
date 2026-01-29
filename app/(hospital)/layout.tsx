@@ -44,6 +44,45 @@ function getDevFallbackHospital(subdomain: string): HospitalProfile {
   const storedSubdomain = typeof window !== "undefined"
     ? localStorage.getItem("hospital_subdomain")
     : null;
+
+  // Try to get selected template + branding from localStorage.
+  // This lets the subdomain render the chosen template even if the backend isn't running.
+  let storedTemplateId: string | undefined;
+  let storedTemplateContent: any | undefined;
+  let storedPrimaryColor: string | undefined;
+  let storedSecondaryColor: string | undefined;
+  let storedLogoUrl: string | undefined;
+
+  if (typeof window !== "undefined") {
+    try {
+      const pendingTemplateRaw = localStorage.getItem("pending_hospital_template");
+      const pendingBrandingRaw = localStorage.getItem("pending_hospital_branding");
+      const pendingSubdomain =
+        localStorage.getItem("pending_hospital_subdomain") ||
+        localStorage.getItem("hospital_subdomain");
+
+      if (pendingSubdomain === subdomain && pendingTemplateRaw) {
+        const parsed = JSON.parse(pendingTemplateRaw) as {
+          id?: string;
+          customizedBlueprint?: unknown;
+        };
+        storedTemplateId = parsed?.id;
+        storedTemplateContent = parsed?.customizedBlueprint;
+      }
+
+      if (pendingSubdomain === subdomain && pendingBrandingRaw) {
+        const parsed = JSON.parse(pendingBrandingRaw) as {
+          colors?: { primary?: string; secondary?: string };
+          logo_url?: string;
+        };
+        storedPrimaryColor = parsed?.colors?.primary;
+        storedSecondaryColor = parsed?.colors?.secondary;
+        storedLogoUrl = parsed?.logo_url;
+      }
+    } catch {
+      // Ignore storage parse errors in dev fallback.
+    }
+  }
   
   // Use stored info if subdomain matches
   const hospitalName = (storedSubdomain === subdomain && pendingName) 
@@ -62,9 +101,17 @@ function getDevFallbackHospital(subdomain: string): HospitalProfile {
     city: "Mumbai",
     state: "Maharashtra",
     pincode: "400001",
-    primary_color: "#007C7C",
-    secondary_color: "#20B2AA",
+    primary_color: storedPrimaryColor || "#007C7C",
+    secondary_color: storedSecondaryColor || "#20B2AA",
     subdomain: subdomain,
+    // Provide branding payload so (hospital)/page.tsx can render the chosen template in dev fallback.
+    branding: {
+      primary_color: storedPrimaryColor,
+      secondary_color: storedSecondaryColor,
+      logo_url: storedLogoUrl,
+      template_id: storedTemplateId,
+      template_content: storedTemplateContent,
+    },
     admin_full_name: "Hospital Admin",
     admin_work_email: `admin@${subdomain}.athaarva.com`,
     admin_phone: "+91 98765 43210",

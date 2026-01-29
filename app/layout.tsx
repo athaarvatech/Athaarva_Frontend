@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/layout/AppLayout";
 import { AppProviders } from "@/contexts/AppProviders";
 import { Toaster } from "sonner";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "HealthCare - Healthcare Platform",
@@ -19,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body className={inter.className}>
+      <body className="font-sans">
         <AppProviders>
           <AppLayout>{children}</AppLayout>
           <Toaster 

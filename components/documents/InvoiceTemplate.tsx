@@ -51,7 +51,9 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-const PaymentStatusBadge = ({ status }: { status: InvoiceData["paymentStatus"] }) => {
+type PaymentStatus = "paid" | "pending" | "partial" | "overdue" | "cancelled";
+
+const PaymentStatusBadge = ({ status }: { status: PaymentStatus }) => {
   const config = {
     paid: {
       icon: CheckCircle,
@@ -120,8 +122,9 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
     },
     ref
   ) => {
-    const { hospital, patient, metadata, items, payment, insurance } = data;
+    const { hospital, patient, metadata, items, payments, insurance } = data;
     const primaryColor = styleConfig?.primaryColor || hospital.primaryColor || "#007C7C";
+    const latestPayment = payments?.[0];
 
     const formatDate = (date: Date) => {
       return date.toLocaleDateString("en-IN", {
@@ -132,11 +135,20 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
     };
 
     // Calculate totals
-    const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-    const totalTax = items.reduce((sum, item) => sum + (item.tax || 0), 0);
-    const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
-    const insuranceCovered = insurance?.coveredAmount || 0;
-    const grandTotal = subtotal + totalTax - totalDiscount - insuranceCovered;
+    const subtotal = data.subtotal;
+    const totalTax = data.totalTax;
+    const totalDiscount = data.totalDiscount;
+    const insuranceCovered = insurance?.approvedAmount || 0;
+    const grandTotal = data.grandTotal;
+    const isOverdue = !!data.dueDate && data.amountDue > 0 && data.dueDate < new Date();
+    const paymentStatus: PaymentStatus =
+      data.amountDue <= 0
+        ? "paid"
+        : isOverdue
+          ? "overdue"
+          : data.amountPaid > 0
+            ? "partial"
+            : "pending";
 
     return (
       <BaseDocumentTemplate
@@ -144,7 +156,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
         hospital={hospital}
         headerConfig={{
           ...headerConfig,
-          showRegistrationNumber: true,
+          showRegistration: true,
         }}
         footerConfig={{
           ...footerConfig,
@@ -179,7 +191,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
               )}
             </div>
           </div>
-          <PaymentStatusBadge status={data.paymentStatus} />
+          <PaymentStatusBadge status={paymentStatus} />
         </div>
 
         {/* Patient & Billing Info */}
@@ -198,38 +210,6 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             </div>
           </div>
 
-          {/* Visit Details */}
-          {data.visitInfo && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                Visit Details
-              </h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                {data.visitInfo.visitType && (
-                  <p>
-                    <span className="font-medium">Type:</span> {data.visitInfo.visitType}
-                  </p>
-                )}
-                {data.visitInfo.doctorName && (
-                  <p>
-                    <span className="font-medium">Doctor:</span> {data.visitInfo.doctorName}
-                  </p>
-                )}
-                {data.visitInfo.department && (
-                  <p>
-                    <span className="font-medium">Department:</span> {data.visitInfo.department}
-                  </p>
-                )}
-                {data.visitInfo.visitDate && (
-                  <p>
-                    <span className="font-medium">Date:</span>{" "}
-                    {formatDate(data.visitInfo.visitDate)}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Invoice Items Table */}
@@ -295,16 +275,16 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                     {item.hsnCode || "-"}
                   </td>
                   <td className="py-3 px-4 text-center text-sm text-gray-600">
-                    {item.quantity} {item.unit}
+                    {item.quantity}
                   </td>
                   <td className="py-3 px-4 text-right text-sm text-gray-600">
-                    {formatCurrency(item.rate)}
+                    {formatCurrency(item.unitPrice)}
                   </td>
                   <td className="py-3 px-4 text-right text-sm text-gray-600">
                     {item.tax ? formatCurrency(item.tax) : "-"}
                   </td>
                   <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
-                    {formatCurrency(item.amount + (item.tax || 0) - (item.discount || 0))}
+                    {formatCurrency(item.total + (item.tax || 0) - (item.discount || 0))}
                   </td>
                 </tr>
               ))}
@@ -355,7 +335,9 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
         {/* Insurance Information */}
         {insurance && (
           <div className="mb-6">
-            <SectionTitle title="Insurance Information" icon={Building2} />
+            <SectionTitle icon={<Building2 className="w-4 h-4" />}>
+              Insurance Information
+            </SectionTitle>
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -366,22 +348,16 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                   <span className="text-gray-600">Policy No:</span>{" "}
                   <span className="font-medium">{insurance.policyNumber}</span>
                 </div>
-                {insurance.memberId && (
+                {insurance.claimNumber && (
                   <div>
-                    <span className="text-gray-600">Member ID:</span>{" "}
-                    <span className="font-medium">{insurance.memberId}</span>
-                  </div>
-                )}
-                {insurance.claimStatus && (
-                  <div>
-                    <span className="text-gray-600">Claim Status:</span>{" "}
-                    <span className="font-medium capitalize">{insurance.claimStatus}</span>
+                    <span className="text-gray-600">Claim No:</span>{" "}
+                    <span className="font-medium">{insurance.claimNumber}</span>
                   </div>
                 )}
                 <div className="col-span-2">
-                  <span className="text-gray-600">Covered Amount:</span>{" "}
+                  <span className="text-gray-600">Approved Amount:</span>{" "}
                   <span className="font-bold text-blue-700">
-                    {formatCurrency(insurance.coveredAmount || 0)}
+                    {formatCurrency(insurance.approvedAmount || 0)}
                   </span>
                 </div>
               </div>
@@ -390,31 +366,33 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
         )}
 
         {/* Payment Information */}
-        {payment && (
+        {latestPayment && (
           <div className="mb-6">
-            <SectionTitle title="Payment Information" icon={CreditCard} />
+            <SectionTitle icon={<CreditCard className="w-4 h-4" />}>
+              Payment Information
+            </SectionTitle>
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Payment Method:</span>{" "}
-                  <span className="font-medium capitalize">{payment.method}</span>
+                  <span className="font-medium capitalize">{latestPayment.method}</span>
                 </div>
-                {payment.transactionId && (
+                {latestPayment.transactionId && (
                   <div>
                     <span className="text-gray-600">Transaction ID:</span>{" "}
-                    <span className="font-medium">{payment.transactionId}</span>
+                    <span className="font-medium">{latestPayment.transactionId}</span>
                   </div>
                 )}
-                {payment.paidDate && (
+                {latestPayment.paidAt && (
                   <div>
                     <span className="text-gray-600">Payment Date:</span>{" "}
-                    <span className="font-medium">{formatDate(payment.paidDate)}</span>
+                    <span className="font-medium">{formatDate(latestPayment.paidAt)}</span>
                   </div>
                 )}
                 <div>
                   <span className="text-gray-600">Amount Paid:</span>{" "}
                   <span className="font-bold text-green-700">
-                    {formatCurrency(payment.amountPaid)}
+                    {formatCurrency(latestPayment.paidAmount)}
                   </span>
                 </div>
               </div>
@@ -432,14 +410,14 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
         )}
 
         {/* Bank Details for pending payments */}
-        {data.paymentStatus === "pending" && data.bankDetails && (
+        {paymentStatus === "pending" && data.bankDetails && (
           <div className="bg-gray-100 rounded-lg p-4 text-sm">
             <p className="font-medium text-gray-700 mb-2">Bank Details for Payment:</p>
             <div className="grid grid-cols-2 gap-2 text-gray-600">
               <p>Bank: {data.bankDetails.bankName}</p>
               <p>Account No: {data.bankDetails.accountNumber}</p>
               <p>IFSC: {data.bankDetails.ifscCode}</p>
-              <p>Account Name: {data.bankDetails.accountName}</p>
+              <p>Account Name: {data.bankDetails.accountHolder}</p>
               {data.bankDetails.upiId && <p>UPI: {data.bankDetails.upiId}</p>}
             </div>
           </div>

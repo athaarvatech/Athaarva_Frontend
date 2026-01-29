@@ -52,9 +52,9 @@ export default function OrganizationProfileStep() {
   };
 
   // Validation helpers
-  const isLegalNameValid = profile.legal_name && profile.legal_name.length >= 3;
-  const isRegistrationValid = profile.registration_number && profile.registration_number.length >= 5;
-  const isEstablishedDateValid = profile.established_date && profile.established_date.length > 0;
+  const isLegalNameValid = !!profile.legal_name && profile.legal_name.length >= 3;
+  const isRegistrationValid = !!profile.registration_number && profile.registration_number.length >= 5;
+  const isEstablishedDateValid = !!profile.established_date && profile.established_date.length > 0;
 
   return (
     <div className="space-y-6">
