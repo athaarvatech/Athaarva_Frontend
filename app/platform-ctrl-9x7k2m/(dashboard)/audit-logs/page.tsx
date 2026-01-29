@@ -19,19 +19,12 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { superAdminSecurityAPI } from "@/lib/super-admin-config";
+import { superAdminSecurityAPI, type AccessLogEntry } from "@/lib/super-admin-config";
 import { toast } from "sonner";
 
-interface AccessLog {
-  id: string;
-  admin_id: string;
-  action: string;
-  ip_address: string;
-  user_agent: string;
-  details: Record<string, unknown>;
-  success: boolean;
-  created_at: string;
-}
+type AccessLog = AccessLogEntry & {
+  user_agent?: string;
+};
 
 export default function SecureAuditLogsPage() {
   const [logs, setLogs] = useState<AccessLog[]>([]);
@@ -45,8 +38,8 @@ export default function SecureAuditLogsPage() {
           toast.error("Session not found");
           return;
         }
-        const data = await superAdminSecurityAPI.getAccessLogs(sessionToken, 100);
-        setLogs(data.logs || []);
+        const data = await superAdminSecurityAPI.getAccessLogs(100);
+        setLogs(data || []);
       } catch (error) {
         console.error("Failed to load access logs:", error);
         toast.error("Failed to load access logs");
@@ -80,7 +73,8 @@ export default function SecureAuditLogsPage() {
     );
   };
 
-  const parseUserAgent = (ua: string) => {
+  const parseUserAgent = (ua?: string) => {
+    if (!ua) return "Unknown";
     if (ua.includes("Chrome")) return "Chrome";
     if (ua.includes("Firefox")) return "Firefox";
     if (ua.includes("Safari")) return "Safari";

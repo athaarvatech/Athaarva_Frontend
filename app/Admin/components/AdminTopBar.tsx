@@ -140,7 +140,7 @@ const AdminTopBar = ({ toggleMobileMenu }: AdminTopBarProps) => {
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="flex items-center gap-2 text-red-600 cursor-pointer"
-                onClick={logout}
+                onClick={() => logout()}
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out

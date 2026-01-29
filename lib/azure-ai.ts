@@ -103,7 +103,7 @@ export async function generateImage(
     }
 
     // Call Azure DALL-E API via our backend proxy
-    const response = await fetch(`${API_CONFIG.API_BASE_URL}/api/v1/ai/generate-image`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/ai/generate-image`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -149,7 +149,7 @@ export async function suggestContent(
     }
 
     // Call Azure GPT API via our backend proxy
-    const response = await fetch(`${API_CONFIG.API_BASE_URL}/api/v1/ai/suggest-content`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/ai/suggest-content`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -241,7 +241,7 @@ export async function enhanceText(
       return text; // Return original text if AI not configured
     }
 
-    const response = await fetch(`${API_CONFIG.API_BASE_URL}/api/v1/ai/enhance-text`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/ai/enhance-text`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

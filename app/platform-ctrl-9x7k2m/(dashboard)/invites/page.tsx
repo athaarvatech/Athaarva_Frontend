@@ -645,6 +645,9 @@ export default function SecureInvitesPage() {
                 )}
                 {!loading && inviteData?.invitations.map((invite: InvitationResponse) => {
                   const meta = getMetadata(invite);
+                  const onboardingToken = typeof invite.metadata === "object" && invite.metadata && "token" in invite.metadata
+                    ? String((invite.metadata as Record<string, unknown>).token)
+                    : invite.id;
                   return (
                   <TableRow key={invite.id}>
                     <TableCell>
@@ -677,7 +680,7 @@ export default function SecureInvitesPage() {
                           size="icon"
                           className="text-white/70"
                           title="Copy onboarding link"
-                          onClick={() => handleCopyOnboardingLink(invite.token)}
+                          onClick={() => handleCopyOnboardingLink(onboardingToken)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>

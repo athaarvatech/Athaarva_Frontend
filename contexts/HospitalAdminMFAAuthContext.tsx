@@ -94,13 +94,11 @@ async function apiCall<T>(
 ): Promise<T> {
   const sessionToken = localStorage.getItem("ha_session_token");
   
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
   
   if (sessionToken) {
-    headers["Authorization"] = `Bearer ${sessionToken}`;
+    headers.set("Authorization", `Bearer ${sessionToken}`);
   }
   
   const response = await fetch(`${API_BASE}${endpoint}`, {

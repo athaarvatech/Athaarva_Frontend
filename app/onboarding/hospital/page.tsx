@@ -383,6 +383,7 @@ function HospitalOnboardingContent({
     isStepValid,
     getStepCompletion,
     activityLog,
+    updateData,
     buildSubmissionPayload,
     lastSaved,
     isSaving,
@@ -424,23 +425,22 @@ function HospitalOnboardingContent({
   // Pre-fill invitation data (only once)
   useEffect(() => {
     if (validationData && !invitationPrefilled.current && token) {
-      // Update invitation section with validated data
-      // Note: _invitationData is prepared but actual update depends on context API
-      const _invitationData = {
+      // Prefill invitation data into context so:
+      // - localStorage keys are per invitation (prevents cross-tenant data leakage)
+      // - invitation email/name show correctly throughout the wizard
+      updateData("invitation", {
+        ...data.invitation,
         token,
-        email: validationData.email || "",
-        expires_at: validationData.expires_at || "",
-        hospital_name_preview: validationData.hospital_name || "",
-      };
-      void _invitationData; // Acknowledge intentionally unused
-
-      // Use the context's updateData method
-      // The actual implementation depends on HospitalOnboardingContextV2
-      // This is a placeholder - adjust based on actual context API
+        invitation_id: validationData.invitation_id || data.invitation.invitation_id,
+        email: validationData.email || data.invitation.email,
+        expires_at: validationData.expires_at || data.invitation.expires_at,
+        hospital_name_preview:
+          validationData.hospital_name || data.invitation.hospital_name_preview,
+      });
 
       invitationPrefilled.current = true;
     }
-  }, [validationData, token]);
+  }, [validationData, token, updateData, data.invitation]);
 
   // Handle browser back/forward and tab close
   useEffect(() => {
@@ -540,9 +540,40 @@ function HospitalOnboardingContent({
             localStorage.setItem("hospital_admin_token", acceptResult.access_token);
           }
         }
+
+        // STEP 1.5: Persist website template + login page config to DB (tenant_branding)
+        // IMPORTANT: The backend persists tenant_branding only when step_3 is saved.
+        // This MUST succeed, otherwise the hospital subdomain will render the default template.
+        {
+          const selectedTemplate = (data as any)?.template?.selected_template;
+          const customizedBlueprint =
+            selectedTemplate?.customizedBlueprint ??
+            selectedTemplate?.customized_blueprint ??
+            selectedTemplate?.blueprint;
+
+          const persistBrandingPayload: Record<string, unknown> = {
+            ...(((payload?.branding ?? {}) as unknown) as Record<string, unknown>),
+            template_id: selectedTemplate?.id,
+            template_content: customizedBlueprint,
+            login_page_config: (data as any)?.loginPageConfig,
+          };
+
+          await onboardingAPI.saveStep(3, persistBrandingPayload, false);
+          console.log("[Onboarding] Persisted branding/template via backend step_3", {
+            template_id: persistBrandingPayload.template_id,
+          });
+
+          if (!persistBrandingPayload.template_id) {
+            // Defensive: we allow the save call to run (it can still persist branding colors),
+            // but fail submission because template selection is required for correct rendering.
+            throw new Error(
+              "Template selection is missing. Please select a website template before submitting."
+            );
+          }
+        }
       } catch (acceptError: any) {
         // If tenant already exists, we can continue (idempotent check)
-        if (acceptError.message?.includes("already exists") || acceptError.message?.includes("already accepted")) {
+        if (acceptError.message?.includes("already accepted")) {
           console.log("[Onboarding] Invitation already accepted, continuing...");
         } else {
           throw acceptError;
