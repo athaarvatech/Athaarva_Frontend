@@ -40,7 +40,7 @@ export default function LicensingCertificationStep() {
   const { data, updateData } = useHospitalOnboarding();
   const [licenses, setLicenses] = useState<License[]>(
     data.licenses && data.licenses.length > 0
-      ? data.licenses.map((l: any) => ({
+      ? data.licenses.map((l: License) => ({
           id: l.id,
           name: l.name,
           certificate_file: l.certificate_file,
@@ -70,7 +70,7 @@ export default function LicensingCertificationStep() {
     updateData("licenses", updated);
   };
 
-  const updateLicense = (id: string, field: keyof License, value: any) => {
+  const updateLicense = (id: string, field: keyof License, value: File | string | undefined) => {
     const updated = licenses.map((l) =>
       l.id === id ? { ...l, [field]: value } : l
     );

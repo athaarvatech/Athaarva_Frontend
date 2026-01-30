@@ -10,13 +10,12 @@
  * - Initial hospital settings
  */
 
-import React, { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Globe,
   Check,
-  X,
   ArrowRight,
   ArrowLeft,
   Sparkles,
@@ -24,11 +23,8 @@ import {
   CheckCircle2,
   Loader2,
   Copy,
-  ExternalLink,
   RefreshCw,
-  Shield,
   Clock,
-  Building2,
   Link2,
   Settings,
   Calendar,
@@ -39,7 +35,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   validateSubdomainLocal,
@@ -475,7 +470,7 @@ function DomainSetupPageContent() {
                           DNS Configuration Required
                         </h4>
                         <p className="text-sm text-blue-800 mb-4">
-                          Add the following CNAME record to your domain's DNS settings:
+                          Add the following CNAME record to your domain&apos;s DNS settings:
                         </p>
                         <div className="bg-white rounded p-3 space-y-2 font-mono text-sm">
                           <div className="flex justify-between items-center">

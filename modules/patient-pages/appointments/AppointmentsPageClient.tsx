@@ -733,7 +733,7 @@ export function AppointmentsPageClient() {
                     filterSpecialty !== "all" ||
                     filterType !== "all"
                     ? "No appointments match your current filters. Try adjusting your search criteria."
-                    : "You're all set! Ready to schedule your next healthcare visit?"
+                    : "You&apos;re all set! Ready to schedule your next healthcare visit?"
                   : "Your completed appointment history will appear here as you visit your healthcare providers."}
               </p>
 

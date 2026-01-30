@@ -305,7 +305,7 @@ const MedicationDashboard = () => {
               <div className="text-4xl">💊</div>
               <h3 className="text-lg font-semibold text-gray-700">No Medications Found</h3>
               <p className="text-gray-600">
-                You don't have any medications recorded yet. Add your first medication to start tracking.
+                You don&apos;t have any medications recorded yet. Add your first medication to start tracking.
               </p>
               <Button className="bg-[#007C7C] hover:bg-[#006666]">
                 <Plus className="h-4 w-4 mr-2" />

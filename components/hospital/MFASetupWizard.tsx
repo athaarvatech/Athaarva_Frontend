@@ -23,7 +23,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -71,6 +70,7 @@ function QRCodeDisplay({ uri, secret }: { uri: string; secret: string }) {
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="relative p-4 bg-white rounded-xl shadow-lg border">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={qrImageUrl}
           alt="TOTP QR Code"
@@ -84,7 +84,7 @@ function QRCodeDisplay({ uri, secret }: { uri: string; secret: string }) {
 
       <div className="text-center space-y-2">
         <p className="text-sm text-gray-600">
-          Can't scan? Enter this key manually:
+          Can&apos;t scan? Enter this key manually:
         </p>
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
           <code className="text-sm font-mono text-gray-800 select-all">
@@ -234,8 +234,9 @@ export function MFASetupWizard({
       setQrUri(result.qrUri);
       setBackupCodes(result.backupCodes);
       setStep("qrcode");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to initialize MFA setup");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed to initialize MFA setup");
     }
   };
 
@@ -253,8 +254,9 @@ export function MFASetupWizard({
       await verifyTOTPSetup(verificationCode);
       setStep("backup");
       toast.success("Authenticator verified successfully!");
-    } catch (err: any) {
-      setError(err.message || "Invalid verification code");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Invalid verification code");
       setVerificationCode("");
     } finally {
       setVerifying(false);
@@ -347,7 +349,7 @@ export function MFASetupWizard({
           onClick={() => setStep("verify")}
           className="w-full bg-healthcare-primary hover:bg-healthcare-primary/90"
         >
-          I've Scanned the Code
+          I&apos;ve Scanned the Code
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
@@ -513,8 +515,9 @@ export function MFASettings() {
     try {
       const codes = await regenerateBackupCodes();
       setNewBackupCodes(codes);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to regenerate backup codes");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed to regenerate backup codes");
     }
   };
 
@@ -534,7 +537,7 @@ export function MFASettings() {
           Two-Factor Authentication
         </CardTitle>
         <CardDescription>
-          Manage your account's security settings
+          Manage your account&apos;s security settings
         </CardDescription>
       </CardHeader>
 

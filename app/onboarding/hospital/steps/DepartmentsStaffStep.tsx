@@ -12,7 +12,6 @@ import {
   FlaskConical,
   Wrench,
   Briefcase,
-  DollarSign,
   AlertCircle,
 } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
@@ -79,6 +78,7 @@ const DEPARTMENT_TYPES: {
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const COST_CENTER_TYPES = [
   { value: "revenue", label: "Revenue Center" },
   { value: "cost", label: "Cost Center" },
@@ -130,6 +130,7 @@ export default function DepartmentsStaffStep() {
     setExpandedDepts(newSet);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleCostCenterExpansion = (ccId: string) => {
     const newSet = new Set(expandedCostCenters);
     if (newSet.has(ccId)) {
@@ -207,6 +208,7 @@ export default function DepartmentsStaffStep() {
   // Cost Center CRUD
   // ─────────────────────────────────────────────────────────────────────────────
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const addCostCenter = () => {
     const newCC: CostCenterData = {
       id: `cc_${Date.now()}`,
@@ -219,6 +221,7 @@ export default function DepartmentsStaffStep() {
     setExpandedCostCenters(new Set([...expandedCostCenters, newCC.id]));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateCostCenter = (ccId: string, updates: Partial<CostCenterData>) => {
     updateData(
       "costCenters",
@@ -228,6 +231,7 @@ export default function DepartmentsStaffStep() {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const removeCostCenter = (ccId: string) => {
     updateData(
       "costCenters",

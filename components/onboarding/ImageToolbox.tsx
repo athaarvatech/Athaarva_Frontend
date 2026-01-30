@@ -17,7 +17,6 @@
  */
 
 import React, { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -162,8 +161,8 @@ const AI_PROMPT_SUGGESTIONS = [
 
 export function ImageToolbox({
   onImageSelect,
-  category = "general",
-  currentImage,
+  category: _category = "general",
+  currentImage: _currentImage,
   trigger,
   title = "Select Image",
 }: ImageToolboxProps) {
@@ -400,6 +399,7 @@ export function ImageToolbox({
                           : "border-transparent hover:border-gray-200"
                       )}
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
                         alt={`Generated ${index + 1}`}
@@ -477,6 +477,7 @@ export function ImageToolbox({
                         : "border-transparent hover:border-gray-200"
                     )}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.thumbnail}
                       alt={img.title}
@@ -538,6 +539,7 @@ export function ImageToolbox({
               ) : (
                 <div className="space-y-4">
                   <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={uploadPreview}
                       alt="Upload preview"
@@ -601,6 +603,7 @@ export function ImageToolbox({
                         : "border-transparent hover:border-gray-200"
                     )}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={item.url}
                       alt={`Recent ${index + 1}`}
@@ -633,6 +636,7 @@ export function ImageToolbox({
             {selectedImage && (
               <>
                 <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedImage}
                     alt="Selected"

@@ -107,6 +107,7 @@ export function CertificateModal({ isOpen, onClose, license }: CertificateModalP
                   title="Certificate PDF"
                 />
               ) : (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={license.certificate_file}
                   alt={`${license.name} Certificate`}

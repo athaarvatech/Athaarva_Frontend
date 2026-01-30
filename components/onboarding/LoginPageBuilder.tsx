@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,31 +29,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
   Layout,
-  Palette,
   Image as ImageIcon,
-  Type,
   Settings2,
   Eye,
   Wand2,
-  Check,
-  RotateCw,
   Smartphone,
   Monitor,
   Lock,
   Building2,
   Mail,
-  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -179,7 +168,7 @@ export function LoginPageBuilder({
             Login Page Builder
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Customize your hospital's login page
+            Customize your hospital&apos;s login page
           </p>
         </div>
 
@@ -663,6 +652,7 @@ function LoginPagePreviewContent({
         <div className="w-1/2 relative flex items-center justify-center p-8">
           <div className={cn("text-center max-w-md relative z-10", textColor)}>
             {logo.position === "top" && logo.url && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl || "/placeholder-logo.png"}
                 alt="Logo"
@@ -694,6 +684,7 @@ function LoginPagePreviewContent({
           {logo.position !== "hidden" && layout !== "split" && (
             <div className="text-center mb-6">
               {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logoUrl}
                   alt="Hospital Logo"

@@ -9,7 +9,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import {
   Lock,
   Mail,
@@ -17,14 +16,11 @@ import {
   Shield,
   CheckCircle,
   Eye,
-  EyeOff,
   User,
-  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   LoginPageConfig,
-  DEFAULT_LOGIN_CONFIG,
 } from "@/lib/login-templates";
 
 interface LoginPagePreviewProps {
@@ -195,6 +191,7 @@ export function LoginPagePreview({
               {logo.position === "top" && (
                 <div className="mb-6">
                   {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={logoUrl}
                       alt={hospitalName}
@@ -270,6 +267,7 @@ export function LoginPagePreview({
               {logo.position !== "hidden" && layout !== "split" && (
                 <div className="text-center mb-6">
                   {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={logoUrl}
                       alt={hospitalName}
@@ -424,7 +422,7 @@ export function LoginPagePreview({
                 {/* Create Account */}
                 <div className="text-center">
                   <p className="text-sm text-gray-600">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <a
                       href="#"
                       className="font-semibold text-healthcare-primary hover:underline"

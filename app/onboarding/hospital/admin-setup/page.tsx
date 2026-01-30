@@ -490,7 +490,7 @@ function AdminSetupPageContent() {
                             <Mail className="w-8 h-8 text-healthcare-primary" />
                           </div>
                           <p className="text-gray-600 mb-4">
-                            We'll send a 6-digit verification code to:
+                            We&apos;ll send a 6-digit verification code to:
                           </p>
                           <p className="font-semibold text-gray-900 mb-6">
                             {adminEmail || "admin@hospital.com"}

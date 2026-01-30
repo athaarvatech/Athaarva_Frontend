@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   FileText, 
   CheckCircle, 
@@ -105,6 +105,7 @@ const ModernPreview = ({ primaryColor, logoUrl }: { primaryColor: string; logoUr
     {/* Watermark */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="w-20 h-20 object-contain opacity-[0.05]" />
       ) : (
         <div className="text-5xl font-bold opacity-[0.04]" style={{ color: primaryColor }}>⚕</div>
@@ -540,6 +541,7 @@ export default function DocumentTemplatesStep() {
                   <>
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       {branding?.logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={branding.logo_url} alt="" className="w-48 h-48 object-contain opacity-[0.04]" />
                       ) : (
                         <div className="text-[150px] font-bold opacity-[0.03]" style={{ color: primaryColor }}>⚕</div>

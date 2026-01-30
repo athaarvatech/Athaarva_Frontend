@@ -1,8 +1,6 @@
 import { toast as sonnerToast } from "sonner";
-import { CheckCircle2, XCircle, AlertTriangle, Info, Undo2 } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Info } from "lucide-react";
 import { createElement } from "react";
-
-type ToastType = "success" | "error" | "warning" | "info";
 
 interface ToastOptions {
   title: string;

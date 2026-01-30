@@ -359,7 +359,7 @@ const PillIdentifier = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-600 text-sm mb-4">
-                Can't take a photo? Describe your pill manually
+                Can&apos;t take a photo? Describe your pill manually
               </p>
 
               <div className="grid grid-cols-2 gap-4">

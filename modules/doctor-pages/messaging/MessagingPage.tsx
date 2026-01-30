@@ -220,7 +220,7 @@ const MessagingPage = () => {
               id: 3,
               sender: "You",
               content:
-                "That's great to hear! Any side effects I should know about?",
+                "That&apos;s great to hear! Any side effects I should know about?",
               timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1),
               status: "read",
               attachments: [],

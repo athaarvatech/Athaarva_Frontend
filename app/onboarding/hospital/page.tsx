@@ -21,7 +21,6 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   Popover,
   PopoverContent,
@@ -42,7 +41,6 @@ import {
   Globe,
   DollarSign,
   Users,
-  Settings,
   Info,
   Shield,
   Menu,
@@ -276,7 +274,7 @@ function HospitalOnboardingWrapper() {
         const response = await Promise.race([
           onboardingAPI.validateToken(token),
           timeoutPromise
-        ]) as any;
+        ]) as { valid: boolean; invitation_id?: string; email?: string; expires_at?: string; hospital_name?: string; owner_name?: string; message?: string; status?: string };
 
         if (response.valid) {
           setValidationState({
@@ -289,7 +287,7 @@ function HospitalOnboardingWrapper() {
               expires_at: response.expires_at || undefined,
               hospital_name: response.hospital_name || "",
               owner_name: response.owner_name || "",
-              message: response.message,
+              message: response.message || "",
             },
           });
         } else {
@@ -545,17 +543,17 @@ function HospitalOnboardingContent({
         // IMPORTANT: The backend persists tenant_branding only when step_3 is saved.
         // This MUST succeed, otherwise the hospital subdomain will render the default template.
         {
-          const selectedTemplate = (data as any)?.template?.selected_template;
+          const selectedTemplate = (data as unknown as Record<string, unknown>)?.template as { selected_template?: { id?: string; customizedBlueprint?: unknown; customized_blueprint?: unknown; blueprint?: unknown } } | undefined;
           const customizedBlueprint =
-            selectedTemplate?.customizedBlueprint ??
-            selectedTemplate?.customized_blueprint ??
-            selectedTemplate?.blueprint;
+            selectedTemplate?.selected_template?.customizedBlueprint ??
+            selectedTemplate?.selected_template?.customized_blueprint ??
+            selectedTemplate?.selected_template?.blueprint;
 
           const persistBrandingPayload: Record<string, unknown> = {
             ...(((payload?.branding ?? {}) as unknown) as Record<string, unknown>),
-            template_id: selectedTemplate?.id,
+            template_id: selectedTemplate?.selected_template?.id,
             template_content: customizedBlueprint,
-            login_page_config: (data as any)?.loginPageConfig,
+            login_page_config: (data as unknown as Record<string, unknown>)?.loginPageConfig,
           };
 
           await onboardingAPI.saveStep(3, persistBrandingPayload, false);
@@ -571,9 +569,10 @@ function HospitalOnboardingContent({
             );
           }
         }
-      } catch (acceptError: any) {
+      } catch (acceptError: unknown) {
         // If tenant already exists, we can continue (idempotent check)
-        if (acceptError.message?.includes("already accepted")) {
+        const error = acceptError as Error;
+        if (error.message?.includes("already accepted")) {
           console.log("[Onboarding] Invitation already accepted, continuing...");
         } else {
           throw acceptError;

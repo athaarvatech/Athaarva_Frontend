@@ -25,9 +25,10 @@ export default function LocationMapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   // NOTE: `@maptiler/sdk`'s `Marker` extends `maplibre-gl`'s Marker.
-  // In some installs, TypeScript can't find `maplibre-gl`'s bundled .d.ts,
+  // In some installs, TypeScript can&apos;t find `maplibre-gl`&apos;s bundled .d.ts,
   // which makes inherited methods like `setLngLat` disappear from the type.
   // We keep this as `any` to avoid build-blocking type errors.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const marker = useRef<any>(null);
 
   // Initialize map
@@ -41,6 +42,7 @@ export default function LocationMapView({
         if (marker.current) {
           marker.current.setLngLat([location.lng, location.lat]);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
             .setLngLat([location.lng, location.lat])
             .addTo(map.current);
@@ -75,6 +77,7 @@ export default function LocationMapView({
 
     // If initial location exists, add marker
     if (location) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
         .setLngLat([location.lng, location.lat])
         .addTo(map.current);
@@ -89,6 +92,7 @@ export default function LocationMapView({
         if (marker.current) {
           marker.current.setLngLat([lng, lat]);
         } else if (map.current) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           marker.current = new (maptilersdk.Marker as any)({ color: "#0d9488" })
             .setLngLat([lng, lat])
             .addTo(map.current);

@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import {
   Building2,
   Sparkles,
-  CheckCircle,
   Clock,
   Shield,
   ArrowRight,
@@ -123,6 +122,7 @@ export function WelcomeModal({
                 className="flex justify-center mb-6"
               >
                 {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={logoUrl}
                     alt={hospitalName}
@@ -146,7 +146,7 @@ export function WelcomeModal({
                     Welcome, {firstName}! 👋
                   </h1>
                   <p className="text-gray-600 text-base">
-                    You're setting up{" "}
+                    You&apos;re setting up{" "}
                     <span className="font-semibold text-healthcare-primary">
                       {hospitalName}
                     </span>{" "}
@@ -169,7 +169,7 @@ export function WelcomeModal({
               >
                 <h4 className="font-semibold text-gray-900 text-sm mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-healthcare-primary" />
-                  What you'll do today:
+                  What you&apos;ll do today:
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {ONBOARDING_STEPS.map((step, index) => (
@@ -211,7 +211,7 @@ export function WelcomeModal({
                   <span className="text-healthcare-primary font-semibold">~30 minutes</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Don't worry - your progress is auto-saved, so you can pause and continue anytime.
+                  Don&apos;t worry - your progress is auto-saved, so you can pause and continue anytime.
                 </p>
               </motion.div>
 
@@ -225,7 +225,7 @@ export function WelcomeModal({
                   onClick={onStart}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-healthcare-primary to-healthcare-teal hover:from-healthcare-teal hover:to-healthcare-primary transition-all duration-300 shadow-lg shadow-healthcare-primary/25 hover:shadow-healthcare-primary/40 hover:scale-[1.02]"
                 >
-                  Let's Get Started
+                  Let&apos;s Get Started
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
                 <p className="text-center text-xs text-gray-400 mt-3">

@@ -1,19 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
 import { 
   AlertCircle, 
   DollarSign, 
-  TrendingDown, 
   Mail, 
   Tag, 
   FileDown, 
@@ -24,16 +21,12 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  ArrowRight,
-  PackageX,
   AlertTriangle,
   TrendingUp,
   Package,
   Zap,
-  Star,
   ThumbsDown,
   Gift,
-  Calculator
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PharmacyStats } from "@/hooks/usePharmacyStats";

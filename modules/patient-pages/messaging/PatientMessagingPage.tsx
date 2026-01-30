@@ -206,7 +206,7 @@ export default function PatientMessagingPage() {
               id: 3,
               sender: "Dr. Sarah Johnson",
               content:
-                "That's great to hear! I've reviewed your latest labs and everything looks good.",
+                "That&apos;s great to hear! I&apos;ve reviewed your latest labs and everything looks good.",
               timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
               status: "read",
               priority: "normal",

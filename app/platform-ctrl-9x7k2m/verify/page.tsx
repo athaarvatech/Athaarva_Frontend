@@ -359,7 +359,7 @@ export default function SecureSuperAdminVerifyPage() {
             <Shield className="h-5 w-5 text-slate-400 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-slate-400">
               <p>
-                Didn't receive the code? Check your spam folder or request a new code.
+                Didn&apos;t receive the code? Check your spam folder or request a new code.
                 For security, codes expire after 15 minutes.
               </p>
             </div>

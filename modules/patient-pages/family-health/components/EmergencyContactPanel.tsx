@@ -379,7 +379,7 @@ const EmergencyContactPanel = ({
                 <h3 className="font-medium mb-1">Healthcare Proxy Status</h3>
                 <p className="text-sm text-gray-500">
                   A healthcare proxy allows someone to make medical decisions
-                  for you if you're unable to.
+                  for you if you&apos;re unable to.
                 </p>
               </div>
               <Badge
@@ -419,7 +419,7 @@ const EmergencyContactPanel = ({
                     size={16}
                     className="mr-1 mt-0.5 flex-shrink-0"
                   />
-                  You haven't designated anyone as your healthcare decision
+                  You haven&apos;t designated anyone as your healthcare decision
                   maker. This is recommended for emergency situations.
                 </p>
               </div>
@@ -432,7 +432,7 @@ const EmergencyContactPanel = ({
                   <div>
                     <p className="font-medium">Living Will</p>
                     <p className="text-sm text-gray-500">
-                      Instructions for medical care if you're incapacitated
+                      Instructions for medical care if you&apos;re incapacitated
                     </p>
                   </div>
                   <Badge variant="outline" className="text-amber-700">

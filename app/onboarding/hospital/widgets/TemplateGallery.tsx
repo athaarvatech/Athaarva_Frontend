@@ -701,7 +701,7 @@ function TemplatePreviewModal({
     if (editedBlueprint) {
       setEditedBlueprint(prev => prev ? { ...prev, licenses: contextLicenses } : null);
     }
-  }, [contextLicenses]);
+  }, [contextLicenses, editedBlueprint, setEditedBlueprint]);
 
   // Reset handler
   const handleReset = () => {

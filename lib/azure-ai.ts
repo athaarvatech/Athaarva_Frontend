@@ -261,9 +261,11 @@ export async function enhanceText(
   }
 }
 
-export default {
+const azureAI = {
   generateImage,
   suggestContent,
   suggestBrandingPackage,
   enhanceText,
 };
+
+export default azureAI;

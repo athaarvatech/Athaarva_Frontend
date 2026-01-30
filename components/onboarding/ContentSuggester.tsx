@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -68,7 +68,7 @@ export function ContentSuggester({
   section,
   hospitalName,
   specialties = [],
-  currentValue = "",
+  currentValue: _currentValue = "",
   onApply,
   buttonText = "✨ Get AI Suggestions",
   tone = "professional",
@@ -105,7 +105,7 @@ export function ContentSuggester({
       } else {
         setError(response.error || "Failed to generate suggestions");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An error occurred while generating suggestions");
     } finally {
       setIsLoading(false);

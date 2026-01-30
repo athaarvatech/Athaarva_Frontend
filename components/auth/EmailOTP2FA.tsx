@@ -232,7 +232,7 @@ export default function EmailOTP2FA({
 
         setOtpSent(true);
         toast.success("Verification code sent to your email");
-      } catch (err) {
+      } catch (_err) {
         // Mock success in development
         console.log("Mock: OTP sent to", email);
         setOtpSent(true);
@@ -303,7 +303,7 @@ export default function EmailOTP2FA({
       } else {
         throw new Error(data.message || "Verification failed");
       }
-    } catch (err) {
+    } catch (_err) {
       // Mock success for development
       const mockToken = `mock-verified-token-${Date.now()}`;
       setIsVerified(true);
@@ -345,7 +345,7 @@ export default function EmailOTP2FA({
       }
       
       toast.success("New verification code sent!");
-    } catch (err) {
+    } catch (_err) {
       // Mock success for development
       toast.success("New verification code sent!");
     } finally {

@@ -7,7 +7,7 @@ import { useHospital } from "../HospitalContext";
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { hospital, theme, loading } = useHospital();
+  const { hospital: _hospital, theme, loading } = useHospital();
 
   useEffect(() => {
     // Check if user is authenticated as patient

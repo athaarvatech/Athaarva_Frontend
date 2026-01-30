@@ -4,9 +4,6 @@ import React, { useState } from "react";
 import { 
   CheckCircle2, 
   Circle, 
-  AlertTriangle, 
-  Package, 
-  FileCheck, 
   ClipboardCheck,
   Clock,
   Zap,

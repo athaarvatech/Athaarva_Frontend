@@ -456,7 +456,7 @@ const LabResultsVisualization = () => {
                                         <p className="text-sm text-amber-700">
                                           This result is outside the reference
                                           range. This could be due to various
-                                          factors and doesn't always indicate a
+                                          factors and doesn&apos;t always indicate a
                                           serious condition. Discuss with your
                                           healthcare provider for proper
                                           interpretation.

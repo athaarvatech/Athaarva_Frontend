@@ -205,7 +205,7 @@ export default function VirtualConsultationInterface({
             <div className="p-4 border-b">
               <h3 className="font-medium mb-1">Consultation Notes</h3>
               <p className="text-sm text-gray-500">
-                These notes are for your personal reference and won't be shared
+                These notes are for your personal reference and won&apos;t be shared
                 with your doctor
               </p>
             </div>

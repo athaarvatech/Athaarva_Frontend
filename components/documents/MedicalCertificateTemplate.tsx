@@ -10,12 +10,9 @@
  */
 
 import React, { forwardRef } from "react";
-import { cn } from "@/lib/utils";
 import {
   BaseDocumentTemplate,
-  PatientInfoSection,
   DoctorInfoSection,
-  SectionTitle,
 } from "./BaseDocumentTemplate";
 import {
   MedicalCertificateData,
@@ -23,7 +20,7 @@ import {
   DocumentFooterConfig,
   DocumentStyleConfig,
 } from "./types";
-import { FileCheck, Calendar, Clock } from "lucide-react";
+import { FileCheck, Calendar } from "lucide-react";
 
 interface MedicalCertificateTemplateProps {
   data: MedicalCertificateData;

@@ -166,7 +166,7 @@ function createDefaultBlueprint(hospitalName: string, branding?: { colors?: { pr
 }
 
 export default function HospitalHomeClient() {
-  const { hospital, subdomain, theme } = useHospital();
+  const { hospital, subdomain: _subdomain, theme } = useHospital();
   const { user, isAuthenticated } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [templateData, setTemplateData] = useState<{
@@ -601,7 +601,7 @@ export default function HospitalHomeClient() {
                 Get In Touch
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-gray-600">
-                Have questions? We're here to help. Reach out to us through any of the following channels.
+                Have questions? We&apos;re here to help. Reach out to us through any of the following channels.
               </motion.p>
 
               <motion.div variants={fadeInUp} className="space-y-4">

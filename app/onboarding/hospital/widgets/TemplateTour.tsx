@@ -125,7 +125,7 @@ const TOUR_STEPS: TourStep[] = [
     id: "complete",
     title: "🤖 Tour Complete! 🎉",
     description:
-      "That's it! You've seen everything. When you're ready, click 'Select & Continue' to save your customizations. You can replay this demo anytime!",
+      "That&apos;s it! You&apos;ve seen everything. When you&apos;re ready, click &apos;Select & Continue&apos; to save your customizations. You can replay this demo anytime!",
     targetSelector: '[data-tour="select-button"]',
     position: "auto",
     arrowDirection: "down",

@@ -9,7 +9,6 @@ import {
   MapPin,
   Stethoscope,
   ChevronDown,
-  Check,
   SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

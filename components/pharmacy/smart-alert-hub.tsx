@@ -4,17 +4,11 @@ import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bell, 
-  AlertTriangle, 
-  AlertOctagon, 
-  Clock, 
-  TrendingDown,
+  AlertTriangle,
   Package,
-  ShoppingCart,
   X,
   CheckCircle,
   Info,
-  ChevronRight,
-  Lightbulb
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -196,7 +190,7 @@ export function SmartAlertHub({ stats }: SmartAlertHubProps) {
     return { critical, urgent, warning, info, unread, actionable, all: alerts };
   }, [alerts]);
 
-  const handleAction = (alertId: string, action: string) => {
+  const handleAction = (alertId: string, _action: string) => {
     const alert = alerts.find(a => a.id === alertId);
     
     // Show toast feedback

@@ -14,7 +14,6 @@ import {
   ExternalLink,
   Sparkles,
   Heart,
-  Map,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_CONFIG } from "@/lib/api-config";
 import { SubdomainService } from "@/lib/subdomain-service";
 import {
@@ -64,11 +62,13 @@ export default function HospitalSelectorPage() {
   });
   const [sortBy, setSortBy] = useState<SortOption>("name-asc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeTab, setActiveTab] = useState<"all" | "nearby">("all");
 
   // Fetch all hospitals on mount
   useEffect(() => {
     fetchHospitals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchHospitals = async () => {

@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -134,7 +133,7 @@ export default function LoginPageCustomizationStep() {
                 Login Page Designer
               </h3>
               <p className="text-sm text-gray-600">
-                Customize your hospital's patient login experience with visual
+                Customize your hospital&apos;s patient login experience with visual
                 templates or advanced customization options.
               </p>
             </div>

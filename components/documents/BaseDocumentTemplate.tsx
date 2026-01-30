@@ -165,6 +165,7 @@ function DocumentHeader({ hospital, config, primaryColor }: DocumentHeaderProps)
       >
         {/* Logo */}
         {config.showLogo && hospital.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={hospital.logoUrl}
             alt={hospital.hospitalName}
@@ -379,6 +380,7 @@ export function DoctorInfoSection({
   return (
     <div className={cn("text-right", className)}>
       {showSignature && signatureUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={signatureUrl}
           alt="Doctor's Signature"

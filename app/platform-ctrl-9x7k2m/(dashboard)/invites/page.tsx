@@ -43,7 +43,6 @@ import {
 } from 'lucide-react';
 import { superAdminAPI, type InvitationResponse, type CreateInvitationRequest } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { SUPER_ADMIN_CONFIG } from '@/lib/super-admin-config';
 
 // Invitation statuses
 type InviteStatus = 'pending' | 'accepted' | 'revoked' | 'expired';

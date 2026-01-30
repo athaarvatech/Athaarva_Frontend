@@ -267,9 +267,10 @@ class OnboardingAPI {
     try {
       const response = await fetch(url, options);
       return await this.handleResponse<T>(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       // If 401 and we haven't retried yet, try refreshing token and retry
-      if (retryOnAuth && error.message?.includes('Session expired')) {
+      if (retryOnAuth && err.message?.includes('Session expired')) {
         try {
           console.log('[OnboardingAPI] Token expired, attempting refresh...');
           await this.refreshToken();

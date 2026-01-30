@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Shield,
   Users,
@@ -27,7 +27,6 @@ import {
   Loader2,
   AlertTriangle,
   UserPlus,
-  UserMinus,
   RefreshCw,
   Search,
   Info,
@@ -94,6 +93,7 @@ interface UserRole {
   assigned_by: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface StaffMember {
   id: string;
   email: string;
@@ -115,7 +115,7 @@ interface RoleManagementProps {
 export function RoleManagement({
   tenantId,
   token,
-  onRoleChange,
+  onRoleChange: _onRoleChange,
 }: RoleManagementProps) {
   // State
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);

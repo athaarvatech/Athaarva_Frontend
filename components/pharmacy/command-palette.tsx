@@ -4,18 +4,14 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
   Calculator,
-  Calendar,
-  CreditCard,
   Package,
   PackagePlus,
   PackageMinus,
   Search,
   Settings,
-  User,
   Pill,
   AlertTriangle,
   Clock,
-  BarChart3,
   FileText,
   TrendingUp,
 } from "lucide-react";
@@ -70,7 +66,7 @@ export function PharmacyCommandPalette({
     }
   };
 
-  const searchMedicine = (query: string) => {
+  const _searchMedicine = (query: string) => {
     setOpen(false);
     if (onSearch) {
       onSearch(query);

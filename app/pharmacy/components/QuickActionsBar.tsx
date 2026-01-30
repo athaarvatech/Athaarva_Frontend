@@ -4,18 +4,15 @@ import React from "react";
 import { 
   Trash2, 
   ShoppingCart, 
-  RotateCcw, 
   Percent, 
   FileSpreadsheet,
   Zap,
   Mail,
-  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import Link from "next/link";
 
 interface QuickAction {
   id: string;

@@ -35,6 +35,7 @@ export default function StaffSignInPage() {
   // 2FA state
   const [sessionToken, setSessionToken] = useState("");
   const [userId, setUserId] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [requires2FA, setRequires2FA] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Building2, FileText, Globe, CheckCircle } from "lucide-react";
+import { Building2, Globe } from "lucide-react";
 import { useHospitalOnboarding } from "@/contexts/HospitalOnboardingContextV2";
 import { HelpPopover } from "../widgets/HelpPopover";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const OWNERSHIP_MODELS = [
   "Private Limited",
   "Public Limited",

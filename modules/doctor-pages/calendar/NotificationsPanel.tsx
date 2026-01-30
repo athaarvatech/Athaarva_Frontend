@@ -169,7 +169,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
             </div>
             <h3 className="text-slate-700 font-medium">No notifications</h3>
             <p className="text-slate-500 text-sm mt-2">
-              You don't have any notifications yet. They will appear here when available.
+              You don&apos;t have any notifications yet. They will appear here when available.
             </p>
           </div>
         )}

@@ -60,6 +60,7 @@ const ModernDecorations = ({
     {/* Large watermark in center */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img 
           src={logoUrl} 
           alt="" 
@@ -135,6 +136,7 @@ const DocumentHeader = ({
         {/* Logo and hospital name */}
         <div className="flex items-center gap-3">
           {branding.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={branding.logo_url} alt="" className="w-16 h-16 object-contain" />
           ) : (
             <div 
@@ -518,7 +520,7 @@ const CertificateContent = ({
         </div>
         <div className="text-right">
           <div className="border-t border-gray-300 pt-1 inline-block px-8">
-            <p className="text-xs text-gray-500">Doctor's Signature & Seal</p>
+            <p className="text-xs text-gray-500">Doctor&apos;s Signature & Seal</p>
           </div>
         </div>
       </div>

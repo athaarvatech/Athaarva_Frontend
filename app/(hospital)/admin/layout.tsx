@@ -7,7 +7,7 @@ import { useHospital } from "../HospitalContext";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { hospital, subdomain, theme, loading } = useHospital();
+  const { hospital: _hospital, subdomain: _subdomain, theme, loading } = useHospital();
 
   useEffect(() => {
     // Check if user is authenticated as admin

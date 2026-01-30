@@ -468,6 +468,7 @@ export default function InventoryPage() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useMemo<T>(factory: () => T, deps: unknown[]): T {
   const [value] = React.useState(factory);
   return value;

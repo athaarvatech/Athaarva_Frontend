@@ -98,6 +98,7 @@ export function UnifiedIntelligenceBar({ stats }: UnifiedIntelligenceBarProps) {
   }, [displayStats.healthScore]);
 
   const circumference = 2 * Math.PI * 45;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
 
   return (

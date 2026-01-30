@@ -13,7 +13,6 @@ import {
   ArrowRight,
   Key,
   Download,
-  RefreshCw,
   CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,6 +65,7 @@ export default function MFASetup({
   // TOTP setup data
   const [totpSecret, setTotpSecret] = useState<string | null>(null);
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [provisioningUri, setProvisioningUri] = useState<string | null>(null);
   
   // Verification

@@ -434,7 +434,7 @@ export function generateTemplateCSS(
   style: DocumentTemplateStyle,
   primaryColor: string
 ): string {
-  const template = DOCUMENT_TEMPLATES[style];
+  const _template = DOCUMENT_TEMPLATES[style];
   
   const baseCSS = `
     .document-${style} {

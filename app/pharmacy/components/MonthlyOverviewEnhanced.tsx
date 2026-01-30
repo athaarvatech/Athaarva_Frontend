@@ -7,7 +7,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   AlertTriangle, 
-  DollarSign, 
   Package,
   Activity,
   Zap,
@@ -53,6 +52,7 @@ export function MonthlyOverviewEnhanced({ stats }: MonthlyOverviewEnhancedProps)
   
   // Stock turnover health (fresh stock ratio)
   const totalItems = displayStats.expiredCount + displayStats.expiringSoonCount + displayStats.lowStockCount;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const healthyItems = Math.max(0, 100 - totalItems); // Mock: assume 100 total items
   const turnoverHealth = totalItems > 0 ? Math.max(0, 100 - (totalItems * 2)) : 85;
   

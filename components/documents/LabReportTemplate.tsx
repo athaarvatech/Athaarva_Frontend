@@ -14,7 +14,6 @@ import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   BaseDocumentTemplate,
-  PatientInfoSection,
   DoctorInfoSection,
   SectionTitle,
 } from "./BaseDocumentTemplate";
@@ -25,7 +24,7 @@ import {
   DocumentFooterConfig,
   DocumentStyleConfig,
 } from "./types";
-import { TestTube, Clock, User, FlaskConical, AlertTriangle } from "lucide-react";
+import { TestTube, User, FlaskConical, AlertTriangle } from "lucide-react";
 
 interface LabReportTemplateProps {
   data: LabReportData;
@@ -61,6 +60,7 @@ export const LabReportTemplate = forwardRef<HTMLDivElement, LabReportTemplatePro
       });
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const formatDate = (date: Date) => {
       return date.toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -292,6 +292,7 @@ export const LabReportTemplate = forwardRef<HTMLDivElement, LabReportTemplatePro
           {data.pathologist && (
             <div className="text-right">
               {data.pathologist.signature && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={data.pathologist.signature}
                   alt="Pathologist Signature"

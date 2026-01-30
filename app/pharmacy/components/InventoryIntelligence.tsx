@@ -5,7 +5,6 @@ import { TrendingUp, Activity, DollarSign, AlertCircle, ArrowUpRight, Sparkles }
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { BatchAnalysisModal } from "@/components/pharmacy/batch-analysis-modal";
 import type { PharmacyStats } from "@/hooks/usePharmacyStats";
 

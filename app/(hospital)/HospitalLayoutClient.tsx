@@ -214,7 +214,7 @@ export default function HospitalLayoutClient({
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Hospital Not Found</h2>
           <p className="text-gray-600 mb-4">
-            {error || "The hospital you're looking for doesn't exist or has been removed."}
+            {error || "The hospital you&apos;re looking for doesn&apos;t exist or has been removed."}
           </p>
           <p className="text-sm text-gray-500 mb-6">
             Subdomain: <code className="bg-gray-100 px-2 py-1 rounded">{subdomain}</code>
